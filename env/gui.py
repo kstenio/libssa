@@ -20,7 +20,7 @@
 #
 
 # imports
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import QFile
 from PySide2.QtUiTools import QUiLoader
 
@@ -28,12 +28,14 @@ from PySide2.QtUiTools import QUiLoader
 # gui class
 class LIBSsaGUI(object):
 	"""
+	LIBSsa: GUI
+
 	This is the main GUI class for LIBSsa.
 	
 	Every element here is loaded from libssa.ui file, and bound as class variables.
 	With an object of this class, the main is able to control the entire gui.
 	"""
-	def __init__(self, uifile: str):
+	def __init__(self, uifile: str, logofile: str):
 		# loads main window
 		try:
 			self.mw = self.loadui(uifile)
@@ -41,6 +43,10 @@ class LIBSsaGUI(object):
 			raise ValueError('Could not initialize UI file. Error message:\n\t%s' % str(err))
 		# if no error was fount, loads all remaining widgets
 		else:
+			# main tab element and logo
+			self.toolbox = self.mw.findChild(QtWidgets.QToolBox, 'operationsMainToolBox')
+			self.logo = self.mw.findChild(QtWidgets.QLabel, 'mainLogo')
+			self.loadstyle(logofile)
 			# elements from graph
 			self.g_plot = self.mw.findChild(QtWidgets.QLineEdit, 'graphWindow')
 			self.g_selector = self.mw.findChild(QtWidgets.QComboBox, 'graphTypeCB')
@@ -57,3 +63,26 @@ class LIBSsaGUI(object):
 			window = loader.load(uifile)
 			uifile.close()
 			return window
+		else:
+			raise FileNotFoundError('Could not load UI file.')
+
+	def loadstyle(self, logofile):
+		try:
+			logo = QtGui.QPixmap(logofile)
+			self.logo.setPixmap(logo)
+		except Exception as err:
+			print(err)
+		style = """
+		QToolBox::tab {
+			background: qlineargradient(x1: 0, x2: 1, stop: 0 #cc99ff, stop: 1.0 transparent);
+            border-radius: 2px;
+            color: #000000;
+        }
+        
+        QToolBox::tab:selected {
+        	font: bold italic;
+        	background: #6600cc;
+        	color: #ffffff;
+        }"""
+		self.toolbox.setStyleSheet(style)
+

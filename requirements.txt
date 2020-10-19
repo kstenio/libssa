@@ -1,0 +1,7 @@
+PySide2
+numpy
+scipy
+pandas
+pyqtgraph
+xlrd
+openpyxl

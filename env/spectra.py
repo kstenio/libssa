@@ -18,3 +18,20 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
+
+# imports
+import numpy as np
+
+class Spectra(object):
+    """
+    LIBSsa: Spectra
+
+    Class for store and organize entire LIBSsa environment.
+    """
+    def __init__(self):
+        self.wavelength = np.array(([None]), dtype=object)
+        self.wavelength_iso  = np.array(([None]), dtype=object)
+        self.counts = np.array(([None]), dtype=object)
+        self.counts_iso = np.array(([None]), dtype=object)
+        self.counts_out = np.array(([None]), dtype=object)
+        self.pearson = np.array(([None]), dtype=object)

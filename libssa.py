@@ -24,29 +24,40 @@ import sys
 from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 from PySide2.QtCore import QObject, QCoreApplication, Qt
 from env.gui import *
+from env.spectra import Spectra
 from pathlib import Path
 
 
 class LIBSSA2(QObject):
-	def __init__(self, ui_file: str, parent=None):
-		if ui_file != '0':
+	"""
+	This is the main APP of LIBSsa.
+
+	In it we have all needed functions, actions and connects for the app to work properly.
+	"""
+	def __init__(self, ui_file: str, logo_file: str, parent=None):
+		# checks if ui file exists and warn users if not
+		try:
 			super(LIBSSA2, self).__init__(parent)
-			self.gui = LIBSsaGUI(ui_file)
+			self.gui = LIBSsaGUI(ui_file, logo_file)
 			self.gui.mw.show()
-			self.start = True
-		else:
-			QMessageBox.critical(QMainWindow(), 'Critical error!', 'Could not find <b>libssa.ui</b> file in pic folder!')
+		except ValueError:
+			QMessageBox.critical(QMainWindow(parent), 'Critical error!', 'Could not find <b>libssa.ui (or libssa.svg)</b> files in pic folder!')
 			sys.exit(1)
+		else:
+			# if all is fine with ui, then starts to read other modules
+			self.spec = Spectra()
+			print(self.spec)
 
 			
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
-	uif = Path.cwd().joinpath('pic').joinpath('1libssa.ui')
+	uif = Path.cwd().joinpath('pic').joinpath('libssa.ui')
+	lof = Path.cwd().joinpath('pic').joinpath('libssa.svg')
 	QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 	app = QApplication(sys.argv)
-	if uif.is_file():
-		form = LIBSSA2(str(uif))
+	if uif.is_file() and lof.is_file():
+		form = LIBSSA2(str(uif), str(lof))
 		sys.exit(app.exec_())
 	else:
-		form = LIBSSA2('0')
+		form = LIBSSA2('','')
 		sys.exit(app.exec_())
