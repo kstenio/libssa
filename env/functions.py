@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  libssa.py
+#  functions.py
 #
 #  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
 #

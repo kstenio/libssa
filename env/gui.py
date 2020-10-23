@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  libssa.py
+#  gui.py
 #
 #  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -75,14 +75,14 @@ class LIBSsaGUI(object):
 		style = """
 		QToolBox::tab {
 			background: qlineargradient(x1: 0, x2: 1, stop: 0 #cc99ff, stop: 1.0 transparent);
-            border-radius: 2px;
-            color: #000000;
-        }
-        
-        QToolBox::tab:selected {
-        	font: bold italic;
-        	background: #6600cc;
-        	color: #ffffff;
-        }"""
+			border-radius: 2px;
+			color: #000000;
+		}
+		
+		QToolBox::tab:selected {
+			font: bold italic;
+			background: #6600cc;
+			color: #ffffff;
+		}"""
 		self.toolbox.setStyleSheet(style)
 

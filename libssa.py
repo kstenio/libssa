@@ -30,7 +30,7 @@ from pathlib import Path
 
 class LIBSSA2(QObject):
 	"""
-	This is the main APP of LIBSsa.
+	This is LIBSsa main APP.
 
 	In it we have all needed functions, actions and connects for the app to work properly.
 	"""
@@ -41,12 +41,21 @@ class LIBSSA2(QObject):
 			self.gui = LIBSsaGUI(ui_file, logo_file)
 			self.gui.mw.show()
 		except ValueError:
-			QMessageBox.critical(QMainWindow(parent), 'Critical error!', 'Could not find <b>libssa.ui (or libssa.svg)</b> files in pic folder!')
+			QMessageBox.critical(QMainWindow(None), 'Critical error!', 'Could not find <b>libssa.ui (or libssa.svg)</b> files in pic folder!')
 			sys.exit(1)
 		else:
 			# if all is fine with ui, then starts to read other modules
 			self.spec = Spectra()
-			print(self.spec)
+			#
+	
+	def variables(self):
+		pass
+	
+	def connects(self):
+		pass
+	
+	
+
 
 			
 if __name__ == '__main__':

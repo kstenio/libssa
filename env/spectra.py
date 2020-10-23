@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  libssa.py
+#  spectra.py
 #
 #  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -20,18 +20,18 @@
 #
 
 # imports
-import numpy as np
+from numpy import array
 
 class Spectra(object):
-    """
-    LIBSsa: Spectra
-
-    Class for store and organize entire LIBSsa environment.
-    """
-    def __init__(self):
-        self.wavelength = np.array(([None]), dtype=object)
-        self.wavelength_iso  = np.array(([None]), dtype=object)
-        self.counts = np.array(([None]), dtype=object)
-        self.counts_iso = np.array(([None]), dtype=object)
-        self.counts_out = np.array(([None]), dtype=object)
-        self.pearson = np.array(([None]), dtype=object)
+	"""
+	LIBSsa: Spectra
+	
+	Class for store and organize entire LIBSsa environment.
+	"""
+	def __init__(self):
+		self.wavelength = array(([None]), dtype=object)
+		self.wavelength_iso  = array(([None]), dtype=object)
+		self.counts = array(([None]), dtype=object)
+		self.counts_iso = array(([None]), dtype=object)
+		self.counts_out = array(([None]), dtype=object)
+		self.pearson = array(([None]), dtype=object)
