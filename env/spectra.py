@@ -35,3 +35,6 @@ class Spectra(object):
 		self.counts_iso = array(([None]), dtype=object)
 		self.counts_out = array(([None]), dtype=object)
 		self.pearson = array(([None]), dtype=object)
+		self.nsamples = 0
+		self.samples = [None]
+		self.samples_path = [None]

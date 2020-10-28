@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  import.py
+#  imports.py
 #
 #  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -39,6 +39,11 @@ def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int,
 	:param progress: Qt signal for multithreading
 	:return: Wavelength and Counts arrays
 	"""
+	# organizes delimiter
+	if delim == 'TAB':
+		delim = '\t'
+	elif delim == 'SPACE':
+		delim = '\s+'
 	# creates wavelength and counts vectors
 	wavelength, counts, count, sort = array(([None])), array(([None]*len(folder)), dtype=object), None, False
 	if mode == "Single":
@@ -70,15 +75,15 @@ def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int,
 			files = [folders.joinpath(x) for x in files]
 			for k, spectrum in enumerate(files):
 				# reads wavelength
-				if j == 0:
-					wavelength = read_csv(spectrum, usecols=wcol, delimiter=delim, skiprows=header, dtype=float).to_numpy()
+				if (j == 0) and (k == 0):
+					wavelength = read_csv(spectrum, usecols=[wcol-1], delimiter=delim, skiprows=header, dtype=float).to_numpy().T[0]
 					if not all(equal(wavelength, wavelength[wavelength.argsort()])):
 						sort = True
 				# reads counts
 				if k == 0:
-					count = read_csv(spectrum, usecols=ccol, delimiter=delim, skiprows=header, dtype=float).to_numpy()
+					count = read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header, dtype=float).to_numpy()
 				else:
-					count = column_stack((count, read_csv(spectrum, usecols=ccol, delimiter=delim, skiprows=header, dtype=float).to_numpy()))
+					count = column_stack((count, read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header, dtype=float).to_numpy()))
 			# back in j loop, save count in counts vector and sort if needed
 			counts[j] = count
 			if sort:

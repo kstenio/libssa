@@ -38,12 +38,14 @@ class LIBSsaGUI(object):
 	def __init__(self, uifile: str, logofile: str):
 		# loads main window
 		try:
-			self.mw = self.loadui(uifile)
+			self.mw = QtWidgets.QMainWindow()
+			self.loadui(uifile)
 		except Exception as err:
 			raise ValueError('Could not initialize UI file. Error message:\n\t%s' % str(err))
 		# if no error was fount, loads all remaining widgets
 		else:
 			# main tab element and logo
+			self.sb = self.mw.findChild(QtWidgets.QStatusBar, 'statusbar')
 			self.toolbox = self.mw.findChild(QtWidgets.QToolBox, 'operationsMainToolBox')
 			self.logo = self.mw.findChild(QtWidgets.QLabel, 'mainLogo')
 			self.loadstyle(logofile)
@@ -55,14 +57,31 @@ class LIBSsaGUI(object):
 			self.g_displayed = self.mw.findChild(QtWidgets.QSpinBox, 'graphIndex')
 			self.g_max = self.mw.findChild(QtWidgets.QLabel, 'graphLabel3')
 			self.g_run = self.mw.findChild(QtWidgets.QLabel, 'graphPlot')
-	
+			# page 1 == Load Spectra
+			self.p1_smm = self.p1_sms = QtWidgets.QRadioButton()
+			self.p1_fdtext = QtWidgets.QLineEdit()
+			self.p1_fdbtn = QtWidgets.QToolButton()
+			self.p1_delim = QtWidgets.QComboBox()
+			self.p1_header = self.p1_wcol = self.p1_ccol = QtWidgets.QSpinBox()
+			self.p1_ldspectra = QtWidgets.QPushButton()
+			# page 2 == Operations
+			pass
+			# loads all elements
+			self.loadp1()
+			self.loadp2()
+			self.loadp3()
+			self.loadp4()
+			self.loadp5()
+			self.loadp6()
+			
+			
 	def loadui(self, uifile: str):
 		uifile = QFile(uifile)
 		if uifile.open(QFile.ReadOnly):
 			loader = QUiLoader()
 			window = loader.load(uifile)
 			uifile.close()
-			return window
+			self.mw = window
 		else:
 			raise FileNotFoundError('Could not load UI file.')
 
@@ -85,4 +104,29 @@ class LIBSsaGUI(object):
 			color: #ffffff;
 		}"""
 		self.toolbox.setStyleSheet(style)
-
+		
+	def loadp1(self):
+		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
+		self.p1_sms = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB2')
+		self.p1_fdtext = self.mw.findChild(QtWidgets.QLineEdit, 'p1lE1')
+		self.p1_fdbtn = self.mw.findChild(QtWidgets.QToolButton, 'p1tB1')
+		self.p1_delim = self.mw.findChild(QtWidgets.QComboBox, 'p1cB1')
+		self.p1_header = self.mw.findChild(QtWidgets.QSpinBox, 'p1sB1')
+		self.p1_wcol = self.mw.findChild(QtWidgets.QSpinBox, 'p1sB2')
+		self.p1_ccol = self.mw.findChild(QtWidgets.QSpinBox, 'p1sB3')
+		self.p1_ldspectra = self.mw.findChild(QtWidgets.QPushButton, 'p1pB1')
+	
+	def loadp2(self):
+		pass
+	
+	def loadp3(self):
+		pass
+	
+	def loadp4(self):
+		pass
+	
+	def loadp5(self):
+		pass
+	
+	def loadp6(self):
+		pass

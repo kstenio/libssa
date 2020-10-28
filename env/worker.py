@@ -27,7 +27,7 @@ from PySide2.QtCore import QObject, QRunnable, Signal, Slot
 # signals for Qt worker
 class WorkerSignals(QObject):
 	# types of signals for LIBSsa
-	# finished = Signal()
+	finished = Signal()
 	error = Signal(tuple)
 	result = Signal(object)
 	progress = Signal(int)
