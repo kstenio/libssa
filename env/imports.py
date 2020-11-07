@@ -25,9 +25,9 @@ from pandas import read_csv
 from pathlib import PosixPath
 from typing import List, Tuple
 from PySide2.QtCore import Signal
-from numpy import array, equal, ndarray, column_stack
+from numpy import array, array_equal, ndarray, column_stack
 
-def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int, ccol: int, progress: Signal) -> Tuple[ndarray, ndarray]:
+def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
 	"""
 	This method loads spectra and returns global variables wavelength and counts
 	:param folder: PosixPath list of input folder/files (sorted)
@@ -50,14 +50,14 @@ def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int,
 		# reads all files
 		for i, file in enumerate(folder):
 			if i == 0:
-				matrix = read_csv(file, delimiter=delim, skiprows=header, dtype=float).to_numpy()
+				matrix = read_csv(file, delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)
 				wavelength, counts[i] = matrix[:, 0], matrix[:, 1:]
-				if not all(equal(wavelength, wavelength[wavelength.argsort()])):
+				if not array_equal(wavelength, wavelength[wavelength.argsort()]):
 					sort = True
 					counts[i] = counts[i][wavelength.argsort()]
 			else:
 				# after reading wavelength and defining if sort is needed, reads counts
-				counts[i] = read_csv(file, delimiter=delim, skiprows=header, dtype=float).to_numpy()[:, 1:]
+				counts[i] = read_csv(file, delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)[:, 1:]
 				if sort:
 					counts[i] = counts[i][wavelength.argsort()]
 			# emits signal for GUI
@@ -76,14 +76,14 @@ def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int,
 			for k, spectrum in enumerate(files):
 				# reads wavelength
 				if (j == 0) and (k == 0):
-					wavelength = read_csv(spectrum, usecols=[wcol-1], delimiter=delim, skiprows=header, dtype=float).to_numpy().T[0]
-					if not all(equal(wavelength, wavelength[wavelength.argsort()])):
+					wavelength = read_csv(spectrum, usecols=[wcol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec).T[0]
+					if not array_equal(wavelength, wavelength[wavelength.argsort()]):
 						sort = True
 				# reads counts
 				if k == 0:
-					count = read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header, dtype=float).to_numpy()
+					count = read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)
 				else:
-					count = column_stack((count, read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header, dtype=float).to_numpy()))
+					count = column_stack((count, read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)))
 			# back in j loop, save count in counts vector and sort if needed
 			counts[j] = count
 			if sort:

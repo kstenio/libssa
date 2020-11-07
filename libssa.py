@@ -136,11 +136,13 @@ class LIBSSA2(QObject):
 				if (self.mode == 'Multiple' and s.is_file()) or (self.mode == 'Single' and s.is_dir()):
 					self.guimsg('Error', 'Wrong file structure for <b>%s</b> mode.' % self.mode, 'c')
 					self.gui.p1_fdtext.setText('')
+					self.gui.p1_fdtext.setEnabled(False)
 					self.spec.samples = [None]
 					break
 			else:
 				self.parent = folder
 				self.gui.p1_fdtext.setText(folder.as_posix())
+				self.gui.p1_fdtext.setEnabled(True)
 				self.spec.nsamples = len(samples)
 				self.spec.samples = samples
 				self.spec.samples_path = samples_pathlib
@@ -153,8 +155,10 @@ class LIBSSA2(QObject):
 			# outputs timer
 			print('Load spectra count timer: %.2f seconds. ' % (time() - self.timer))
 			# saves result
-			self.spec.wavelength = returned[0]
-			self.spec.counts = returned[1]
+			self.spec.wavelength, self.spec.counts = returned
+			# plot last spectra in array
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[-1])
+		
 		
 		# the method itself
 		if not self.spec.samples[0]:
@@ -165,7 +169,7 @@ class LIBSSA2(QObject):
 			# configures worker
 			changestatus(self.gui.sb, 'Please Wait. Loading spectra...', 'p', 1)
 			self.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.nsamples)
-			worker = Worker(load, self.spec.samples_path, self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value())
+			worker = Worker(load, self.spec.samples_path, self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value())
 			worker.signals.progress.connect(self.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.updatedynamicbox(val=0, update=False, msg='Spectra loaded into LIBSsa'))
 			worker.signals.result.connect(result)
