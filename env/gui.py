@@ -23,10 +23,11 @@
 from numpy import zeros
 from numpy.random import random
 from colorsys import hsv_to_rgb
-from PySide2.QtCore import QFile
+from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
 from pyqtgraph import PlotWidget, setConfigOption
+from pathlib import PosixPath
 
 # Graph global configurations
 setConfigOption('background', 'w')
@@ -55,6 +56,8 @@ class LIBSsaGUI(object):
 			self.sb = QtWidgets.QStatusBar()
 			self.toolbox = QtWidgets.QToolBox()
 			self.logo = QtWidgets.QLabel()
+			self.mbox = QtWidgets.QMessageBox()
+			self.mbox_pbar = QtWidgets.QProgressBar()
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
@@ -186,7 +189,52 @@ class LIBSsaGUI(object):
 		for i in range(smp):
 			self.g.plot(x, matrix[:, i], pen=colors[i, :])
 		self.g.autoRange()
-
+		
+	#
+	# GUI/helper functions
+	#
+	def guimsg(self, top: str, main: str, tp: str):
+		if tp.lower() in ('w', 'warning'):
+			return QtWidgets.QMessageBox.warning(self.mw, top, main)
+		elif tp.lower() in ('i', 'information'):
+			return QtWidgets.QMessageBox.information(self.mw, top, main)
+		elif tp.lower() in ('q', 'question'):
+			return QtWidgets.QMessageBox.question(self.mw, top, main)
+		elif tp.lower() in ('c', 'critical'):
+			return QtWidgets.QMessageBox.critical(self.mw, top, main)
+		else:
+			QtWidgets.QMessageBox.critical(self.mw, 'Erro', 'Wrong MSG ID!')
+			raise ValueError('Wrong MSG ID!')
+	
+	def guifd(self, parent: PosixPath, tp: str, st1: str, st2: str = ''):
+		if tp in ('ged', 'getExistingDirectory'):
+			return QtWidgets.QFileDialog.getExistingDirectory(self.mw, st1,
+			                                        dir=parent.as_posix())
+		else:
+			QtWidgets.QMessageBox.critical(self.mw, 'Erro', 'Wrong FD ID!')
+			raise ValueError('Wrong FD ID!')
+	
+	def dynamicbox(self, top: str, msg: str, maxi: int):
+		self.mbox = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Information, top, msg,
+		                        QtWidgets.QMessageBox.NoButton)
+		mbox_layout = self.mbox.layout()
+		mbox_layout.itemAtPosition(mbox_layout.rowCount() - 1,
+		                           0).widget().hide()
+		self.mbox_pbar = QtWidgets.QProgressBar()
+		self.mbox_pbar.setValue(0)
+		self.mbox_pbar.setRange(0, maxi)
+		mbox_layout.addWidget(self.mbox_pbar, mbox_layout.rowCount(), 0, 1, mbox_layout.columnCount(), Qt.AlignCenter)
+		self.mbox.show()
+	
+	def updatedynamicbox(self, val, update=True, msg='Operation Finished'):
+		if update:
+			self.mbox_pbar.setValue(val)
+		else:
+			self.mbox_pbar.setValue(self.mbox_pbar.maximum())
+			self.mbox.close()
+			self.mbox = None
+			changestatus(self.sb, msg, 'g', False)
+			
 
 # Extra functions
 def pretty_colours(colors):
@@ -200,3 +248,28 @@ def pretty_colours(colors):
 		hue %= 1
 		output[tmp, :] = [int(x * 256) for x in hsv_to_rgb(hue, 0.95, 0.75)]
 	return output
+
+def changestatus(bar, message='', color='', bold=False):
+	if (message == '') and (color == ''):
+		bar.clearMessage()
+	else:
+		if len(color) == 1:
+			r, g, b, p, color = ['ff2266', '008000', '003cb3', 'cc00ff', color.lower()]
+			if color == 'r':
+				color = r
+			elif color == 'g':
+				color = g
+			elif color == 'b':
+				color = b
+			elif color == 'p':
+				color = p
+			else:
+				raise ValueError('Wrong color identifier. Use "r","g","b","p" or 6 hexadecimal values.')
+		if len(color) == 6:
+			bar.showMessage(message)
+			if bold:
+				bar.setStyleSheet('color:#%s;font-weight:bold' % color)
+			else:
+				bar.setStyleSheet('color:#%s' % color)
+		else:
+			raise ValueError('Wrong color length style. Please use 6 hexadecimal values.')
