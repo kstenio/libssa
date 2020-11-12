@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 02 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 03 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -348,8 +348,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -361,8 +361,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -374,8 +374,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -387,8 +387,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -400,8 +400,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -470,39 +470,55 @@
          </item>
          <item>
           <widget class="QComboBox" name="graphTypeCB">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
            <item>
             <property name="text">
-             <string>1</string>
+             <string>Raw spectra</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>2</string>
+             <string>Outliers removed</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>3</string>
+             <string>Correlation spectrum</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>4</string>
+             <string>Isolated peaks</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>5</string>
+             <string>Fitted peaks</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>6</string>
+             <string>PCA</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>7</string>
+             <string>PLS</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Calibration curve</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Plasma temperature</string>
             </property>
            </item>
           </widget>

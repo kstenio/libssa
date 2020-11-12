@@ -20,9 +20,9 @@
 #
 
 # Imports
-from numpy import zeros
-from numpy.random import random
-from colorsys import hsv_to_rgb
+from numpy import zeros, int16, ones
+from numpy.random import randint, uniform, random
+from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
@@ -48,6 +48,7 @@ class LIBSsaGUI(object):
 		try:
 			self.mw = QtWidgets.QMainWindow()
 			self.loadui(uifile)
+			self.logofile = logofile
 		except Exception as err:
 			raise ValueError('Could not initialize UI file. Error message:\n\t%s' % str(err))
 		# If no error was found, loads all remaining widgets
@@ -61,9 +62,11 @@ class LIBSsaGUI(object):
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
-			self.g_minus = self.g_plus = QtWidgets.QToolButton()
-			self.g_displayed = QtWidgets.QSpinBox()
-			self.g_max = self.g_run = QtWidgets.QLabel()
+			self.g_minus = self.g_plus = self.g_run = QtWidgets.QToolButton()
+			self.g_current_sb = self.g_displayed = QtWidgets.QSpinBox()
+			self.g_max = QtWidgets.QLabel()
+			self.g_current = ''
+			self.g_op = ['Wavelenght', 'nm', 'Counts', 'a.u.']
 			# Page 1 == Load Spectra
 			self.p1_smm = self.p1_sms = QtWidgets.QRadioButton()
 			self.p1_fdtext = QtWidgets.QLineEdit()
@@ -82,11 +85,11 @@ class LIBSsaGUI(object):
 			self.loadp5()
 			self.loadp6()
 			# extra configs
-			self.loadmain()
-			self.loadstyle(logofile)
-			self.configgraphic()
+			self.loadconfigs()
 			# gui connects
+			self.g_selector.currentIndexChanged.connect(self.setgoptions)
 			self.p1_sms.toggled.connect(self.modechanger)
+			
 			
 	def loadui(self, uifile: str):
 		uifile = QFile(uifile)
@@ -120,6 +123,11 @@ class LIBSsaGUI(object):
 		self.toolbox.setStyleSheet(style)
 	
 	# Load methods
+	def loadconfigs(self):
+		self.g.setTitle('LIBS Spectum')
+		self.loadstyle(self.logofile)
+		self.setgoptions()
+		
 	def loadmain(self):
 		# main tab element and logo
 		self.sb = self.mw.findChild(QtWidgets.QStatusBar, 'statusbar')
@@ -130,10 +138,10 @@ class LIBSsaGUI(object):
 		self.g_selector = self.mw.findChild(QtWidgets.QComboBox, 'graphTypeCB')
 		self.g_minus = self.mw.findChild(QtWidgets.QToolButton, 'graphMinus')
 		self.g_plus = self.mw.findChild(QtWidgets.QToolButton, 'graphPlus')
-		self.g_displayed = self.mw.findChild(QtWidgets.QSpinBox, 'graphIndex')
+		self.g_current_sb = self.mw.findChild(QtWidgets.QSpinBox, 'graphIndex')
 		self.g_max = self.mw.findChild(QtWidgets.QLabel, 'graphLabel3')
-		self.g_run = self.mw.findChild(QtWidgets.QLabel, 'graphPlot')
-	
+		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
+		
 	def loadp1(self):
 		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
 		self.p1_sms = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB2')
@@ -171,12 +179,64 @@ class LIBSsaGUI(object):
 			self.p1_wcol.setEnabled(not is_single)
 			self.p1_ccol.setEnabled(not is_single)
 	
-	# Graph methods
-	def configgraphic(self):
-		self.g.setTitle('LIBS Spectum')
-		self.g.setLabel('left', 'Counts', units='a.u.')
-		self.g.setLabel('bottom', 'Wavelength', units='nm')
+	def setgoptions(self):
+		# Current Index selected
+		ci = self.g_selector.currentIndex()
+		# Raw spectra
+		if ci == 0:
+			self.g_current = 'Raw'
+			self.g_op = ['Wavelenght', 'nm', 'Counts', 'a.u.']
+		# Spectra after having outliers removed
+		elif ci == 1:
+			self.g_current = 'Outliers'
+			self.g_op = ['Wavelenght', 'nm', 'Counts', 'a.u.']
+		# Correlation spectrum
+		elif ci == 2:
+			self.g_current = 'Correlation'
+			self.g_op = ['Wavelenght', 'nm', 'Pearson correlation coefficient', '&rho;']
+		# Isolated peaks
+		elif ci == 3:
+			self.g_current = 'Isolated'
+			self.g_op = ['Wavelenght', 'nm', 'Intensity', 'a.u.']
+		# Fitted peaks
+		elif ci == 4:
+			self.g_current = 'Fit'
+			self.g_op = ['Wavelenght', 'nm', 'Intensity', 'a.u.']
+		# PCA plot
+		elif ci == 5:
+			self.g_current = 'PCA'
+			pca = self.g_current_sb.value()
+			if pca == 1:
+				self.g_op = ['Number of components', '#', 'Cumulative explained variance', '%']
+			elif pca == 2:
+				self.g_op = ['Principal Component <b>1</b>', 'a.u.', 'Principal Component <b>2</b>', 'a.u.']
+			elif pca == 3:
+				self.g_op = ['Principal Component <b>1</b>', 'a.u.', 'Principal Component <b>3</b>', 'a.u.']
+			elif pca == 4:
+				self.g_op = ['Principal Component <b>2</b>', 'a.u.', 'Principal Component <b>3</b>', 'a.u.']
+			elif pca == 5:
+				self.g_op = ['Attributes', 'nm', 'PCA Loadings', 'a.u.']
+		# PLS regression
+		elif ci == 6:
+			self.g_current = 'PLS'
+			pls = self.g_current_sb.value()
+			if pls == 1:
+				self.g_op = ['True value', 'ref', 'Predicted values', 'r.u.']
+			elif pls == 2:
+				self.g_op = ['Predicted values', 'r.u.', 'Amount', 'r.u.']
+		# Linear model regression
+		elif ci == 7:
+			self.g_current = 'Linear'
+			self.g_op = ['True value', 'ref', 'Peak intensity', 'a.u.']
+		# Saha-Boltzmann energy plot
+		elif ci == 8:
+			self.g_current = 'Temperature'
+			self.g_op = ['Energy', 'eV', 'Ln', 'a.u.']
+		# Change Graph labels
+		self.g.setLabel('bottom', self.g_op[0], units=self.g_op[1])
+		self.g.setLabel('left', self.g_op[2], units=self.g_op[3])
 		
+	# Graph methods
 	def splot(self, x, y):
 		self.g.clear()
 		self.g.plot(x, y)
@@ -185,7 +245,7 @@ class LIBSsaGUI(object):
 	def mplot(self, x, matrix):
 		self.g.clear()
 		smp = matrix.shape[1]
-		colors = pretty_colours(smp)
+		colors = hsl_colors(smp)
 		for i in range(smp):
 			self.g.plot(x, matrix[:, i], pen=colors[i, :])
 		self.g.autoRange()
@@ -235,9 +295,10 @@ class LIBSsaGUI(object):
 			self.mbox = None
 			changestatus(self.sb, msg, 'g', False)
 			
-
+#
 # Extra functions
-def pretty_colours(colors):
+#
+def pretty_colors(colors):
 	"""uses golden ratio to create pleasant/pretty colours
 	returns in rgb form"""
 	output = zeros((colors, 3))
@@ -248,6 +309,13 @@ def pretty_colours(colors):
 		hue %= 1
 		output[tmp, :] = [int(x * 256) for x in hsv_to_rgb(hue, 0.95, 0.75)]
 	return output
+
+def hsl_colors(colors):
+	output = ones((colors, 3))*255
+	for c in range(colors):
+		h, l, s = randint(190, 360)/360, uniform(0.30, 0.70), uniform(0.5, 1)
+		output[c, :] *= hls_to_rgb(h, l, s)
+	return int16(output)
 
 def changestatus(bar, message='', color='', bold=False):
 	if (message == '') and (color == ''):

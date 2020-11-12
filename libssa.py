@@ -50,20 +50,24 @@ class LIBSSA2(QObject):
 			# if all is fine with ui, then starts to read other modules
 			self.spec = Spectra()
 			# defines global variables
+			self.threadpool = QThreadPool()
 			self.parent = PosixPath()
 			self.mbox = QMessageBox()
 			self.mode = self.delimiter = ''
-			self.timer = 0
+			self.cores = self.ranged = self.timer = 0
 			# connects
 			self.connects()
 			# extra variables
 			self.variables()
-			self.configthread()
 	
 	def variables(self):
 		self.parent = Path.cwd()
 	
 	def connects(self):
+		# main
+		self.gui.g_run.clicked.connect(self.doplot)
+		self.gui.g_selector.activated.connect(self.setgrange)
+		self.gui.g_current_sb.editingFinished.connect(self.doplot)
 		# page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
@@ -72,7 +76,105 @@ class LIBSSA2(QObject):
 		self.threadpool = QThreadPool()
 		self.cores = self.threadpool.maxThreadCount()
 		self.threadpool.setMaxThreadCount(self.cores - 1)
-		
+	
+	#
+	# Methods for Graphics
+	#
+	def doplot(self):
+		# Rechecks current ranges
+		if not self.ranged: self.setgrange()
+		# Sets current index
+		idx = self.gui.g_current_sb.value() - 1
+		# Perform plot based on actual settings
+		if self.gui.g_current == 'Raw':
+			self.gui.g.setTitle('Raw LIBS spectra from sample <b>%s</b>' % self.spec.samples_path[idx].stem)
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'Outliers':
+			self.gui.g.setTitle('Outliers removed LIBS spectra from sample <b>%s</b>' % self.spec.samples_path[idx].stem)
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'Correlation':
+			self.gui.g.setTitle('Correlation spectrum os sample set (for ELEMENT)')
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'Isolated':
+			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' %('ELEMENT', self.spec.samples_path[idx].stem))
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'Fit':
+			self.gui.g.setTitle('Fitted peak of <b>%s</b> for sample <b>%s</b>' % ('ELEMENT', self.spec.samples_path[idx].stem))
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'PCA':
+			if idx == 0:
+				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			if idx == 1:
+				self.gui.g.setTitle('Principal component <b>2</b> as function of component <b>1</b>')
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			if idx == 2:
+				self.gui.g.setTitle('Principal component <b>3</b> as function of component <b>1</b>')
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			if idx == 3:
+				self.gui.g.setTitle('Principal component <b>3</b> as function of component <b>2</b>')
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'PLS':
+			if idx == 0:
+				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' %('Element') )
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			if idx == 1:
+				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % ('Element'))
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'Linear':
+			if idx == 0:
+				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Height</u> as <i>Intensity</i>' % ('Element'))
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			if idx == 1:
+				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Area</u> as <i>Intensity</i>' % ('Element'))
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+		elif self.gui.g_current == 'Temperature':
+			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
+			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+	
+	def setgrange(self):
+		# Enable ranged global variable
+		self.ranged = True
+		# Helper idx variable
+		idx = self.gui.g_selector.currentIndex()
+		# Sets correct range based on current graph
+		if idx == 0:
+			# Raw spectra
+			self.gui.g_current_sb.setRange(1, self.spec.nsamples)
+			self.gui.g_max.setText(str(self.spec.nsamples))
+		elif idx == 1:
+			# Spectra after having outliers removed
+			self.gui.g_current_sb.setRange(1, self.spec.nsamples)
+			self.gui.g_max.setText(str(self.spec.nsamples))
+		elif idx == 2:
+			# Correlation spectrum
+			self.gui.g_current_sb.setRange(1, 1)
+			self.gui.g_max.setText('1')
+		elif idx == 3:
+			# Isolated peaks
+			self.gui.g_current_sb.setRange(1, len(self.spec.counts_iso))
+			self.gui.g_max.setText(str(len(self.spec.counts_iso)))
+		elif idx == 4:
+			# Fitted peaks
+			self.gui.g_current_sb.setRange(1, len(self.spec.counts_iso))
+			self.gui.g_max.setText(str(len(self.spec.counts_iso)))
+		elif idx == 5:
+			# PCA
+			self.gui.g_current_sb.setRange(1, 5)
+			self.gui.g_max.setText('5')
+		elif idx == 6:
+			# PLS
+			self.gui.g_current_sb.setRange(1, 2)
+			self.gui.g_max.setText('2')
+		elif idx == 7:
+			# Linear curve
+			self.gui.g_current_sb.setRange(1, 2)
+			self.gui.g_max.setText('2')
+		elif idx == 8:
+			# Saha-Boltzmann plot
+			self.gui.g_current_sb.setRange(1, self.spec.nsamples)
+			self.gui.g_max.setText(str(self.spec.nsamples))
+			
 	#
 	# Methods for page 1 == Load Spectra
 	#
@@ -106,15 +208,16 @@ class LIBSSA2(QObject):
 	def spload(self):
 		# module for receiving result from worker
 		def result(returned):
+			# saves result
+			self.spec.wavelength, self.spec.counts = returned
+			self.spec.nsamples = len(self.spec.samples)
 			# enable load button
 			self.gui.p1_ldspectra.setEnabled(True)
 			# outputs timer
 			print('Load spectra count timer: %.2f seconds. ' % (time() - self.timer))
-			# saves result
-			self.spec.wavelength, self.spec.counts = returned
-			# plot last spectra in array
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[-1])
-		
+			# updates gui elements
+			self.gui.g_selector.setCurrentIndex(0)
+			self.doplot()
 		
 		# the method itself
 		if not self.spec.samples[0]:
@@ -133,7 +236,7 @@ class LIBSSA2(QObject):
 			self.timer = time()
 			self.threadpool.start(worker)
 
-			
+	
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
 	uif = Path.cwd().joinpath('pic').joinpath('libssa.ui')
