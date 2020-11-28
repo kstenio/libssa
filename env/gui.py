@@ -75,7 +75,9 @@ class LIBSsaGUI(object):
 			self.p1_header = self.p1_wcol = self.p1_ccol = self.p1_dec = QtWidgets.QSpinBox()
 			self.p1_ldspectra = QtWidgets.QPushButton()
 			# Page 2 == Operations
-			pass
+			self.p2_dot = self.p2_mad = QtWidgets.QRadioButton()
+			self.p2_dot_c = self.p2_mad_c = QtWidgets.QDoubleSpinBox()
+			self.p2_apply_dot = self.p2_apply_correl = QtWidgets.QToolButton()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -84,12 +86,10 @@ class LIBSsaGUI(object):
 			self.loadp4()
 			self.loadp5()
 			self.loadp6()
-			# extra configs
+			# extra configs and connects
 			self.loadconfigs()
+			self.connects()
 			# gui connects
-			self.g_selector.currentIndexChanged.connect(self.setgoptions)
-			self.p1_sms.toggled.connect(self.modechanger)
-			
 			
 	def loadui(self, uifile: str):
 		uifile = QFile(uifile)
@@ -155,8 +155,13 @@ class LIBSsaGUI(object):
 		self.p1_ldspectra = self.mw.findChild(QtWidgets.QPushButton, 'p1pB1')
 		
 	def loadp2(self):
-		pass
-	
+		self.p2_dot = self.mw.findChild(QtWidgets.QRadioButton, 'p2rB1')
+		self.p2_mad = self.mw.findChild(QtWidgets.QRadioButton, 'p2rB1')
+		self.p2_dot_c = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p2dSb1')
+		self.p2_mad_c = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p2dSb2')
+		self.p2_apply_dot = self.mw.findChild(QtWidgets.QToolButton, 'p2tB1')
+		self.p2_apply_correl =  self.mw.findChild(QtWidgets.QToolButton, 'p2tB1')
+		
 	def loadp3(self):
 		pass
 	
@@ -170,15 +175,30 @@ class LIBSsaGUI(object):
 		pass
 	
 	# Connects helper
-	def modechanger(self):
-		is_single = self.p1_sms.isChecked()
-		if is_single:
-			self.p1_wcol.setEnabled(not is_single)
-			self.p1_ccol.setEnabled(not is_single)
-		else:
-			self.p1_wcol.setEnabled(not is_single)
-			self.p1_ccol.setEnabled(not is_single)
+	def connects(self):
+		self.g_selector.currentIndexChanged.connect(self.setgoptions)
+		self.p1_sms.toggled.connect(self.modechanger)
+		self.p2_dot.toggled.connect(self.setoutliers)
 	
+	def modechanger(self):
+		is_multi = self.p1_smm.isChecked()
+		if not is_multi:
+			self.p1_wcol.setEnabled(is_multi)
+			self.p1_ccol.setEnabled(is_multi)
+		else:
+			self.p1_wcol.setEnabled(is_multi)
+			self.p1_ccol.setEnabled(is_multi)
+	
+	def setoutliers(self):
+		self.p2_apply_dot.setEnabled(True)
+		dot = self.p2_dot.isChecked()
+		if dot:
+			self.p2_dot_c.setEnabled(dot)
+			self.p2_mad_c.setEnabled(not dot)
+		else:
+			self.p2_dot_c.setEnabled(dot)
+			self.p2_mad_c.setEnabled(not dot)
+			
 	def setgoptions(self):
 		# Current Index selected
 		ci = self.g_selector.currentIndex()

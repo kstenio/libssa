@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1216</width>
+    <width>1218</width>
     <height>684</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 03 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 04 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -54,7 +54,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
+              <width>384</width>
               <height>384</height>
              </rect>
             </property>
@@ -343,26 +343,314 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="page_2">
+           <widget class="QWidget" name="p2">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
              <string>Outliers and correlation spectrum</string>
             </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <item>
+              <layout class="QHBoxLayout" name="p2hL1">
+               <item>
+                <layout class="QGridLayout" name="p2gL1">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="p2lB1">
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>21</height>
+                    </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Remove outliers</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLabel" name="p2lB2">
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>21</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Criteria</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QRadioButton" name="p2rB1">
+                   <property name="text">
+                    <string>SAM (Spectral Angle Mapper)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QDoubleSpinBox" name="p2dSb1">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>0.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>1.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.000100000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.925000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QRadioButton" name="p2rB2">
+                   <property name="text">
+                    <string>MAD (Median Absolute Deviation)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QDoubleSpinBox" name="p2dSb2">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="minimum">
+                    <double>2.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>3.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.500000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>3.000000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_4">
+                 <item>
+                  <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout">
+                   <item>
+                    <spacer name="horizontalSpacer">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="p2tB1">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                     <property name="icon">
+                      <iconset>
+                       <normaloff>pic/icons/check-square-solid.svg</normaloff>pic/icons/check-square-solid.svg</iconset>
+                     </property>
+                     <property name="iconSize">
+                      <size>
+                       <width>25</width>
+                       <height>25</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="horizontalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>15</width>
+                 <height>15</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_7">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>15</width>
+                 <height>15</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="p2lB3">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Create correlation Spectrum</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="QLabel" name="p2lB4">
+                 <property name="text">
+                  <string>&lt;br&gt;&lt;b&gt;Warning:&lt;/b&gt; To use this functionality, you must first load the reference data in the &lt;i&gt;&lt;u&gt;&quot;Import&quot;&lt;/u&gt;&lt;/i&gt; nenu.</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="p2tB2">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>pic/icons/check-square-regular.svg</normaloff>pic/icons/check-square-regular.svg</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>25</width>
+                   <height>25</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
            <widget class="QWidget" name="page_3">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -374,8 +662,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -387,8 +675,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -400,8 +688,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -617,12 +905,206 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1216</width>
+     <width>1218</width>
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionLoad"/>
+    <addaction name="actionSave"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuImport">
+    <property name="title">
+     <string>Import</string>
+    </property>
+    <addaction name="actionRef"/>
+   </widget>
+   <widget class="QMenu" name="menuExport">
+    <property name="title">
+     <string>Export</string>
+    </property>
+    <widget class="QMenu" name="menuSpectra_ASCII">
+     <property name="title">
+      <string>Full spectra (ASCII)</string>
+     </property>
+     <addaction name="actionRAW"/>
+     <addaction name="actionWithout_outliers"/>
+    </widget>
+    <widget class="QMenu" name="menuPeaks">
+     <property name="title">
+      <string>Peaks</string>
+     </property>
+     <addaction name="actionIsolation_table"/>
+     <addaction name="actionIsolated_peaks_2"/>
+     <addaction name="actionAreas_and_intensities"/>
+    </widget>
+    <widget class="QMenu" name="menuPredictions">
+     <property name="title">
+      <string>Predictions</string>
+     </property>
+     <addaction name="actionLinear_model"/>
+     <addaction name="actionPLS_Regression"/>
+    </widget>
+    <widget class="QMenu" name="menuOther_data">
+     <property name="title">
+      <string>Other data</string>
+     </property>
+     <addaction name="actionPCA_data_2"/>
+     <addaction name="actionTemperature_and_electron_density"/>
+    </widget>
+    <addaction name="menuSpectra_ASCII"/>
+    <addaction name="menuPeaks"/>
+    <addaction name="menuPredictions"/>
+    <addaction name="menuOther_data"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuImport"/>
+   <addaction name="menuExport"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionLoad">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-import-solid.svg</normaloff>pic/icons/file-import-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Load environment</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-export-solid.svg</normaloff>pic/icons/file-export-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save environment</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/times-circle-regular.svg</normaloff>pic/icons/times-circle-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Quit LIBSsa</string>
+   </property>
+  </action>
+  <action name="actionRef">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-solid.svg</normaloff>pic/icons/file-excel-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Load reference spreadsheet</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/question-circle-regular.svg</normaloff>pic/icons/question-circle-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>About LIBSsa</string>
+   </property>
+  </action>
+  <action name="actionRAW">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-text-regular.svg</normaloff>pic/icons/file-text-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>RAW</string>
+   </property>
+  </action>
+  <action name="actionWithout_outliers">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-text-regular.svg</normaloff>pic/icons/file-text-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Without outliers</string>
+   </property>
+  </action>
+  <action name="actionIsolated_peaks_2">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Isolated peaks</string>
+   </property>
+  </action>
+  <action name="actionAreas_and_intensities">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Areas and intensities</string>
+   </property>
+  </action>
+  <action name="actionIsolation_table">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/table-solid.svg</normaloff>pic/icons/table-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Regions table</string>
+   </property>
+  </action>
+  <action name="actionLinear_model">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Linear model</string>
+   </property>
+  </action>
+  <action name="actionPLS_Regression">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>PLS Regression</string>
+   </property>
+  </action>
+  <action name="actionPCA_data_2">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>PCA data</string>
+   </property>
+  </action>
+  <action name="actionTemperature_and_electron_density">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Temperature and electron density</string>
+   </property>
+  </action>
+  <action name="actionTEST">
+   <property name="text">
+    <string>TEST</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

@@ -201,7 +201,7 @@ class LIBSSA2(QObject):
 				self.parent = folder
 				self.gui.p1_fdtext.setText(folder.as_posix())
 				self.gui.p1_fdtext.setEnabled(True)
-				self.spec.nsamples = len(samples)
+				# self.spec.nsamples = len(samples)
 				self.spec.samples = samples
 				self.spec.samples_path = samples_pathlib
 	
@@ -235,7 +235,21 @@ class LIBSSA2(QObject):
 			self.configthread()
 			self.timer = time()
 			self.threadpool.start(worker)
-
+			
+	#
+	# Methods for page 2 == Operations
+	#
+	def outliers(self):
+		# module for receiving result from worker
+		def result(returned):
+			pass
+		
+		# main method itself
+		if self.spec.nsamples <= 0:
+			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
+		else:
+			pass
+	
 	
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
