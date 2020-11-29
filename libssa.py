@@ -21,12 +21,13 @@
 
 # imports
 import sys
+from PySide2.QtGui import QKeyEvent
 from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
 from env.gui import LIBSsaGUI, changestatus
 from env.spectra import Spectra
 from env.worker import Worker
-from env.imports import load
+from env.imports import load, outliers
 from pathlib import Path, PosixPath
 from os import listdir
 from time import time
@@ -71,7 +72,11 @@ class LIBSSA2(QObject):
 		# page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
-	
+		# page 2
+		self.gui.p2_apply_out.clicked.connect(self.outliers)
+		self.gui.p2_dot_c.valueChanged.connect(self.outliers)
+		self.gui.p2_mad_c.valueChanged.connect(self.outliers)
+		
 	def configthread(self):
 		self.threadpool = QThreadPool()
 		self.cores = self.threadpool.maxThreadCount()
@@ -91,7 +96,7 @@ class LIBSSA2(QObject):
 			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 		elif self.gui.g_current == 'Outliers':
 			self.gui.g.setTitle('Outliers removed LIBS spectra from sample <b>%s</b>' % self.spec.samples_path[idx].stem)
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			self.gui.mplot(self.spec.wavelength, self.spec.counts_out[idx])
 		elif self.gui.g_current == 'Correlation':
 			self.gui.g.setTitle('Correlation spectrum os sample set (for ELEMENT)')
 			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
@@ -227,7 +232,7 @@ class LIBSSA2(QObject):
 			self.gui.p1_ldspectra.setEnabled(False)
 			# configures worker
 			changestatus(self.gui.sb, 'Please Wait. Loading spectra...', 'p', 1)
-			self.gui.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.nsamples)
+			self.gui.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.samples.__len__())
 			worker = Worker(load, self.spec.samples_path, self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value())
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Spectra loaded into LIBSsa'))
@@ -242,13 +247,40 @@ class LIBSSA2(QObject):
 	def outliers(self):
 		# module for receiving result from worker
 		def result(returned):
-			pass
+			# saves result
+			self.spec.counts_out = returned
+			# enable apply button
+			self.gui.p2_apply_out.setEnabled(True)
+			# outputs timer
+			print('Outliers removal count timer: %.2f seconds. ' % (time() - self.timer))
+			# updates gui elements
+			self.gui.g_selector.setCurrentIndex(1)
+			self.doplot()
 		
 		# main method itself
 		if self.spec.nsamples <= 0:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
 		else:
-			pass
+			# defines type of outliers removal (and selected criteria)
+			out_type = 'SAM' if self.gui.p2_dot.isChecked() else 'MAD'
+			criteria = self.gui.p2_dot_c.value() if self.gui.p2_dot.isChecked() else self.gui.p2_mad_c.value()
+			if out_type == 'SAM':
+				out_size = self.spec.nsamples
+			elif out_type == 'MAD':
+				out_size = self.spec.wavelength.__len__()
+			else:
+				raise ValueError('Outliers removal algorithm not selected.') # this should not happen. Else here just in case it does...
+			# now, setup tome configs and initialize worker
+			changestatus(self.gui.sb, 'Please Wait. Removing outliers...', 'p', 1)
+			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, out_size)
+			self.gui.p2_apply_out.setEnabled(False)
+			worker = Worker(outliers, out_type, criteria, self.spec.counts)
+			worker.signals.progress.connect(self.gui.updatedynamicbox)
+			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Outliers removed from set'))
+			worker.signals.result.connect(result)
+			self.configthread()
+			self.timer = time()
+			self.threadpool.start(worker)
 	
 	
 if __name__ == '__main__':

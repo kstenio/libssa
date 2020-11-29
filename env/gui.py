@@ -77,7 +77,7 @@ class LIBSsaGUI(object):
 			# Page 2 == Operations
 			self.p2_dot = self.p2_mad = QtWidgets.QRadioButton()
 			self.p2_dot_c = self.p2_mad_c = QtWidgets.QDoubleSpinBox()
-			self.p2_apply_dot = self.p2_apply_correl = QtWidgets.QToolButton()
+			self.p2_apply_out = self.p2_apply_correl = QtWidgets.QToolButton()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -89,7 +89,6 @@ class LIBSsaGUI(object):
 			# extra configs and connects
 			self.loadconfigs()
 			self.connects()
-			# gui connects
 			
 	def loadui(self, uifile: str):
 		uifile = QFile(uifile)
@@ -159,8 +158,8 @@ class LIBSsaGUI(object):
 		self.p2_mad = self.mw.findChild(QtWidgets.QRadioButton, 'p2rB1')
 		self.p2_dot_c = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p2dSb1')
 		self.p2_mad_c = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p2dSb2')
-		self.p2_apply_dot = self.mw.findChild(QtWidgets.QToolButton, 'p2tB1')
-		self.p2_apply_correl =  self.mw.findChild(QtWidgets.QToolButton, 'p2tB1')
+		self.p2_apply_out = self.mw.findChild(QtWidgets.QToolButton, 'p2tB1')
+		self.p2_apply_correl =  self.mw.findChild(QtWidgets.QToolButton, 'p2tB2')
 		
 	def loadp3(self):
 		pass
@@ -179,6 +178,8 @@ class LIBSsaGUI(object):
 		self.g_selector.currentIndexChanged.connect(self.setgoptions)
 		self.p1_sms.toggled.connect(self.modechanger)
 		self.p2_dot.toggled.connect(self.setoutliers)
+		self.p2_dot_c.setKeyboardTracking(False)
+		self.p2_mad_c.setKeyboardTracking(False)
 	
 	def modechanger(self):
 		is_multi = self.p1_smm.isChecked()
@@ -190,7 +191,7 @@ class LIBSsaGUI(object):
 			self.p1_ccol.setEnabled(is_multi)
 	
 	def setoutliers(self):
-		self.p2_apply_dot.setEnabled(True)
+		self.p2_apply_out.setEnabled(True)
 		dot = self.p2_dot.isChecked()
 		if dot:
 			self.p2_dot_c.setEnabled(dot)

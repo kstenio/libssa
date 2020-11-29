@@ -25,7 +25,8 @@ from pandas import read_csv
 from pathlib import PosixPath
 from typing import List, Tuple
 from PySide2.QtCore import Signal
-from numpy import array, array_equal, ndarray, column_stack
+from numpy import array, array_equal, ndarray, column_stack, mean, dot
+from scipy.linalg import norm
 
 def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
 	"""
@@ -97,4 +98,22 @@ def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int,
 		return wavelength, counts
 	else:
 		raise ValueError('Wrong reading mode.')
-	
+
+def outliers(mode: str, criteria: float, counts: ndarray, progress: Signal) -> ndarray:
+	# creates counts new vector
+	out_counts = array(([None] * counts.__len__()), dtype=object)
+	if mode == 'SAM':
+		for i in range(counts.__len__()):
+			out_average = mean(counts[i], 1)
+			out_counts[i] = out_average
+			for j in range(counts[i].shape[1]):
+				costheta = dot(out_average, counts[i][:, j]) / ( norm(out_average)*norm(counts[i][:, j]) )
+				if costheta >= criteria:
+					out_counts[i] = column_stack((out_counts[i], counts[i][:, j]))
+			out_counts[i] = out_counts[i][:, 1:]
+			progress.emit(i)
+		return out_counts
+	elif mode == 'MAD':
+		pass
+	else:
+		pass
