@@ -25,7 +25,7 @@ from pandas import read_csv
 from pathlib import PosixPath
 from typing import List, Tuple
 from PySide2.QtCore import Signal
-from numpy import array, array_equal, ndarray, column_stack, mean, dot
+from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract
 from scipy.linalg import norm
 
 def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
@@ -112,8 +112,23 @@ def outliers(mode: str, criteria: float, counts: ndarray, progress: Signal) -> n
 					out_counts[i] = column_stack((out_counts[i], counts[i][:, j]))
 			out_counts[i] = out_counts[i][:, 1:]
 			progress.emit(i)
-		return out_counts
 	elif mode == 'MAD':
-		pass
-	else:
-		pass
+		b = 1.4826
+		for i in range(counts.__len__()):
+			# calculates MAD for each wavelength
+			ith_mad_vector = zeros(counts[i].shape[0])
+			ith_median = median(counts[i], 1)
+			ith_mad_vector = b * median(nabs(subtract(counts[i].T, ith_median).T), 1)
+			# now, check if each shoot is or isn't an outlier
+			zero_counts = zeros(counts[i].shape[0])
+			bool_checker = array([criteria] * counts[i].shape[0])
+			for k in range(counts[i].shape[1]):
+				criteria_ = (counts[i][:, k] - ith_median) / ith_mad_vector
+				criteria_bool = nabs(criteria_) < bool_checker
+				if criteria_bool.sum() / counts[i].shape[0] >= 0.95:
+					zero_counts = column_stack((zero_counts, counts[i][:, k]))
+			# saves corrected values
+			out_counts[i] = zero_counts[:, 1:]
+			progress.emit(i)
+	# return result
+	return out_counts

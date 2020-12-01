@@ -264,15 +264,9 @@ class LIBSSA2(QObject):
 			# defines type of outliers removal (and selected criteria)
 			out_type = 'SAM' if self.gui.p2_dot.isChecked() else 'MAD'
 			criteria = self.gui.p2_dot_c.value() if self.gui.p2_dot.isChecked() else self.gui.p2_mad_c.value()
-			if out_type == 'SAM':
-				out_size = self.spec.nsamples
-			elif out_type == 'MAD':
-				out_size = self.spec.wavelength.__len__()
-			else:
-				raise ValueError('Outliers removal algorithm not selected.') # this should not happen. Else here just in case it does...
 			# now, setup tome configs and initialize worker
 			changestatus(self.gui.sb, 'Please Wait. Removing outliers...', 'p', 1)
-			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, out_size)
+			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, self.spec.nsamples)
 			self.gui.p2_apply_out.setEnabled(False)
 			worker = Worker(outliers, out_type, criteria, self.spec.counts)
 			worker.signals.progress.connect(self.gui.updatedynamicbox)

@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 05 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 06 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -403,12 +403,15 @@
                    <property name="text">
                     <string>SAM (Spectral Angle Mapper)</string>
                    </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
                   <widget class="QDoubleSpinBox" name="p2dSb1">
                    <property name="enabled">
-                    <bool>false</bool>
+                    <bool>true</bool>
                    </property>
                    <property name="decimals">
                     <number>4</number>
@@ -649,8 +652,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -662,8 +665,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -675,8 +678,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -688,8 +691,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
