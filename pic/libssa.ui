@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 06 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 07 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -652,8 +652,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -665,8 +665,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -678,8 +678,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -691,8 +691,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>384</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -916,16 +916,16 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoad"/>
-    <addaction name="actionSave"/>
+    <addaction name="actionF01"/>
+    <addaction name="actionF02"/>
     <addaction name="separator"/>
-    <addaction name="actionQuit"/>
+    <addaction name="actionF03"/>
    </widget>
    <widget class="QMenu" name="menuImport">
     <property name="title">
      <string>Import</string>
     </property>
-    <addaction name="actionRef"/>
+    <addaction name="actionI01"/>
    </widget>
    <widget class="QMenu" name="menuExport">
     <property name="title">
@@ -935,30 +935,30 @@
      <property name="title">
       <string>Full spectra (ASCII)</string>
      </property>
-     <addaction name="actionRAW"/>
-     <addaction name="actionWithout_outliers"/>
+     <addaction name="actionE01"/>
+     <addaction name="actionE02"/>
     </widget>
     <widget class="QMenu" name="menuPeaks">
      <property name="title">
       <string>Peaks</string>
      </property>
-     <addaction name="actionIsolation_table"/>
-     <addaction name="actionIsolated_peaks_2"/>
-     <addaction name="actionAreas_and_intensities"/>
+     <addaction name="actionE03"/>
+     <addaction name="actionE04"/>
+     <addaction name="actionE05"/>
     </widget>
     <widget class="QMenu" name="menuPredictions">
      <property name="title">
       <string>Predictions</string>
      </property>
-     <addaction name="actionLinear_model"/>
-     <addaction name="actionPLS_Regression"/>
+     <addaction name="actionE06"/>
+     <addaction name="actione07"/>
     </widget>
     <widget class="QMenu" name="menuOther_data">
      <property name="title">
       <string>Other data</string>
      </property>
-     <addaction name="actionPCA_data_2"/>
-     <addaction name="actionTemperature_and_electron_density"/>
+     <addaction name="actionE08"/>
+     <addaction name="actionE09"/>
     </widget>
     <addaction name="menuSpectra_ASCII"/>
     <addaction name="menuPeaks"/>
@@ -969,7 +969,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout"/>
+    <addaction name="actionH01"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImport"/>
@@ -977,7 +977,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionLoad">
+  <action name="actionF01">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-import-solid.svg</normaloff>pic/icons/file-import-solid.svg</iconset>
@@ -986,7 +986,7 @@
     <string>Load environment</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionF02">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-export-solid.svg</normaloff>pic/icons/file-export-solid.svg</iconset>
@@ -995,7 +995,7 @@
     <string>Save environment</string>
    </property>
   </action>
-  <action name="actionQuit">
+  <action name="actionF03">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/times-circle-regular.svg</normaloff>pic/icons/times-circle-regular.svg</iconset>
@@ -1004,7 +1004,7 @@
     <string>Quit LIBSsa</string>
    </property>
   </action>
-  <action name="actionRef">
+  <action name="actionI01">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-solid.svg</normaloff>pic/icons/file-excel-solid.svg</iconset>
@@ -1013,7 +1013,7 @@
     <string>Load reference spreadsheet</string>
    </property>
   </action>
-  <action name="actionAbout">
+  <action name="actionH01">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/question-circle-regular.svg</normaloff>pic/icons/question-circle-regular.svg</iconset>
@@ -1022,7 +1022,7 @@
     <string>About LIBSsa</string>
    </property>
   </action>
-  <action name="actionRAW">
+  <action name="actionE01">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-text-regular.svg</normaloff>pic/icons/file-text-regular.svg</iconset>
@@ -1031,7 +1031,7 @@
     <string>RAW</string>
    </property>
   </action>
-  <action name="actionWithout_outliers">
+  <action name="actionE02">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-text-regular.svg</normaloff>pic/icons/file-text-regular.svg</iconset>
@@ -1040,7 +1040,7 @@
     <string>Without outliers</string>
    </property>
   </action>
-  <action name="actionIsolated_peaks_2">
+  <action name="actionE04">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -1049,7 +1049,7 @@
     <string>Isolated peaks</string>
    </property>
   </action>
-  <action name="actionAreas_and_intensities">
+  <action name="actionE05">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -1058,7 +1058,7 @@
     <string>Areas and intensities</string>
    </property>
   </action>
-  <action name="actionIsolation_table">
+  <action name="actionE03">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/table-solid.svg</normaloff>pic/icons/table-solid.svg</iconset>
@@ -1067,7 +1067,7 @@
     <string>Regions table</string>
    </property>
   </action>
-  <action name="actionLinear_model">
+  <action name="actionE06">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -1076,7 +1076,7 @@
     <string>Linear model</string>
    </property>
   </action>
-  <action name="actionPLS_Regression">
+  <action name="actione07">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -1085,7 +1085,7 @@
     <string>PLS Regression</string>
    </property>
   </action>
-  <action name="actionPCA_data_2">
+  <action name="actionE08">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -1094,7 +1094,7 @@
     <string>PCA data</string>
    </property>
   </action>
-  <action name="actionTemperature_and_electron_density">
+  <action name="actionE09">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>

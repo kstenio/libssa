@@ -59,6 +59,8 @@ class LIBSsaGUI(object):
 			self.logo = QtWidgets.QLabel()
 			self.mbox = QtWidgets.QMessageBox()
 			self.mbox_pbar = QtWidgets.QProgressBar()
+			# Menubar
+			self.menu_import_ref = QtWidgets.QAction()
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
@@ -140,6 +142,8 @@ class LIBSsaGUI(object):
 		self.g_current_sb = self.mw.findChild(QtWidgets.QSpinBox, 'graphIndex')
 		self.g_max = self.mw.findChild(QtWidgets.QLabel, 'graphLabel3')
 		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
+		# menu
+		self.menu_import_ref = self.mw.findChild(QtWidgets.QAction, 'actionI01')
 		
 	def loadp1(self):
 		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
@@ -175,9 +179,15 @@ class LIBSsaGUI(object):
 	
 	# Connects helper
 	def connects(self):
+		# connects
 		self.g_selector.currentIndexChanged.connect(self.setgoptions)
 		self.p1_sms.toggled.connect(self.modechanger)
 		self.p2_dot.toggled.connect(self.setoutliers)
+		# settings
+		self.graphenable(False)
+		self.g_current_sb.setKeyboardTracking(False)
+		self.g_plus.clicked.connect(lambda: self.graphchangeval(1))
+		self.g_minus.clicked.connect(lambda: self.graphchangeval(-1))
 		self.p2_dot_c.setKeyboardTracking(False)
 		self.p2_mad_c.setKeyboardTracking(False)
 	
@@ -258,15 +268,15 @@ class LIBSsaGUI(object):
 		self.g.setLabel('left', self.g_op[2], units=self.g_op[3])
 		
 	# Graph methods
-	def splot(self, x, y):
-		self.g.clear()
-		self.g.plot(x, y)
+	def splot(self, x, y, clear=True):
+		if clear: self.g.clear()
+		self.g.plot(x, y, pen=randint(50, 200, (1, 3))[0])
 		self.g.autoRange()
-	
-	def mplot(self, x, matrix):
+		
+	def mplot(self, x, matrix, hsl=True):
 		self.g.clear()
 		smp = matrix.shape[1]
-		colors = hsl_colors(smp)
+		colors = hsl_colors(smp) if hsl else randint(0, 255, (smp, 3))
 		for i in range(smp):
 			self.g.plot(x, matrix[:, i], pen=colors[i, :])
 		self.g.autoRange()
@@ -289,8 +299,9 @@ class LIBSsaGUI(object):
 	
 	def guifd(self, parent: PosixPath, tp: str, st1: str, st2: str = ''):
 		if tp in ('ged', 'getExistingDirectory'):
-			return QtWidgets.QFileDialog.getExistingDirectory(self.mw, st1,
-			                                        dir=parent.as_posix())
+			return QtWidgets.QFileDialog.getExistingDirectory(parent=self.mw, caption=st1, dir=parent.as_posix())
+		elif tp in ('gof', 'getOpenFileName'):
+			return QtWidgets.QFileDialog.getOpenFileName(parent=self.mw, caption=st1, filter=st2, dir=parent.as_posix())
 		else:
 			QtWidgets.QMessageBox.critical(self.mw, 'Erro', 'Wrong FD ID!')
 			raise ValueError('Wrong FD ID!')
@@ -315,6 +326,16 @@ class LIBSsaGUI(object):
 			self.mbox.close()
 			self.mbox = None
 			changestatus(self.sb, msg, 'g', False)
+	
+	def graphchangeval(self, val: int):
+		self.g_current_sb.setValue(self.g_current_sb.value()+val)
+	
+	def graphenable(self, status: bool):
+		self.g_selector.setEnabled(status)
+		self.g_minus.setEnabled(status)
+		self.g_plus.setEnabled(status)
+		self.g_current_sb.setEnabled(status)
+		self.g_run.setEnabled(status)
 			
 #
 # Extra functions

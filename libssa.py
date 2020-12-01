@@ -21,17 +21,25 @@
 
 # imports
 import sys
-from PySide2.QtGui import QKeyEvent
-from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
-from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
-from env.gui import LIBSsaGUI, changestatus
-from env.spectra import Spectra
-from env.worker import Worker
-from env.imports import load, outliers
-from pathlib import Path, PosixPath
-from os import listdir
-from time import time
+try:
+	from time import time
+	from os import listdir
+	from pathlib import Path, PosixPath
+	from env.worker import Worker
+	from env.spectra import Spectra
+	from env.gui import LIBSsaGUI, changestatus
+	from env.imports import load, outliers, refcorrel, domulticorrel
+	from PySide2.QtGui import QKeyEvent
+	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
+	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
+except (ImportError, ImportWarning) as err:
+	print('\nYou have missing libraries to install.\n\n'
+	      '\tError message: {error}\n\n'
+	      'Check the README.md for extra info.'.format(error=str(err)))
+	sys.exit(1)
 
+
+# LIBSsa main class
 class LIBSSA2(QObject):
 	"""
 	This is LIBSsa main APP.
@@ -68,12 +76,15 @@ class LIBSSA2(QObject):
 		# main
 		self.gui.g_run.clicked.connect(self.doplot)
 		self.gui.g_selector.activated.connect(self.setgrange)
-		self.gui.g_current_sb.editingFinished.connect(self.doplot)
+		self.gui.g_current_sb.valueChanged.connect(self.doplot)
+		# menu
+		self.gui.menu_import_ref.triggered.connect(self.loadrefcorrel)
 		# page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
 		# page 2
 		self.gui.p2_apply_out.clicked.connect(self.outliers)
+		self.gui.p2_apply_correl.clicked.connect(self.docorrel)
 		self.gui.p2_dot_c.valueChanged.connect(self.outliers)
 		self.gui.p2_mad_c.valueChanged.connect(self.outliers)
 		
@@ -98,8 +109,11 @@ class LIBSSA2(QObject):
 			self.gui.g.setTitle('Outliers removed LIBS spectra from sample <b>%s</b>' % self.spec.samples_path[idx].stem)
 			self.gui.mplot(self.spec.wavelength, self.spec.counts_out[idx])
 		elif self.gui.g_current == 'Correlation':
-			self.gui.g.setTitle('Correlation spectrum os sample set (for ELEMENT)')
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			self.gui.g.clear()
+			self.gui.g.setTitle('Correlation spectrum for <b>%s</b>' % self.spec.pearson_ref.columns[idx])
+			self.gui.splot(self.spec.wavelength, self.spec.pearson[0][:, idx], False)
+			self.gui.splot(self.spec.wavelength, self.spec.pearson[1], False)
+			self.gui.splot(self.spec.wavelength, self.spec.pearson[2], False)
 		elif self.gui.g_current == 'Isolated':
 			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' %('ELEMENT', self.spec.samples_path[idx].stem))
 			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
@@ -153,8 +167,8 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText(str(self.spec.nsamples))
 		elif idx == 2:
 			# Correlation spectrum
-			self.gui.g_current_sb.setRange(1, 1)
-			self.gui.g_max.setText('1')
+			self.gui.g_current_sb.setRange(1, self.spec.pearson_ref.columns.__len__())
+			self.gui.g_max.setText(str(self.spec.pearson_ref.columns.__len__()))
 		elif idx == 3:
 			# Isolated peaks
 			self.gui.g_current_sb.setRange(1, len(self.spec.counts_iso))
@@ -216,11 +230,14 @@ class LIBSSA2(QObject):
 			# saves result
 			self.spec.wavelength, self.spec.counts = returned
 			self.spec.nsamples = len(self.spec.samples)
-			# enable load button
+			# enable gui elements
+			self.gui.graphenable(True)
 			self.gui.p1_ldspectra.setEnabled(True)
+			self.gui.p2_apply_out.setEnabled(True)
 			# outputs timer
-			print('Load spectra count timer: %.2f seconds. ' % (time() - self.timer))
+			print('Timestamp:', time(), 'MSG: Load spectra count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
+			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(0)
 			self.doplot()
 		
@@ -252,8 +269,9 @@ class LIBSSA2(QObject):
 			# enable apply button
 			self.gui.p2_apply_out.setEnabled(True)
 			# outputs timer
-			print('Outliers removal count timer: %.2f seconds. ' % (time() - self.timer))
+			print('Timestamp:', time(), 'MSG: Outliers removal count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
+			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(1)
 			self.doplot()
 		
@@ -264,7 +282,7 @@ class LIBSSA2(QObject):
 			# defines type of outliers removal (and selected criteria)
 			out_type = 'SAM' if self.gui.p2_dot.isChecked() else 'MAD'
 			criteria = self.gui.p2_dot_c.value() if self.gui.p2_dot.isChecked() else self.gui.p2_mad_c.value()
-			# now, setup tome configs and initialize worker
+			# now, setup some configs and initialize worker
 			changestatus(self.gui.sb, 'Please Wait. Removing outliers...', 'p', 1)
 			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, self.spec.nsamples)
 			self.gui.p2_apply_out.setEnabled(False)
@@ -276,6 +294,60 @@ class LIBSSA2(QObject):
 			self.timer = time()
 			self.threadpool.start(worker)
 	
+	def loadrefcorrel(self):
+		if self.spec.nsamples <= 0:
+			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
+		else:
+			# gets file from dialog
+			ref_file = Path(self.gui.guifd(self.parent, 'gof', 'Select reference spreadsheet file', 'Excel Spreadsheet Files (*.xls *.xlsx)')[0])
+			if ref_file.as_posix() == '.':
+				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+			else:
+				ref_spreadsheet = refcorrel(ref_file)
+				if ref_spreadsheet.index.__len__() != self.spec.nsamples:
+					self.gui.guimsg('Error',
+					                'Total of rows in spreadsheet: <b>{rows}</b><br>'
+					                'Total of samples in sample set: <b>{samples}</b><br><br>'
+					                'Number of rows <b>must</b> be the same as total of samples!'.format(
+						                rows=ref_spreadsheet.index.__len__(),
+						                samples=self.spec.nsamples), 'c')
+				else:
+					# enables gui element and saves val
+					self.spec.pearson_ref = ref_spreadsheet
+					self.gui.p2_apply_correl.setEnabled(True)
+	
+	def docorrel(self):
+		# module for receiving result from worker
+		def result(returned):
+			# saves result
+			self.spec.pearson = returned
+			# enable apply button
+			self.gui.p2_apply_correl.setEnabled(True)
+			# outputs timer
+			print('Timestamp:', time(),
+			      'MSG: Correlation spectrum count timer: %.2f seconds. ' % (
+						      time() - self.timer))
+			# updates gui elements
+			self.ranged = False
+			self.gui.g_selector.setCurrentIndex(2)
+			self.doplot()
+		
+		# setup some configs and initialize worker
+		changestatus(self.gui.sb, 'Please Wait. Creating correlation spectrum...', 'p', 1)
+		self.gui.dynamicbox('Creating correlation spectrum',
+		                    '<b>Please wait</b>. This may take a while...',
+		                    self.spec.pearson_ref.columns.__len__())
+		self.gui.p2_apply_correl.setEnabled(False)
+		worker = Worker(domulticorrel, self.spec.wavelength.__len__(), self.spec.counts, self.spec.pearson_ref)
+		worker.signals.progress.connect(self.gui.updatedynamicbox)
+		worker.signals.finished.connect(
+			lambda: self.gui.updatedynamicbox(val=0, update=False,
+			                                  msg='Correlation spectrum for all parameters finished'))
+		worker.signals.result.connect(result)
+		self.configthread()
+		self.timer = time()
+		self.threadpool.start(worker)
+		
 	
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app

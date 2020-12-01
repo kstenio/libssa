@@ -21,12 +21,13 @@
 
 # imports
 from os import listdir
-from pandas import read_csv
+from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import PosixPath
 from typing import List, Tuple
 from PySide2.QtCore import Signal
 from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract
 from scipy.linalg import norm
+from scipy.stats import pearsonr
 
 def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
 	"""
@@ -132,3 +133,35 @@ def outliers(mode: str, criteria: float, counts: ndarray, progress: Signal) -> n
 			progress.emit(i)
 	# return result
 	return out_counts
+
+def refcorrel(file: PosixPath) -> DataFrame:
+	return read_excel(file)
+
+def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:
+	# extra functions
+	def meanmatrix(rows: int, full_matrix: ndarray):
+		mean_ = zeros((rows, full_matrix.__len__()))
+		for i, m in enumerate(full_matrix):
+			mean_[:, i] = mean(m, 1)
+		return mean_
+	
+	def onepearson(rows: int, m_matrix: ndarray, one_ref: Series):
+		p  = zeros(rows)
+		for i in range(rows):
+			p[i], _ = pearsonr(m_matrix[i, :], one_ref)
+		return p
+	
+	# main function
+	pearson = zeros((wsize, ref.columns.__len__()))
+	mean_matrix = meanmatrix(wsize, counts)
+	# now, for each column in ref, we must calculate one pearson
+	for i, r in enumerate(ref.columns):
+		pearson[:, i] = onepearson(wsize, mean_matrix, ref[r])
+		progress.emit(i)
+	# calculates full_mean
+	full_mean = mean(mean_matrix, 1)
+	full_mean /= max(full_mean)
+	# organizes return array
+	return_array = array(([None]*3), dtype=object)
+	return_array[0], return_array[1], return_array[2] = pearson, full_mean, zeros(wsize)
+	return return_array
