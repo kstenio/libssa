@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1218</width>
+    <width>1216</width>
     <height>684</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 07 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 08 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -47,15 +47,15 @@
          <item>
           <widget class="QToolBox" name="operationsMainToolBox">
            <property name="currentIndex">
-            <number>0</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="p1">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>297</width>
+              <height>315</height>
              </rect>
             </property>
             <attribute name="label">
@@ -348,7 +348,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
+              <width>382</width>
               <height>384</height>
              </rect>
             </property>
@@ -468,6 +468,9 @@
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
                    </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Preferred</enum>
+                   </property>
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
@@ -530,6 +533,9 @@
                   <spacer name="verticalSpacer_2">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeType">
+                    <enum>QSizePolicy::Preferred</enum>
                    </property>
                    <property name="sizeHint" stdset="0">
                     <size>
@@ -637,6 +643,9 @@
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::MinimumExpanding</enum>
+               </property>
                <property name="sizeHint" stdset="0">
                 <size>
                  <width>20</width>
@@ -647,26 +656,239 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="page_3">
+           <widget class="QWidget" name="p3">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
+              <width>382</width>
               <height>384</height>
              </rect>
             </property>
             <attribute name="label">
              <string>Regions and peak fitting</string>
             </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <widget class="QTableWidget" name="p3tW1">
+                 <column>
+                  <property name="text">
+                   <string>Element</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>W -</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>W + </string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Center</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>#Peaks</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_2">
+                 <item>
+                  <widget class="QToolButton" name="p3tB1">
+                   <property name="minimumSize">
+                    <size>
+                     <width>30</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>+</string>
+                   </property>
+                   <property name="icon">
+                    <iconset>
+                     <normaloff>pic/icons/plus-square-solid.svg</normaloff>pic/icons/plus-square-solid.svg</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="p3tB2">
+                   <property name="minimumSize">
+                    <size>
+                     <width>30</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>-</string>
+                   </property>
+                   <property name="icon">
+                    <iconset>
+                     <normaloff>pic/icons/minus-square-solid.svg</normaloff>pic/icons/minus-square-solid.svg</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="p3cBox1">
+                   <property name="text">
+                    <string>Fix inclination</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="p3cBox2">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Norm</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="p3tB3">
+                   <property name="minimumSize">
+                    <size>
+                     <width>30</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>A</string>
+                   </property>
+                   <property name="icon">
+                    <iconset>
+                     <normaloff>pic/icons/check-square-solid.svg</normaloff>pic/icons/check-square-solid.svg</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>80</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_7">
+               <item>
+                <widget class="QTableWidget" name="p3tW2">
+                 <column>
+                  <property name="text">
+                   <string>Element</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Shape</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Polynom</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>Extra</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <item>
+                  <widget class="QRadioButton" name="p3rB1">
+                   <property name="text">
+                    <string>Mean 1st</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="p3rB2">
+                   <property name="text">
+                    <string>Area 1st</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="p3tB4">
+                   <property name="minimumSize">
+                    <size>
+                     <width>30</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>A</string>
+                   </property>
+                   <property name="icon">
+                    <iconset>
+                     <normaloff>pic/icons/check-square-regular.svg</normaloff>pic/icons/check-square-regular.svg</iconset>
+                   </property>
+                   <property name="iconSize">
+                    <size>
+                     <width>25</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </widget>
            <widget class="QWidget" name="page_4">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -678,8 +900,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -691,8 +913,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>384</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">
@@ -908,7 +1130,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1218</width>
+     <width>1216</width>
      <height>22</height>
     </rect>
    </property>

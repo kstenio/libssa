@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  gui.py
+#  libssa_gui.py
 #
 #  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -80,6 +80,11 @@ class LIBSsaGUI(object):
 			self.p2_dot = self.p2_mad = QtWidgets.QRadioButton()
 			self.p2_dot_c = self.p2_mad_c = QtWidgets.QDoubleSpinBox()
 			self.p2_apply_out = self.p2_apply_correl = QtWidgets.QToolButton()
+			self.p2_correl_lb = QtWidgets.QLabel()
+			# Page 3 == Peaks
+			self.p3_isotb = QtWidgets.QTableWidget()
+			self.p3_isoadd = self.p3_isorem = self.p3_isoapply = self.p3_fitapply = QtWidgets.QToolButton()
+			self.p3_fittb = QtWidgets.QTableWidget()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -164,9 +169,17 @@ class LIBSsaGUI(object):
 		self.p2_mad_c = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p2dSb2')
 		self.p2_apply_out = self.mw.findChild(QtWidgets.QToolButton, 'p2tB1')
 		self.p2_apply_correl =  self.mw.findChild(QtWidgets.QToolButton, 'p2tB2')
+		self.p2_correl_lb = self.mw.findChild(QtWidgets.QLabel, 'p2lB4')
 		
 	def loadp3(self):
-		pass
+		self.p3_isotb = self.mw.findChild(QtWidgets.QTableWidget, 'p3tW1')
+		self.p3_isoadd = self.mw.findChild(QtWidgets.QToolButton, 'p3tB1')
+		self.p3_isorem = self.mw.findChild(QtWidgets.QToolButton, 'p3tB2')
+		self.p3_isoapply = self.mw.findChild(QtWidgets.QToolButton, 'p3tB3')
+		self.p3_fittb = self.mw.findChild(QtWidgets.QTableWidget, 'p3tW2')
+		self.p3_fitapply = self.mw.findChild(QtWidgets.QToolButton, 'p3tB4')
+		
+		
 	
 	def loadp4(self):
 		pass
@@ -181,8 +194,14 @@ class LIBSsaGUI(object):
 	def connects(self):
 		# connects
 		self.g_selector.currentIndexChanged.connect(self.setgoptions)
+		# p1
 		self.p1_sms.toggled.connect(self.modechanger)
+		# p2
 		self.p2_dot.toggled.connect(self.setoutliers)
+		# p3
+		self.p3_isoadd.clicked.connect(lambda: self.changetable(True))
+		self.p3_isorem.clicked.connect(lambda: self.changetable(False))
+		self.p3_isotb.cellChanged.connect(self.checktable)
 		# settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
@@ -336,6 +355,59 @@ class LIBSsaGUI(object):
 		self.g_plus.setEnabled(status)
 		self.g_current_sb.setEnabled(status)
 		self.g_run.setEnabled(status)
+	
+	def changetable(self, option: bool):
+		self.p3_isotb.blockSignals(True)
+		selected = self.p3_isotb.selectedIndexes()
+		if selected.__len__() > 0:
+				for r in selected:
+					if option:
+						self.p3_isotb.insertRow(r.row()+1)
+						self.p3_isotb.setItem(r.row() + 1, 4, QtWidgets.QTableWidgetItem('1'))
+					else:
+						self.p3_isotb.removeRow(r.row())
+		else:
+			if option:
+				self.p3_isotb.setRowCount(self.p3_isotb.rowCount() + 1)
+				self.p3_isotb.setItem(self.p3_isotb.rowCount() - 1, 4, QtWidgets.QTableWidgetItem('1'))
+			else:
+				self.p3_isotb.setRowCount(self.p3_isotb.rowCount() - 1)
+		self.p3_isotb.blockSignals(False)
+		
+	def checktable(self, row, col):
+		self.p3_isotb.blockSignals(True)
+		error = [False, '']
+		if col == 0:
+			self.p3_isotb.item(row, col).setText(self.p3_isotb.item(row, col).text().upper())
+		else:
+			value = self.p3_isotb.item(row, col).text().split(';') if col == 3 else self.p3_isotb.item(row, col).text()
+			# Peak center
+			if col == 3:
+				for number in value:
+					if number != '':
+						try:
+							float(number)
+						except ValueError:
+							error = [True, '<b>numbers</b> <u>or</u> <b>numbers separated by semicolon</b>']
+			# Peak number
+			elif col == 4:
+				if value != '':
+					try:
+						int(value)
+					except ValueError:
+						error = [True, 'a <b>integer number</b>']
+			else:
+				value = self.p3_isotb.item(row, col).text()
+				if value != '':
+					try:
+						float(value)
+					except ValueError:
+						error = [True, 'a <b>number</b>']
+			if error[0]:
+				self.guimsg('Wrong value assigned', 'You can only enter %s in this cell.' %error[1], 'w')
+				self.p3_isotb.item(row, col).setText('')
+		self.p3_isotb.blockSignals(False)
+				
 			
 #
 # Extra functions

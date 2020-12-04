@@ -27,7 +27,7 @@ try:
 	from pathlib import Path, PosixPath
 	from env.worker import Worker
 	from env.spectra import Spectra
-	from env.gui import LIBSsaGUI, changestatus
+	from pic.libssa_gui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from PySide2.QtGui import QKeyEvent
 	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
@@ -314,6 +314,7 @@ class LIBSSA2(QObject):
 				else:
 					# enables gui element and saves val
 					self.spec.pearson_ref = ref_spreadsheet
+					self.gui.p2_correl_lb.setText('Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name )
 					self.gui.p2_apply_correl.setEnabled(True)
 	
 	def docorrel(self):
