@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 08 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 09 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -348,8 +348,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>374</width>
+              <height>315</height>
              </rect>
             </property>
             <attribute name="label">
@@ -680,12 +680,12 @@
                  </column>
                  <column>
                   <property name="text">
-                   <string>W -</string>
+                   <string>λ -</string>
                   </property>
                  </column>
                  <column>
                   <property name="text">
-                   <string>W + </string>
+                   <string>λ + </string>
                   </property>
                  </column>
                  <column>

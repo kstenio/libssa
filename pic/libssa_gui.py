@@ -202,6 +202,7 @@ class LIBSsaGUI(object):
 		self.p3_isoadd.clicked.connect(lambda: self.changetable(True))
 		self.p3_isorem.clicked.connect(lambda: self.changetable(False))
 		self.p3_isotb.cellChanged.connect(self.checktable)
+		self.p3_isoapply.clicked.connect(self.checktablevalues)
 		# settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
@@ -209,6 +210,8 @@ class LIBSsaGUI(object):
 		self.g_minus.clicked.connect(lambda: self.graphchangeval(-1))
 		self.p2_dot_c.setKeyboardTracking(False)
 		self.p2_mad_c.setKeyboardTracking(False)
+		self.p3_isotb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
 	
 	def modechanger(self):
 		is_multi = self.p1_smm.isChecked()
@@ -358,14 +361,15 @@ class LIBSsaGUI(object):
 	
 	def changetable(self, option: bool):
 		self.p3_isotb.blockSignals(True)
-		selected = self.p3_isotb.selectedIndexes()
+		# creates set list for to-be-removed rows
+		selected = set([x.row() for x in self.p3_isotb.selectedIndexes()])
 		if selected.__len__() > 0:
 				for r in selected:
 					if option:
-						self.p3_isotb.insertRow(r.row()+1)
-						self.p3_isotb.setItem(r.row() + 1, 4, QtWidgets.QTableWidgetItem('1'))
+						self.p3_isotb.insertRow(r + 1)
+						self.p3_isotb.setItem(r + 1, 4, QtWidgets.QTableWidgetItem('1'))
 					else:
-						self.p3_isotb.removeRow(r.row())
+						self.p3_isotb.removeRow(r)
 		else:
 			if option:
 				self.p3_isotb.setRowCount(self.p3_isotb.rowCount() + 1)
@@ -388,7 +392,7 @@ class LIBSsaGUI(object):
 						try:
 							float(number)
 						except ValueError:
-							error = [True, '<b>numbers</b> <u>or</u> <b>numbers separated by semicolon</b>']
+							error = [True, '<b>numbers</b> <i>or</i> <b>numbers separated by semicolon</b>']
 			# Peak number
 			elif col == 4:
 				if value != '':
@@ -407,6 +411,74 @@ class LIBSsaGUI(object):
 				self.guimsg('Wrong value assigned', 'You can only enter %s in this cell.' %error[1], 'w')
 				self.p3_isotb.item(row, col).setText('')
 		self.p3_isotb.blockSignals(False)
+	
+	def checktablevalues(self):
+		rows = self.p3_isotb.rowCount()
+		# ROWS:
+		# 0 = Element
+		# 1 = Lower
+		# 2 = Upper
+		# 3 = Center
+		# 4 = Peaks
+		for r in range(rows):
+			try:
+				element = self.p3_isotb.item(r, 0).text()
+			except AttributeError:
+				self.guimsg('Critical error', 'Empty value in <b>element</b> name!', 'c')
+				break
+			else:
+				try:
+					[lower, upper] = list(map(float, [self.p3_isotb.item(r, 1).text(), self.p3_isotb.item(r, 2).text()]))
+				except AttributeError:
+					self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> cells have empty values!', 'c')
+					break
+				else:
+					if lower < upper:
+						# checks center only if passed 1st verification
+						try:
+							center = self.p3_isotb.item(r, 3).text().split(';')
+							peaks = int(self.p3_isotb.item(r, 4).text())
+						except AttributeError:
+							self.guimsg('Critical error', '<b>Center</b> or <b>#Peaks</b> cells have empty values!', 'c')
+							break
+						else:
+							if len(center) == peaks:
+								# if number of peaks is according to center size, continues
+								center_err = False
+								for c in center:
+									if lower < float(c) < upper:
+										# all fine!
+										pass
+									else:
+										error_str = 'Peak center <b>must</b> be between lower and upper values!<p>' \
+										            'Element: <b>{e}</b><br><br>' \
+										            'Lower: <b>{l}</b><br>' \
+										            'Center: <b>{c}</b><br>' \
+										            'Upper: <b>{u}</b>' \
+										            '</p>'.format(e=element, u=upper, l=lower, c=float(c))
+										self.guimsg('Invalid value', error_str, 'w')
+										center_err = True
+										break
+								if center_err:
+									break
+							else:
+								error_str = 'Number of peaks does not have the same size as center list!<p>' \
+								            'Element: <b>{e}</b><br><br>' \
+								            '#Peaks: <b>{p}</b><br>' \
+								            'Center: <b>{c}</b>' \
+								            '</p>'.format(e=element, c=center, p=peaks)
+								self.guimsg('Invalid value', error_str, 'w')
+								break
+					else:
+						error_str = 'Invalid values for upper and lower wavelengths!<p>' \
+						            'Element: <b>{e}</b><br><br>' \
+						            'Lower: <b>{l}</b><br>' \
+						            'Upper: <b>{u}</b>' \
+						            '</p>'.format(e=element, u=upper, l=lower)
+						self.guimsg('Invalid range', error_str, 'w')
+						break
+		else:
+			return True
 				
 			
 #
