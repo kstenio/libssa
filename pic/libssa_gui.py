@@ -382,7 +382,21 @@ class LIBSsaGUI(object):
 		self.p3_isotb.blockSignals(True)
 		error = [False, '']
 		if col == 0:
-			self.p3_isotb.item(row, col).setText(self.p3_isotb.item(row, col).text().upper())
+			# checks repeated values in element column
+			rows = self.p3_isotb.rowCount()
+			element_values = []
+			for i in range(rows):
+				if i != row:
+					try:
+						element_values.append(self.p3_isotb.item(i, col).text())
+					except AttributeError:
+						pass
+			element_value = self.p3_isotb.item(row, col).text().title().replace(' ', '_')
+			if element_value in element_values:
+				self.guimsg('Wrong value assigned', 'The element <b>%s</b> is already in the table.' % element_value, 'w')
+				self.p3_isotb.item(row, col).setText('')
+			else:
+				self.p3_isotb.item(row, col).setText(element_value)
 		else:
 			value = self.p3_isotb.item(row, col).text().split(';') if col == 3 else self.p3_isotb.item(row, col).text()
 			# Peak center
@@ -399,7 +413,7 @@ class LIBSsaGUI(object):
 					try:
 						int(value)
 					except ValueError:
-						error = [True, 'a <b>integer number</b>']
+						error = [True, 'an <b>integer number</b>']
 			else:
 				value = self.p3_isotb.item(row, col).text()
 				if value != '':
@@ -438,7 +452,7 @@ class LIBSsaGUI(object):
 						try:
 							center = self.p3_isotb.item(r, 3).text().split(';')
 							peaks = int(self.p3_isotb.item(r, 4).text())
-						except AttributeError:
+						except (AttributeError, ValueError):
 							self.guimsg('Critical error', '<b>Center</b> or <b>#Peaks</b> cells have empty values!', 'c')
 							break
 						else:
