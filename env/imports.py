@@ -3,7 +3,7 @@
 #
 #  imports.py
 #
-#  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
+#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as published
@@ -22,14 +22,14 @@
 # imports
 from os import listdir
 from pandas import read_csv, read_excel, DataFrame, Series
-from pathlib import PosixPath
+from pathlib import Path
 from typing import List, Tuple
 from PySide2.QtCore import Signal
 from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract
 from scipy.linalg import norm
 from scipy.stats import pearsonr
 
-def load(folder: List[PosixPath], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
+def load(folder: List[Path], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
 	"""
 	This method loads spectra and returns global variables wavelength and counts
 	:param folder: PosixPath list of input folder/files (sorted)
@@ -134,7 +134,7 @@ def outliers(mode: str, criteria: float, counts: ndarray, progress: Signal) -> n
 	# return result
 	return out_counts
 
-def refcorrel(file: PosixPath) -> DataFrame:
+def refcorrel(file: Path) -> DataFrame:
 	return read_excel(file)
 
 def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:

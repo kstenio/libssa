@@ -3,7 +3,7 @@
 #
 #  libssa.py
 #
-#  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
+#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as published
@@ -29,6 +29,7 @@ try:
 	from env.spectra import Spectra
 	from pic.libssa_gui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
+	from env.functions import isopeaks
 	from PySide2.QtGui import QKeyEvent
 	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -73,20 +74,22 @@ class LIBSSA2(QObject):
 		self.parent = Path.cwd()
 	
 	def connects(self):
-		# main
+		# Main
 		self.gui.g_run.clicked.connect(self.doplot)
 		self.gui.g_selector.activated.connect(self.setgrange)
 		self.gui.g_current_sb.valueChanged.connect(self.doplot)
-		# menu
+		# Menu
 		self.gui.menu_import_ref.triggered.connect(self.loadrefcorrel)
-		# page 1
+		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
-		# page 2
+		# Page 2
 		self.gui.p2_apply_out.clicked.connect(self.outliers)
 		self.gui.p2_apply_correl.clicked.connect(self.docorrel)
 		self.gui.p2_dot_c.valueChanged.connect(self.outliers)
 		self.gui.p2_mad_c.valueChanged.connect(self.outliers)
+		# Page 3
+		self.gui.p3_isoapply.clicked.connect(self.peakiso)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -115,8 +118,10 @@ class LIBSSA2(QObject):
 			self.gui.splot(self.spec.wavelength, self.spec.pearson[1], False)
 			self.gui.splot(self.spec.wavelength, self.spec.pearson[2], False)
 		elif self.gui.g_current == 'Isolated':
-			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' %('ELEMENT', self.spec.samples_path[idx].stem))
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			i = idx // self.spec.nsamples
+			j = idx - (i * self.spec.nsamples)
+			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' %(self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
+			self.gui.mplot(self.spec.wavelength_iso[i][2], self.spec.counts_iso[i][j])
 		elif self.gui.g_current == 'Fit':
 			self.gui.g.setTitle('Fitted peak of <b>%s</b> for sample <b>%s</b>' % ('ELEMENT', self.spec.samples_path[idx].stem))
 			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
@@ -171,8 +176,9 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText(str(self.spec.pearson_ref.columns.__len__()))
 		elif idx == 3:
 			# Isolated peaks
-			self.gui.g_current_sb.setRange(1, len(self.spec.counts_iso))
-			self.gui.g_max.setText(str(len(self.spec.counts_iso)))
+			rvalue = self.spec.nsamples * self.spec.wavelength_iso.__len__()
+			self.gui.g_current_sb.setRange(1, rvalue)
+			self.gui.g_max.setText(str(rvalue))
 		elif idx == 4:
 			# Fitted peaks
 			self.gui.g_current_sb.setRange(1, len(self.spec.counts_iso))
@@ -195,7 +201,7 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText(str(self.spec.nsamples))
 			
 	#
-	# Methods for page 1 == Load Spectra
+	# Methods for page 1 == Load spectra
 	#
 	def spopen(self):
 		# sets mode
@@ -259,7 +265,7 @@ class LIBSSA2(QObject):
 			self.threadpool.start(worker)
 			
 	#
-	# Methods for page 2 == Operations
+	# Methods for page 2 == Outliers and correlation spectrum
 	#
 	def outliers(self):
 		# module for receiving result from worker
@@ -348,6 +354,51 @@ class LIBSSA2(QObject):
 		self.configthread()
 		self.timer = time()
 		self.threadpool.start(worker)
+		
+	#
+	# Methods for page 3 == Regions and peak fitting
+	#
+	def peakiso(self):
+		# module for receiving result from worker
+		def result(returned):
+			# saves result
+			self.spec.wavelength_iso, self.spec.counts_iso = returned
+			# enable apply button
+			self.gui.p3_isoapply.setEnabled(True)
+			# outputs timer
+			print('Timestamp:', time(), 'MSG: Peak isolation count timer: %.2f seconds. ' % (time() - self.timer))
+			# updates gui elements
+			self.ranged = False
+			self.gui.g_selector.setCurrentIndex(3)
+			self.doplot()
+		
+		# Checks if iso table is complete
+		if self.gui.p3_isotb.rowCount() > 0:
+			# Checks if values are OK
+			if self.gui.checktablevalues():
+				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
+				self.gui.p3_isoapply.setEnabled(False)
+				counts = self.spec.counts_out if len(self.spec.counts_out) > 1 else self.spec.counts
+				elements, lower, upper = [], [], []
+				for tb in range(self.gui.p3_isotb.rowCount()):
+					elements.append(self.gui.p3_isotb.item(tb, 0).text())
+					lower.append(float(self.gui.p3_isotb.item(tb, 1).text()))
+					upper.append(float(self.gui.p3_isotb.item(tb, 2).text()))
+				self.gui.dynamicbox('Isolating peaks', '<b>Please wait</b>. This may take a while...', len(elements))
+				worker = Worker(isopeaks, self.spec.wavelength, counts, elements, lower, upper, self.gui.p3_linear.isChecked(), self.gui.p3_norm.isChecked())
+				worker.signals.progress.connect(self.gui.updatedynamicbox)
+				worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Peak isolation finished'))
+				worker.signals.result.connect(result)
+				self.configthread()
+				self.timer = time()
+				self.threadpool.start(worker)
+			else:
+				changestatus(self.gui.sb, 'Wrong value in isolation table', 'r', 1)
+		else:
+			self.gui.guimsg('Error', 'Please enter isolation parameters in the <b>table</b> before using this feature.', 'w')
+			
+	def peakfit(self):
+		pass
 		
 	
 if __name__ == '__main__':

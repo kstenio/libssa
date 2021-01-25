@@ -3,7 +3,7 @@
 #
 #  libssa_gui.py
 #
-#  Copyright 2020 Kleydson Stenio <kleydson.stenio@gmail.com>
+#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU Affero General Public License as published
@@ -82,9 +82,9 @@ class LIBSsaGUI(object):
 			self.p2_apply_out = self.p2_apply_correl = QtWidgets.QToolButton()
 			self.p2_correl_lb = QtWidgets.QLabel()
 			# Page 3 == Peaks
-			self.p3_isotb = QtWidgets.QTableWidget()
+			self.p3_isotb = self.p3_fittb = QtWidgets.QTableWidget()
 			self.p3_isoadd = self.p3_isorem = self.p3_isoapply = self.p3_fitapply = QtWidgets.QToolButton()
-			self.p3_fittb = QtWidgets.QTableWidget()
+			self.p3_linear = self.p3_norm = QtWidgets.QCheckBox()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -178,6 +178,8 @@ class LIBSsaGUI(object):
 		self.p3_isoapply = self.mw.findChild(QtWidgets.QToolButton, 'p3tB3')
 		self.p3_fittb = self.mw.findChild(QtWidgets.QTableWidget, 'p3tW2')
 		self.p3_fitapply = self.mw.findChild(QtWidgets.QToolButton, 'p3tB4')
+		self.p3_linear = self.mw.findChild(QtWidgets.QCheckBox, 'p3cBox1')
+		self.p3_norm = self.mw.findChild(QtWidgets.QCheckBox, 'p3cBox2')
 		
 		
 	
@@ -202,7 +204,8 @@ class LIBSsaGUI(object):
 		self.p3_isoadd.clicked.connect(lambda: self.changetable(True))
 		self.p3_isorem.clicked.connect(lambda: self.changetable(False))
 		self.p3_isotb.cellChanged.connect(self.checktable)
-		self.p3_isoapply.clicked.connect(self.checktablevalues)
+		self.p3_linear.stateChanged.connect(self.normenable)
+		# self.p3_isoapply.clicked.connect(self.checktablevalues)
 		# settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
@@ -382,21 +385,25 @@ class LIBSsaGUI(object):
 		self.p3_isotb.blockSignals(True)
 		error = [False, '']
 		if col == 0:
-			# checks repeated values in element column
-			rows = self.p3_isotb.rowCount()
-			element_values = []
-			for i in range(rows):
-				if i != row:
-					try:
-						element_values.append(self.p3_isotb.item(i, col).text())
-					except AttributeError:
-						pass
+			# checks empty value in element cell
 			element_value = self.p3_isotb.item(row, col).text().title().replace(' ', '_')
-			if element_value in element_values:
-				self.guimsg('Wrong value assigned', 'The element <b>%s</b> is already in the table.' % element_value, 'w')
-				self.p3_isotb.item(row, col).setText('')
+			if not len(element_value):
+				self.guimsg('Wrong value assigned', 'Empty value in <b>element</b> name!', 'w')
 			else:
-				self.p3_isotb.item(row, col).setText(element_value)
+				# checks repeated values in element column
+				rows = self.p3_isotb.rowCount()
+				element_values = []
+				for i in range(rows):
+					if i != row:
+						try:
+							element_values.append(self.p3_isotb.item(i, col).text())
+						except AttributeError:
+							pass
+				if element_value in element_values:
+					self.guimsg('Wrong value assigned', 'The element <b>%s</b> is already in the table.' % element_value, 'w')
+					self.p3_isotb.item(row, col).setText('')
+				else:
+					self.p3_isotb.item(row, col).setText(element_value)
 		else:
 			value = self.p3_isotb.item(row, col).text().split(';') if col == 3 else self.p3_isotb.item(row, col).text()
 			# Peak center
@@ -437,15 +444,17 @@ class LIBSsaGUI(object):
 		for r in range(rows):
 			try:
 				element = self.p3_isotb.item(r, 0).text()
+				if not len(element):
+					raise AttributeError('Invalid value for element.')
 			except AttributeError:
 				self.guimsg('Critical error', 'Empty value in <b>element</b> name!', 'c')
-				break
+				return False
 			else:
 				try:
 					[lower, upper] = list(map(float, [self.p3_isotb.item(r, 1).text(), self.p3_isotb.item(r, 2).text()]))
 				except AttributeError:
 					self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> cells have empty values!', 'c')
-					break
+					return False
 				else:
 					if lower < upper:
 						# checks center only if passed 1st verification
@@ -454,7 +463,7 @@ class LIBSsaGUI(object):
 							peaks = int(self.p3_isotb.item(r, 4).text())
 						except (AttributeError, ValueError):
 							self.guimsg('Critical error', '<b>Center</b> or <b>#Peaks</b> cells have empty values!', 'c')
-							break
+							return False
 						else:
 							if len(center) == peaks:
 								# if number of peaks is according to center size, continues
@@ -474,7 +483,7 @@ class LIBSsaGUI(object):
 										center_err = True
 										break
 								if center_err:
-									break
+									return False
 							else:
 								error_str = 'Number of peaks does not have the same size as center list!<p>' \
 								            'Element: <b>{e}</b><br><br>' \
@@ -482,7 +491,7 @@ class LIBSsaGUI(object):
 								            'Center: <b>{c}</b>' \
 								            '</p>'.format(e=element, c=center, p=peaks)
 								self.guimsg('Invalid value', error_str, 'w')
-								break
+								return False
 					else:
 						error_str = 'Invalid values for upper and lower wavelengths!<p>' \
 						            'Element: <b>{e}</b><br><br>' \
@@ -490,11 +499,17 @@ class LIBSsaGUI(object):
 						            'Upper: <b>{u}</b>' \
 						            '</p>'.format(e=element, u=upper, l=lower)
 						self.guimsg('Invalid range', error_str, 'w')
-						break
+						return False
 		else:
 			return True
-				
-			
+	
+	def normenable(self):
+		enable = True if self.p3_linear.isChecked() else False
+		self.p3_norm.setEnabled(enable)
+		if not enable:
+			self.p3_norm.setChecked(enable)
+		
+	
 #
 # Extra functions
 #
