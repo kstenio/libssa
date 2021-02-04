@@ -22,8 +22,9 @@
 from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz
 from PySide2.QtCore import Signal
 from typing import List, Tuple
+from env.equations import lorentz
 
-def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, upper: List, linear: bool, anorm: bool, progress: Signal) -> Tuple[ndarray, ndarray]:
+def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, upper: List, center: List, linear: bool, anorm: bool, progress: Signal) -> Tuple[ndarray, ndarray]:
 	# Allocate data
 	new_wavelength = array([[None] * 3] * len(elements))
 	new_counts = array([array([None for X in range(len(counts))]) for Y in range(len(elements))], dtype=object)
@@ -54,6 +55,11 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, 
 			# Saves new count
 			new_counts[i][j] = y
 		# Saves new wavelength
-		new_wavelength[i] = e, array([lower[i], upper[i]]), x
+		new_wavelength[i] = e, array([lower[i], upper[i], center[i].split(';')]), x
 		progress.emit(i)
 	return new_wavelength, new_counts
+
+def fitpeaks(iso_wavelengths, iso_counts):
+	for i, w in enumerate(iso_wavelengths):
+		print(w[:2], iso_counts[i])
+		pass

@@ -28,6 +28,7 @@ from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
 from pyqtgraph import PlotWidget, setConfigOption
 from pathlib import PosixPath
+from string import punctuation
 
 # Graph global configurations
 setConfigOption('background', 'w')
@@ -382,15 +383,19 @@ class LIBSsaGUI(object):
 		self.p3_isotb.blockSignals(False)
 		
 	def checktable(self, row, col):
+		# Block all signals from widget (to better check values)
 		self.p3_isotb.blockSignals(True)
 		error = [False, '']
-		if col == 0:
-			# checks empty value in element cell
-			element_value = self.p3_isotb.item(row, col).text().title().replace(' ', '_')
-			if not len(element_value):
-				self.guimsg('Wrong value assigned', 'Empty value in <b>element</b> name!', 'w')
-			else:
-				# checks repeated values in element column
+		# Checks if there is an empty cell
+		value = self.p3_isotb.item(row, col).text()
+		if not len(value) or '---' in value:
+			error[0], error[1] = True,  'Cell can not be <b>empty</b>! Please assign a value.'
+		# Now, we know cell is not empty, but must check if value are OK
+		else:
+			# Element column
+			if col == 0:
+				# Checks repeated values in element column
+				element_value = self.p3_isotb.item(row, col).text().title().replace(' ', '_')
 				rows = self.p3_isotb.rowCount()
 				element_values = []
 				for i in range(rows):
@@ -400,39 +405,46 @@ class LIBSsaGUI(object):
 						except AttributeError:
 							pass
 				if element_value in element_values:
-					self.guimsg('Wrong value assigned', 'The element <b>%s</b> is already in the table.' % element_value, 'w')
-					self.p3_isotb.item(row, col).setText('')
+					error[0] = True
+					error[1] = 'The element <b>%s</b> is already in the table.' % element_value
 				else:
 					self.p3_isotb.item(row, col).setText(element_value)
-		else:
-			value = self.p3_isotb.item(row, col).text().split(';') if col == 3 else self.p3_isotb.item(row, col).text()
-			# Peak center
-			if col == 3:
-				for number in value:
-					if number != '':
+			# Lower and upper wavelengths columns
+			elif col in (1, 2):
+				try:
+					float(value)
+				except ValueError:
+					error[0], error[1] = True, 'This cell can only accept <b>numbers<b>.'
+			# Center column
+			elif col == 3:
+				for char in value:
+					if (char not in ('.', ';')) and (char in punctuation):
+						error[0] = True
+						error[1] = 'This cell can only accept <b>numbers</b> <i>or</i> <b>numbers separated by semicolon</b>.'
+						break
+				else:
+					# Runs if no break was raised
+					center_value = value.split(';')
+					for number in center_value:
 						try:
 							float(number)
 						except ValueError:
-							error = [True, '<b>numbers</b> <i>or</i> <b>numbers separated by semicolon</b>']
-			# Peak number
+							error[0] = True
+							error[1] = 'This cell can only accept <b>numbers</b> <i>or</i> <b>numbers separated by semicolon</b>.'
+			# Peak number column
 			elif col == 4:
-				if value != '':
-					try:
-						int(value)
-					except ValueError:
-						error = [True, 'an <b>integer number</b>']
-			else:
-				value = self.p3_isotb.item(row, col).text()
-				if value != '':
-					try:
-						float(value)
-					except ValueError:
-						error = [True, 'a <b>number</b>']
-			if error[0]:
-				self.guimsg('Wrong value assigned', 'You can only enter %s in this cell.' %error[1], 'w')
-				self.p3_isotb.item(row, col).setText('')
+				try:
+					peak_value = int(float(value))
+					self.p3_isotb.item(row, col).setText(str(peak_value))
+				except ValueError:
+					error[0], error[1] = True, 'This cell can only accept <b>integers<b>.'
+		# Shows error message and clear cell (if error was found)
+		if error[0]:
+			self.guimsg('Wrong value assigned', error[1], 'w')
+			self.p3_isotb.item(row, col).setText('---')
+		# Re-enables signals
 		self.p3_isotb.blockSignals(False)
-	
+		
 	def checktablevalues(self):
 		rows = self.p3_isotb.rowCount()
 		# ROWS:

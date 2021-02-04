@@ -379,13 +379,14 @@ class LIBSSA2(QObject):
 				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
 				self.gui.p3_isoapply.setEnabled(False)
 				counts = self.spec.counts_out if len(self.spec.counts_out) > 1 else self.spec.counts
-				elements, lower, upper = [], [], []
+				elements, lower, upper, center = [], [], [], []
 				for tb in range(self.gui.p3_isotb.rowCount()):
 					elements.append(self.gui.p3_isotb.item(tb, 0).text())
 					lower.append(float(self.gui.p3_isotb.item(tb, 1).text()))
 					upper.append(float(self.gui.p3_isotb.item(tb, 2).text()))
+					center.append(float(self.gui.p3_isotb.item(tb, 3).text()))
 				self.gui.dynamicbox('Isolating peaks', '<b>Please wait</b>. This may take a while...', len(elements))
-				worker = Worker(isopeaks, self.spec.wavelength, counts, elements, lower, upper, self.gui.p3_linear.isChecked(), self.gui.p3_norm.isChecked())
+				worker = Worker(isopeaks, self.spec.wavelength, counts, elements, lower, upper, center, self.gui.p3_linear.isChecked(), self.gui.p3_norm.isChecked())
 				worker.signals.progress.connect(self.gui.updatedynamicbox)
 				worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Peak isolation finished'))
 				worker.signals.result.connect(result)
