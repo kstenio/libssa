@@ -19,84 +19,167 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from numpy import ndarray, array, empty, sum, std
+from scipy.special import wofz
+from numpy import sum as nsum, abs as nabs
+from numpy import ndarray, empty, sum, array_split, exp, real, log, pi
+
 
 # Lorentzian functions
-def lorentz(x: ndarray, *args: float, **kwargs) -> ndarray:
+def lorentz(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
 	:param x: Input vector (wavelength for isolated region)
 	:param args: Parameters of function. These values can be optimized for fit.
-	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
+	:param kwargs: Extra fixed parameters (center, asymmetry)
 	:return: y values for function (intensities)
 	"""
-	peaks = kwargs['Peaks']
+	nparams = 3
+	peaks = len(args) // nparams
+	params = array_split(nabs(args), peaks)
 	lo = empty((x.size, peaks))
-	for i in range(peaks):
-		h, w, c = args[3 * i], args[(3 * i) + 1], args[(3 * i) + 2]
-		lo[:, i] = abs(h) / (1 + ((x - c) / (0.5 * w)) ** 2)
-	return sum(lo, 1)
+	for i, p in enumerate(params):
+		h, w, c = p
+		lo[:, i] = h / (1 + 4 * ((x - c) / w) ** 2)
+	return nsum(lo, 1)
 
-def lorentz_fixed_center(x: ndarray, *args: float, **kwargs) -> ndarray:
+
+def lorentz_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
 	:param x: Input vector (wavelength for isolated region)
 	:param args: Parameters of function. These values can be optimized for fit.
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
-	peaks, c = kwargs['Peaks'], kwargs['Center']
+	nparams = 2
+	peaks = len(args) // nparams
+	params, c = array_split(nabs(args), peaks), kwargs['Center']
 	lofc = empty((x.size, peaks))
-	for i in range(peaks):
-		h, w = args[2 * i], args[(2 * i) + 1]
-		lofc[:, i] = abs(h) / (1 + ((x - c[i]) / (0.5 * w)) ** 2)
+	for i, p in enumerate(params):
+		h, w = p
+		lofc[:, i] = h / (1 + 4 * ((x - c[i]) / w) ** 2)
 	return sum(lofc, 1)
 
-def lorentz_asymmetric(x: ndarray, *args: float, **kwargs) -> ndarray:
+
+def lorentz_asymmetric(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
 	:param x: Input vector (wavelength for isolated region)
 	:param args: Parameters of function. These values can be optimized for fit.
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
-	peaks = kwargs['Peaks']
+	nparams = 4
+	peaks = len(args) // nparams
+	params, c = array_split(nabs(args), peaks), kwargs['Center']
 	loa = empty((x.size, peaks))
-	for i in range(peaks):
-		h, w, c, m = args[4 * i], args[(4 * i) + 1], args[(4 * i) + 2], args[(4 * i) + 3]
-		loa[x <= c, i] = abs(h) / (1 + ((x[x <= c] - c) / (0.5 * w * m)) ** 2)
-		loa[x > c, i] = abs(h) / (1 + ((x[x > c] - c) / (0.5 * w * m)) ** 2)
+	for i, p in enumerate(params):
+		h, w, c, m = p
+		loa[x <= c, i] = h / (1 + 4 * ((x[x <= c] - c) / w*m) ** 2)
+		loa[x > c, i] = h / (1 + 4 * ((x[x > c] - c) / w*(1-m)) ** 2)
 	return sum(loa, 1)
 
-def lorentz_asymmetric_fixed_center(x: ndarray, *args: float, **kwargs) -> ndarray:
+def lorentz_asymmetric_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
 	:param x: Input vector (wavelength for isolated region)
 	:param args: Parameters of function. These values can be optimized for fit.
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
-	peaks, c = kwargs['Peaks'], kwargs['Center']
+	nparams = 3
+	peaks = len(args) // nparams
+	params, c = array_split(nabs(args), peaks), kwargs['Center']
 	loafc = empty((x.size, peaks))
-	for i in range(peaks):
-		h, w, m = args[3 * i], args[(3 * i) + 1], args[(3 * i) + 2]
-		loafc[x <= c[i], i] = abs(h) / (1 + ((x[x <= c[i]] - c) / (0.5 * w * m)) ** 2)
-		loafc[x > c[i], i] = abs(h) / (1 + ((x[x > c[i]] - c[i]) / (0.5 * w * m)) ** 2)
+	for i, p in enumerate(params):
+		h, w, m = p
+		loafc[x <= c[i], i] = h / (1 + 4 * ((x[x <= c[i]] - c[i]) / w * m) ** 2)
+		loafc[x > c[i], i] = h / (1 + 4 * ((x[x > c[i]] - c[i]) / w * (1 - m)) ** 2)
 	return sum(loafc, 1)
 
-def lorentz_asymmetric_fixed_center_asymmetry(x: ndarray, *args: float, **kwargs) -> ndarray:
+def lorentz_asymmetric_fixed_center_asymmetry(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
 	:param x: Input vector (wavelength for isolated region)
 	:param args: Parameters of function. These values can be optimized for fit.
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
-	peaks, c, m = kwargs['Peaks'], kwargs['Center'], kwargs['Asymmetry']
+	nparams = 2
+	peaks = len(args) // nparams
+	params, c, m = array_split(nabs(args), peaks), kwargs['Center'], kwargs['Asymmetry']
 	loafca = empty((x.size, peaks))
-	for i in range(peaks):
-		h, w = args[2 * i], args[(2 * i) + 1]
-		loafca[x <= c[i], i] = abs(h) / (1 + ((x[x <= c[i]] - c) / (0.5 * w * m[i])) ** 2)
-		loafca[x > c[i], i] = abs(h) / (1 + ((x[x > c[i]] - c[i]) / (0.5 * w * m[i])) ** 2)
+	for i, p in enumerate(params):
+		h, w = p
+		loafca[x <= c[i], i] = h / (1 + 4 * ((x[x <= c[i]] - c[i]) / w * m[i]) ** 2)
+		loafca[x > c[i], i] = h / (1 + 4 * ((x[x > c[i]] - c[i]) / w * (1 - m[i])) ** 2)
 	return sum(loafca, 1)
 
-# Residuals function
-def residuals(guess, x, y, shape_id, **kwargs):
-	function_kwargs = {'Center': kwargs['Center'], 'Extra': kwargs['Extra']}
-	return y - kwargs[shape_id](x, *guess, **function_kwargs)
+
+# Gaussian functions
+def gauss(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
+	"""
+	:param x: Input vector (wavelength for isolated region)
+	:param args: Parameters of function. These values can be optimized for fit.
+	:param kwargs: Extra fixed parameters (center, asymmetry)
+	:return: y values for function (intensities)
+	"""
+	nparams = 3
+	peaks = len(args) // nparams
+	params = array_split(nabs(args), peaks)
+	ga = empty((x.size, peaks))
+	for i, p in enumerate(params):
+		h, w, c = p
+		ga[:, i] = h * exp((-2) * ((x - c) / w) ** 2)
+	return nsum(ga, 1)
+
+
+def gauss_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
+	"""
+	:param x: Input vector (wavelength for isolated region)
+	:param args: Parameters of function. These values can be optimized for fit.
+	:param kwargs: Extra fixed parameters (center, asymmetry)
+	:return: y values for function (intensities)
+	"""
+	nparams = 2
+	peaks = len(args) // nparams
+	params, c = array_split(nabs(args), peaks), kwargs['Center']
+	gafc = empty((x.size, peaks))
+	for i, p in enumerate(params):
+		h, w = p
+		gafc[:, i] = h * exp((-2) * ((x - c[i]) / w) ** 2)
+	return nsum(gafc, 1)
+
+
+# Voigt functions
+def voigt(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
+	"""
+	:param x: Input vector (wavelength for isolated region)
+	:param args: Parameters of function. These values can be optimized for fit.
+	:param kwargs: Extra fixed parameters (center, asymmetry)
+	:return: y values for function (intensities)
+	"""
+	nparams = 4
+	peaks = len(args) // nparams
+	params = array_split(nabs(args), peaks)
+	vo = empty((x.size, peaks))
+	for i, p in enumerate(params):
+		a, wl, wg, c = p
+		sigma, gamma = wg / (2 * (2 * log(2))**0.5), wl / 2
+		z = (x - c + 1j*gamma) / (sigma*(2**0.5))
+		vo[:, i] = (a * real(wofz(z))) / (sigma*((2*pi)**0.5))
+	return nsum(vo, 1)
+
+def voigt_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
+	"""
+	:param x: Input vector (wavelength for isolated region)
+	:param args: Parameters of function. These values can be optimized for fit.
+	:param kwargs: Extra fixed parameters (center, asymmetry)
+	:return: y values for function (intensities)
+	"""
+	nparams = 3
+	peaks = len(args) // nparams
+	params, c = array_split(nabs(args), peaks), kwargs['Center']
+	vofc = empty((x.size, peaks))
+	for i, p in enumerate(params):
+		a, wl, wg = p
+		sigma, gamma = wg / (2 * (2 * log(2))**0.5), wl / 2
+		z = (x - c[i] + 1j*gamma) / (sigma*(2**0.5))
+		vofc[:, i] = (a * real(wofz(z))) / (sigma*((2*pi)**0.5))
+	return nsum(vofc, 1)
 

@@ -22,7 +22,7 @@
 from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz
 from PySide2.QtCore import Signal
 from typing import List, Tuple
-from env.equations import lorentz
+
 
 def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, upper: List, center: List, linear: bool, anorm: bool, progress: Signal) -> Tuple[ndarray, ndarray]:
 	# Allocate data
@@ -58,6 +58,28 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, 
 		new_wavelength[i] = e, array([lower[i], upper[i], center[i].split(';')]), x
 		progress.emit(i)
 	return new_wavelength, new_counts
+
+
+def residuals(guess, x, y, shape_id, **kwargs):
+	function_kwargs = {'Center': kwargs['Center'], 'Asymmetry': kwargs['Asymmetry']}
+	return y - kwargs[shape_id](x, *guess, **function_kwargs)
+
+
+def fit_guess(x, y, peaks, center, shape_id, asymmetry=None):
+	guess = []
+	for i in range(peaks):
+		# Height/Area, Width, Center, Asymmetry
+		guess.append( max(y)/(1 + i) ) # Intensity is the highest value
+		guess.append( (x[-1] - x[0]) / (2 + i) ) # Width approximation by half of interval
+		if 'voigt' in shape_id.lower():
+			guess[-2] = ((x[-1] - x[0]) * max(y)) / (2 + i)  # Area approximation by triangle
+			guess.append( (x[-1] - x[0]) / (2 + i*0.99) ) # Width approximation by half of interval
+		if 'fixed' not in shape_id.lower():
+			guess.append(center[i]) # Center (user entered value)
+		if 'asymmetric' in shape_id.lower():
+			guess.append(asymmetry[i] if asymmetry[i] != 0.5 else 0.5)  # Asymmetry (auto or user entered value)
+	return guess
+
 
 def fitpeaks(iso_wavelengths, iso_counts):
 	for i, w in enumerate(iso_wavelengths):
