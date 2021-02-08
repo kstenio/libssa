@@ -206,7 +206,6 @@ class LIBSsaGUI(object):
 		self.p3_isorem.clicked.connect(lambda: self.changetable(False))
 		self.p3_isotb.cellChanged.connect(self.checktable)
 		self.p3_linear.stateChanged.connect(self.normenable)
-		# self.p3_isoapply.clicked.connect(self.checktablevalues)
 		# settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
@@ -447,7 +446,7 @@ class LIBSsaGUI(object):
 		
 	def checktablevalues(self):
 		rows = self.p3_isotb.rowCount()
-		# ROWS:
+		# Columns:
 		# 0 = Element
 		# 1 = Lower
 		# 2 = Upper
@@ -520,6 +519,46 @@ class LIBSsaGUI(object):
 		self.p3_norm.setEnabled(enable)
 		if not enable:
 			self.p3_norm.setChecked(enable)
+	
+	def create_fit_table(self):
+		# Iso table columns:
+		# 0 = Element
+		# 1 = Lower
+		# 2 = Upper
+		# 3 = Center
+		# 4 = Peaks
+		# ------------------ #
+		# Fit table columns:
+		# 0 = Element
+		# 1 = Shape
+		# 2 = Asymmetry
+		
+		# Clear values in table
+		self.p3_fittb.setRowCount(0)
+		# Defines values for shape
+		drop_down_list = ['1) Lorentzian',
+		                  '2) Lorentzian (center fixed)',
+		                  '3) Asymmetric Lorentzian',
+		                  '4) Asym. Lorentzian (center fixed)',
+		                  '5) Asym. Lorentzian (center/as. fixed)',
+		                  '6) Gaussian',
+		                  '7) Gaussian (center fixed)',
+		                  '8) Voigt Profile',
+		                  '9) Voigt Profile (center fixed)',
+		                  '10) Trapezoidal rule']
+		# Iterates over iso table
+		rows = self.p3_isotb.rowCount()
+		for r in range(rows):
+			self.p3_fittb.insertRow(r)
+			self.p3_fittb.setItem(r, 0, QtWidgets.QTableWidgetItem(self.p3_isotb.item(r, 0).text()))
+			self.p3_fittb.setItem(r, 2, QtWidgets.QTableWidgetItem('0.5'))
+			# for ComboBox
+			shapes = QtWidgets.QComboBox()
+			shapes.addItems(drop_down_list)
+			self.p3_fittb.setCellWidget(r, 1, shapes)
+			# Locks editing name
+			self.p3_fittb.item(r, 0).setFlags(Qt.ItemIsEditable)
+		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 		
 	
 #

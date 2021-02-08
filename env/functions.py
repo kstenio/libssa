@@ -55,7 +55,7 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, 
 			# Saves new count
 			new_counts[i][j] = y
 		# Saves new wavelength
-		new_wavelength[i] = e, array([lower[i], upper[i], center[i].split(';')]), x
+		new_wavelength[i][:] = e, array(([lower[i], upper[i], center[i]]), dtype=object), x
 		progress.emit(i)
 	return new_wavelength, new_counts
 

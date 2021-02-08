@@ -371,6 +371,7 @@ class LIBSSA2(QObject):
 			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(3)
 			self.doplot()
+			self.gui.create_fit_table()
 		
 		# Checks if iso table is complete
 		if self.gui.p3_isotb.rowCount() > 0:
@@ -384,7 +385,12 @@ class LIBSSA2(QObject):
 					elements.append(self.gui.p3_isotb.item(tb, 0).text())
 					lower.append(float(self.gui.p3_isotb.item(tb, 1).text()))
 					upper.append(float(self.gui.p3_isotb.item(tb, 2).text()))
-					center.append(float(self.gui.p3_isotb.item(tb, 3).text()))
+					# for center
+					center_cell = self.gui.p3_isotb.item(tb, 3).text()
+					if ';' in center_cell:
+						center.append(list(map(float, self.gui.p3_isotb.item(tb, 3).text().split(';'))))
+					else:
+						center.append([float(self.gui.p3_isotb.item(tb, 3).text())])
 				self.gui.dynamicbox('Isolating peaks', '<b>Please wait</b>. This may take a while...', len(elements))
 				worker = Worker(isopeaks, self.spec.wavelength, counts, elements, lower, upper, center, self.gui.p3_linear.isChecked(), self.gui.p3_norm.isChecked())
 				worker.signals.progress.connect(self.gui.updatedynamicbox)
