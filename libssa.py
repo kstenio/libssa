@@ -29,7 +29,7 @@ try:
 	from env.spectra import Spectra
 	from pic.libssa_gui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks
+	from env.functions import isopeaks, fitpeaks
 	from PySide2.QtGui import QKeyEvent
 	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -90,6 +90,7 @@ class LIBSSA2(QObject):
 		self.gui.p2_mad_c.valueChanged.connect(self.outliers)
 		# Page 3
 		self.gui.p3_isoapply.clicked.connect(self.peakiso)
+		self.gui.p3_fitapply.clicked.connect(self.peakfit)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -140,17 +141,17 @@ class LIBSSA2(QObject):
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 		elif self.gui.g_current == 'PLS':
 			if idx == 0:
-				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' %('Element') )
+				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' % 'Element')
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 			if idx == 1:
-				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % ('Element'))
+				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % 'Element')
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 		elif self.gui.g_current == 'Linear':
 			if idx == 0:
-				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Height</u> as <i>Intensity</i>' % ('Element'))
+				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Height</u> as <i>Intensity</i>' % 'Element')
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 			if idx == 1:
-				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Area</u> as <i>Intensity</i>' % ('Element'))
+				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Area</u> as <i>Intensity</i>' % 'Element')
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 		elif self.gui.g_current == 'Temperature':
 			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
@@ -231,7 +232,7 @@ class LIBSSA2(QObject):
 				self.spec.samples_path = samples_pathlib
 	
 	def spload(self):
-		# module for receiving result from worker
+		# inner function to receive result from worker
 		def result(returned):
 			# saves result
 			self.spec.wavelength, self.spec.counts = returned
@@ -247,6 +248,24 @@ class LIBSSA2(QObject):
 			self.gui.g_selector.setCurrentIndex(0)
 			self.doplot()
 		
+		# inner function to receive errors from worker
+		def error(runerror):
+			# closes progress bar and updates statusbar
+			self.gui.mbox.close()
+			changestatus(self.gui.sb, 'Could not import Spectra. Check parameters and try again.', 'r', 0)
+			# enable gui elements
+			self.gui.graphenable(True)
+			self.gui.p1_ldspectra.setEnabled(True)
+			self.gui.p2_apply_out.setEnabled(True)
+			# outputs timer
+			print('Timestamp:', time(), 'ERROR: Could not import spectra. Timer: %.2f seconds.' % (time() - self.timer))
+			# ousputs error message
+			runerror_message = 'Could not import data properly! ' \
+			                   'Try recheck a spectrum file and change import parameters (mostly <b>header</b> or <b>delimiter</b>).' \
+			                   '<p>Error type: <b><i><u>%s</u></i></b></p>' \
+			                   '<p>Error message:<br><b>%s</b></p>' % (runerror[0].__name__, str(runerror[1]))
+			self.gui.guimsg('Error!', runerror_message, 'c')
+			
 		# the method itself
 		if not self.spec.samples[0]:
 			self.gui.guimsg('Error', 'Please select <b>spectra folder</b> in order to load spectra.', 'w')
@@ -260,6 +279,7 @@ class LIBSSA2(QObject):
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Spectra loaded into LIBSsa'))
 			worker.signals.result.connect(result)
+			worker.signals.error.connect(error)
 			self.configthread()
 			self.timer = time()
 			self.threadpool.start(worker)
@@ -268,7 +288,7 @@ class LIBSSA2(QObject):
 	# Methods for page 2 == Outliers and correlation spectrum
 	#
 	def outliers(self):
-		# module for receiving result from worker
+		# inner function to receive result from worker
 		def result(returned):
 			# saves result
 			self.spec.counts_out = returned
@@ -324,7 +344,7 @@ class LIBSSA2(QObject):
 					self.gui.p2_apply_correl.setEnabled(True)
 	
 	def docorrel(self):
-		# module for receiving result from worker
+		# inner function to receive result from worker
 		def result(returned):
 			# saves result
 			self.spec.pearson = returned
@@ -359,7 +379,7 @@ class LIBSSA2(QObject):
 	# Methods for page 3 == Regions and peak fitting
 	#
 	def peakiso(self):
-		# module for receiving result from worker
+		# inner function to receive result from worker
 		def result(returned):
 			# saves result
 			self.spec.wavelength_iso, self.spec.counts_iso = returned
@@ -376,7 +396,7 @@ class LIBSSA2(QObject):
 		# Checks if iso table is complete
 		if self.gui.p3_isotb.rowCount() > 0:
 			# Checks if values are OK
-			if self.gui.checktablevalues():
+			if self.gui.checktablevalues(self.spec.wavelength[0], self.spec.wavelength[-1]):
 				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
 				self.gui.p3_isoapply.setEnabled(False)
 				counts = self.spec.counts_out if len(self.spec.counts_out) > 1 else self.spec.counts
@@ -405,7 +425,15 @@ class LIBSSA2(QObject):
 			self.gui.guimsg('Error', 'Please enter isolation parameters in the <b>table</b> before using this feature.', 'w')
 			
 	def peakfit(self):
-		pass
+		if self.spec.wavelength_iso.size:
+			# Iterates over fit table rows to get selected values of shapes and asymmetry
+			fittable_rows = self.gui.p3_fittb.rowCount()
+			shapes = [x.split(')')[1][1:] for x in [self.gui.p3_fittb.cellWidget(y, 1).currentText() for y in range(fittable_rows)]]
+			asymmetry = [float(z) for z in [self.gui.p3_fittb.item(w, 2).text() for w in range(fittable_rows)]]
+			# Run the fit function
+			fitpeaks(self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)))
+		else:
+			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
 		
 	
 if __name__ == '__main__':

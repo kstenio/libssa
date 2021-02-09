@@ -81,7 +81,7 @@ def fit_guess(x, y, peaks, center, shape_id, asymmetry=None):
 	return guess
 
 
-def fitpeaks(iso_wavelengths, iso_counts):
+def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List):
 	for i, w in enumerate(iso_wavelengths):
-		print(w[:2], iso_counts[i])
+		print(w[:2], parameters[i], iso_counts[i])
 		pass

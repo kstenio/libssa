@@ -444,7 +444,7 @@ class LIBSsaGUI(object):
 		# Re-enables signals
 		self.p3_isotb.blockSignals(False)
 		
-	def checktablevalues(self):
+	def checktablevalues(self, w_lower: float, w_upper: float):
 		rows = self.p3_isotb.rowCount()
 		# Columns:
 		# 0 = Element
@@ -467,6 +467,12 @@ class LIBSsaGUI(object):
 					self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> cells have empty values!', 'c')
 					return False
 				else:
+					if lower < w_lower or upper > w_upper:
+						self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> wavelengths are not inside spectra range!'
+						                              f'<p>Element: <b>{element}</b>'
+						                              f'<br>Spectra range: <b>{w_lower}</b> to <b>{w_upper}</b>'
+						                              f'<br><i>Table entered range</i>: <b>{lower}</b> to <b>{upper}</b></p>', 'c')
+						return False
 					if lower < upper:
 						# checks center only if passed 1st verification
 						try:
@@ -537,14 +543,14 @@ class LIBSsaGUI(object):
 		self.p3_fittb.setRowCount(0)
 		# Defines values for shape
 		drop_down_list = ['1) Lorentzian',
-		                  '2) Lorentzian (center fixed)',
-		                  '3) Asymmetric Lorentzian',
-		                  '4) Asym. Lorentzian (center fixed)',
-		                  '5) Asym. Lorentzian (center/as. fixed)',
+		                  '2) Asymmetric Lorentzian',
+		                  '3) Lorentzian [center fixed]',
+		                  '4) Asym. Lorentzian [center fixed]',
+		                  '5) Asym. Lorentzian [center/as. fixed]',
 		                  '6) Gaussian',
-		                  '7) Gaussian (center fixed)',
+		                  '7) Gaussian [center fixed]',
 		                  '8) Voigt Profile',
-		                  '9) Voigt Profile (center fixed)',
+		                  '9) Voigt Profile [center fixed]',
 		                  '10) Trapezoidal rule']
 		# Iterates over iso table
 		rows = self.p3_isotb.rowCount()

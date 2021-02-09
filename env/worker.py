@@ -47,6 +47,7 @@ class Worker(QRunnable):
 	@Slot(name='run')
 	def run(self):
 		try:
+			# normal run of function
 			result = self.fn(*self.args, **self.kwargs)
 		except:
 			# return error message as signal
