@@ -121,11 +121,14 @@ class LIBSSA2(QObject):
 		elif self.gui.g_current == 'Isolated':
 			i = idx // self.spec.nsamples
 			j = idx - (i * self.spec.nsamples)
-			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' %(self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
+			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
 			self.gui.mplot(self.spec.wavelength_iso[i][2], self.spec.counts_iso[i][j])
 		elif self.gui.g_current == 'Fit':
-			self.gui.g.setTitle('Fitted peak of <b>%s</b> for sample <b>%s</b>' % ('ELEMENT', self.spec.samples_path[idx].stem))
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			i = idx // self.spec.nsamples
+			j = idx - (i * self.spec.nsamples)
+			self.gui.g.setTitle( 'Fitted peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
+			self.gui.splot(self.spec.wavelength_iso[i][2], self.spec.counts_fit[i][j][0], symbol='o')  # average and x
+			self.gui.splot(self.spec.counts_fit[i][j][1], self.spec.counts_fit[i][j][2], False)  # nx and ny
 		elif self.gui.g_current == 'PCA':
 			if idx == 0:
 				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
@@ -182,8 +185,9 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText(str(rvalue))
 		elif idx == 4:
 			# Fitted peaks
-			self.gui.g_current_sb.setRange(1, len(self.spec.counts_iso))
-			self.gui.g_max.setText(str(len(self.spec.counts_iso)))
+			rvalue = self.spec.nsamples * self.spec.wavelength_iso.__len__()
+			self.gui.g_current_sb.setRange(1, rvalue)
+			self.gui.g_max.setText(str(rvalue))
 		elif idx == 5:
 			# PCA
 			self.gui.g_current_sb.setRange(1, 5)
@@ -431,7 +435,10 @@ class LIBSSA2(QObject):
 			shapes = [x.split(')')[1][1:] for x in [self.gui.p3_fittb.cellWidget(y, 1).currentText() for y in range(fittable_rows)]]
 			asymmetry = [float(z) for z in [self.gui.p3_fittb.item(w, 2).text() for w in range(fittable_rows)]]
 			# Run the fit function
-			fitpeaks(self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)))
+			self.spec.counts_fit = fitpeaks(self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)), self.gui.p3_mean1st.isChecked())
+			self.ranged = False
+			self.gui.g_selector.setCurrentIndex(4)
+			self.doplot()
 		else:
 			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
 		

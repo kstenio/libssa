@@ -26,7 +26,7 @@ from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
-from pyqtgraph import PlotWidget, setConfigOption
+from pyqtgraph import PlotWidget, setConfigOption, mkBrush
 from pathlib import PosixPath
 from string import punctuation
 
@@ -86,6 +86,7 @@ class LIBSsaGUI(object):
 			self.p3_isotb = self.p3_fittb = QtWidgets.QTableWidget()
 			self.p3_isoadd = self.p3_isorem = self.p3_isoapply = self.p3_fitapply = QtWidgets.QToolButton()
 			self.p3_linear = self.p3_norm = QtWidgets.QCheckBox()
+			self.p3_mean1st = QtWidgets.QRadioButton()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -181,6 +182,7 @@ class LIBSsaGUI(object):
 		self.p3_fitapply = self.mw.findChild(QtWidgets.QToolButton, 'p3tB4')
 		self.p3_linear = self.mw.findChild(QtWidgets.QCheckBox, 'p3cBox1')
 		self.p3_norm = self.mw.findChild(QtWidgets.QCheckBox, 'p3cBox2')
+		self.p3_mean1st = self.mw.findChild(QtWidgets.QRadioButton, 'p3rB1')
 		
 		
 	
@@ -293,9 +295,12 @@ class LIBSsaGUI(object):
 		self.g.setLabel('left', self.g_op[2], units=self.g_op[3])
 		
 	# Graph methods
-	def splot(self, x, y, clear=True):
+	def splot(self, x, y, clear=True, symbol=None):
 		if clear: self.g.clear()
-		self.g.plot(x, y, pen=randint(50, 200, (1, 3))[0])
+		if symbol is None:
+			self.g.plot(x, y, pen=randint(50, 200, (1, 3))[0])
+		else:
+			self.g.plot(x, y, pen=None, symbol=symbol, symbolBrush=mkBrush(randint(50, 200, (1, 3))[0]))
 		self.g.autoRange()
 		
 	def mplot(self, x, matrix, hsl=True):
@@ -467,12 +472,17 @@ class LIBSsaGUI(object):
 					self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> cells have empty values!', 'c')
 					return False
 				else:
-					if lower < w_lower or upper > w_upper:
-						self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> wavelengths are not inside spectra range!'
-						                              f'<p>Element: <b>{element}</b>'
-						                              f'<br>Spectra range: <b>{w_lower}</b> to <b>{w_upper}</b>'
-						                              f'<br><i>Table entered range</i>: <b>{lower}</b> to <b>{upper}</b></p>', 'c')
+					try:
+						l, u = lower < w_lower, upper > w_upper
+					except TypeError:
+						self.guimsg('Critical error', 'Please import data <b>before</b> using this feature!', 'c')
 						return False
+					if lower < w_lower or upper > w_upper:
+							self.guimsg('Critical error', '<b>Upper</b> or <b>lower</b> wavelengths are not inside spectra range!'
+							                              f'<p>Element: <b>{element}</b>'
+							                              f'<br>Spectra range: <b>{w_lower}</b> to <b>{w_upper}</b>'
+							                              f'<br><i>Table entered range</i>: <b>{lower}</b> to <b>{upper}</b></p>', 'c')
+							return False
 					if lower < upper:
 						# checks center only if passed 1st verification
 						try:
