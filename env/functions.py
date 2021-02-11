@@ -19,7 +19,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, nanmean, nanstd, zeros_like, linspace
+from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, nanmean, nanstd, zeros_like, linspace, column_stack, zeros
 from scipy.optimize import least_squares
 from PySide2.QtCore import Signal
 from typing import List, Tuple
@@ -61,15 +61,6 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, 
 		progress.emit(i)
 	return new_wavelength, new_counts
 
-
-def residuals(guess, x, y, shape_id, **kwargs):
-	function_kwargs = {'Center': kwargs['Center'], 'Asymmetry': kwargs['Asymmetry']}
-	if shape_id == 'Trapezoidal rule':
-		return zeros_like(y)
-	else:
-		return y - kwargs[shape_id](x, *guess, **function_kwargs)
-
-
 def fit_guess(x: ndarray, y: ndarray, peaks: int, center: List, shape_id: str, asymmetry=None):
 	guess = []
 	for i in range(peaks):
@@ -85,11 +76,52 @@ def fit_guess(x: ndarray, y: ndarray, peaks: int, center: List, shape_id: str, a
 			guess.append(asymmetry)  # Asymmetry (auto or user entered value)
 	return guess
 
+def residuals(guess, x, y, shape_id, **kwargs):
+	function_kwargs = {'Center': kwargs['Center'], 'Asymmetry': kwargs['Asymmetry']}
+	if shape_id == 'Trapezoidal rule':
+		return zeros_like(y)
+	else:
+		return y - kwargs[shape_id](x, *guess, **function_kwargs)
+
+def fit_values(ny, shape, param):
+	if 'Voigt' in shape:
+		a, wl, wg = param[:3]
+		w = 0.5346*wl + (0.2166*(wl**2) + wg**2)**0.5
+		h = max(ny)
+	else:
+		h, w = param[:2]
+		if 'Lorentzian' in shape:
+			a = (h*w*pi)/2
+		elif 'Gaussian' in shape:
+			a = (2*h*w)*((pi/2)**0.5)
+		else:
+			a = 0
+	return h, w, a
+
+def fit_results(x, y, optimized, shape, npeaks, sdict):
+	solution, residual, nfev, convergence = optimized.x, optimized.fun, optimized.nfev, optimized.success
+	individuals_solution = array_split(nabs(solution), npeaks)
+	# With optimized, we can have the x-axis
+	if shape != 'Trapezoidal rule':
+		nx = linspace(x[0], x[-1], 1000)
+		# creates the total result
+		total = zeros((nx.size, npeaks + 1))
+		results = empty((3, npeaks))
+		for i, individuals in enumerate(individuals_solution):
+			indv_dict = {'Center': [sdict['Center'][i]], 'Asymmetry': sdict['Asymmetry']}
+			total[:, i] = sdict[shape](nx, *individuals, **indv_dict)
+			results[:, i] = fit_values(total[:, i], shape, individuals)
+		total[:, -1] = nsum(total[:, :-1], 1)
+	else:
+		nx, total = x, column_stack((y, y))
+		nfev, convergence = 1, True
+		results = array(([max(y), (x[-1]-x[0])/4, trapz(y, x)])) # h, w, a
+	return column_stack((x, y, residual)), nx, total, results, nfev, convergence
 
 def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, mean1st: bool):
 	# Creates exit array
 	# needs: y, nx, ny
-	fit_w_counts = array([[[None] * 3] * len(iso_counts[0])] * len(iso_wavelengths))
+	fit_w_counts = array([[[None] * 6] * len(iso_counts[0])] * len(iso_wavelengths))
 	# Goes in element level: same size as iso_wavelengths
 	for i, w in enumerate(iso_wavelengths):
 		# Extra relevant information:
@@ -101,23 +133,21 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, me
 		#
 		# Gets a dict for shapes and fit equations
 		shape, asym = parameters[i]
-		scd = equations_translator(center=w[1][2], asymmetry=asym)
+		x, center = w[2], w[1][2]
+		scd = equations_translator(center=center, asymmetry=asym)
 		# Now goes into sample level: size of each i-th iso_wavelengths
 		for j, ci in enumerate(iso_counts[i]):
 			# Regarding modes, we have mean 1st or area 1st, which defines how results are exported
 			if mean1st:
 				# If mean1st is True, take the mean of iso_counts[i][j] and pass it to perform fit
 				average_spectrum = mean(ci, axis=1)
-				guess = fit_guess(x=w[2], y=average_spectrum, peaks=len(w[1][2]), center=w[1][2], shape_id=shape, asymmetry=asym)
-				optimized = least_squares(residuals, guess, args=(w[2], average_spectrum, shape), kwargs=scd)
-				# With optimized, we can have the fit curve
-				if shape != 'Trapezoidal rule':
-					nx = linspace(w[1][0], w[1][1], 1000)
-					ny = scd[shape](nx, *optimized.x, **scd)
-				else:
-					nx = w[2]
-					ny = average_spectrum
-				fit_w_counts[i][j][:] = average_spectrum, nx, ny
+				guess = fit_guess(x=x, y=average_spectrum, peaks=len(center), center=center, shape_id=shape, asymmetry=asym)
+				optimized = least_squares(residuals, guess, args=(x, average_spectrum, shape), kwargs=scd)
+				# solution, residual, nfev, convergence = optimized.x, optimized.fun, optimized.nfev, optimized.success
+				# Gets the result based on optimized solution
+				results = fit_results(x, average_spectrum, optimized, shape, len(center), scd)
+				# Finally, saves result
+				fit_w_counts[i][j][:] = results # average_spectrum, nx, ny
 			else:
 				# If mean1st is False, area1st is select, and so we will need to iterates over each individual spectrum
 				pass

@@ -26,7 +26,7 @@ from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
-from pyqtgraph import PlotWidget, setConfigOption, mkBrush
+from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen
 from pathlib import PosixPath
 from string import punctuation
 
@@ -295,12 +295,12 @@ class LIBSsaGUI(object):
 		self.g.setLabel('left', self.g_op[2], units=self.g_op[3])
 		
 	# Graph methods
-	def splot(self, x, y, clear=True, symbol=None):
+	def splot(self, x, y, clear=True, symbol=None, name=None, width=1):
 		if clear: self.g.clear()
 		if symbol is None:
-			self.g.plot(x, y, pen=randint(50, 200, (1, 3))[0])
+			self.g.plot(x, y, pen=mkPen(randint(50, 200, (1, 3))[0], width=width), name=name)
 		else:
-			self.g.plot(x, y, pen=None, symbol=symbol, symbolBrush=mkBrush(randint(50, 200, (1, 3))[0]))
+			self.g.plot(x, y, pen=None, symbol=symbol, symbolBrush=mkBrush(randint(50, 200, (1, 3))[0]), name=name)
 		self.g.autoRange()
 		
 	def mplot(self, x, matrix, hsl=True):

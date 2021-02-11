@@ -124,11 +124,20 @@ class LIBSSA2(QObject):
 			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
 			self.gui.mplot(self.spec.wavelength_iso[i][2], self.spec.counts_iso[i][j])
 		elif self.gui.g_current == 'Fit':
+			self.gui.g.clear()
+			self.gui.g.addLegend()
 			i = idx // self.spec.nsamples
 			j = idx - (i * self.spec.nsamples)
+			fitresults = self.spec.counts_fit[i][j]
 			self.gui.g.setTitle( 'Fitted peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
-			self.gui.splot(self.spec.wavelength_iso[i][2], self.spec.counts_fit[i][j][0], symbol='o')  # average and x
-			self.gui.splot(self.spec.counts_fit[i][j][1], self.spec.counts_fit[i][j][2], False)  # nx and ny
+			# 1st plot is for original data and residuals
+			self.gui.splot(fitresults[0][:, 0], fitresults[0][:, 1], symbol='o', clear=False, name='Original data')
+			self.gui.splot(fitresults[0][:, 0], fitresults[0][:, 2], symbol='+', clear=False, name='Residuals')
+			# remaining plots are for each peak
+			for k in range(fitresults[2].shape[1] - 1):
+				self.gui.splot(fitresults[1], fitresults[2][:, k], clear=False, name='Peak %i' % (k+1))
+			# last one is total
+			self.gui.splot(fitresults[1], fitresults[2][:, -1], clear=False, name='Total', width=2.5)
 		elif self.gui.g_current == 'PCA':
 			if idx == 0:
 				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
