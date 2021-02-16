@@ -55,7 +55,7 @@ def lorentz_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	lofc = empty((x.size, peaks))
 	for i, p in enumerate(params):
 		h, w = p
-		lofc[:, i] = h / (1 + 4 * ((x - c[i]) / w) ** 2)
+		lofc[:, i] = h / (1 + ((x - c[i]) / (0.5 * w)) ** 2)
 	return sum(lofc, 1)
 
 
@@ -73,8 +73,8 @@ def lorentz_asymmetric(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	for i, p in enumerate(params):
 		h, w, c, m = p
 		m = m if 0.2 < m < 0.8 else 0.5
-		loa[x <= c, i] = h / (1 + 4 * ((x[x <= c] - c) / w*m) ** 2)
-		loa[x > c, i] = h / (1 + 4 * ((x[x > c] - c) / w*(1-m)) ** 2)
+		loa[x <= c, i] = h / (1 + ((x[x <= c] - c) / (0.5 * w * m)) ** 2)
+		loa[x > c, i] = h / (1 + ((x[x > c] - c) / (0.5 * w *(1-m))) ** 2)
 	return sum(loa, 1)
 
 def lorentz_asymmetric_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
@@ -91,8 +91,8 @@ def lorentz_asymmetric_fixed_center(x: ndarray, *args: [float], **kwargs: dict) 
 	for i, p in enumerate(params):
 		h, w, m = p
 		m = m if 0.2 < m < 0.8 else 0.5
-		loafc[x <= c[i], i] = h / (1 + 4 * ((x[x <= c[i]] - c[i]) / w * m) ** 2)
-		loafc[x > c[i], i] = h / (1 + 4 * ((x[x > c[i]] - c[i]) / w * (1 - m)) ** 2)
+		loafc[x <= c[i], i] = h / (1 + ((x[x <= c[i]] - c[i]) / (0.5 * w * m)) ** 2)
+		loafc[x > c[i], i] = h / (1 + ((x[x > c[i]] - c[i]) / (0.5 * w * (1 - m))) ** 2)
 	return sum(loafc, 1)
 
 def lorentz_asymmetric_fixed_center_asymmetry(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
@@ -108,8 +108,8 @@ def lorentz_asymmetric_fixed_center_asymmetry(x: ndarray, *args: [float], **kwar
 	loafca = empty((x.size, peaks))
 	for i, p in enumerate(params):
 		h, w = p
-		loafca[x <= c[i], i] = h / (1 + 4 * ((x[x <= c[i]] - c[i]) / w * mf) ** 2)
-		loafca[x > c[i], i] = h / (1 + 4 * ((x[x > c[i]] - c[i]) / w * (1.0 - mf)) ** 2)
+		loafca[x <= c[i], i] = h / (1 + ((x[x <= c[i]] - c[i]) / (0.5 * w * mf)) ** 2)
+		loafca[x > c[i], i] = h / (1 + ((x[x > c[i]] - c[i]) / (0.5 * w * (1.0 - mf))) ** 2)
 	return sum(loafca, 1)
 
 

@@ -20,7 +20,7 @@
 #
 
 # Imports
-from numpy import zeros, int16, ones
+from numpy import zeros, int16, ones, ndarray
 from numpy.random import randint, uniform, random
 from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
@@ -309,6 +309,20 @@ class LIBSsaGUI(object):
 		colors = hsl_colors(smp) if hsl else randint(0, 255, (smp, 3))
 		for i in range(smp):
 			self.g.plot(x, matrix[:, i], pen=colors[i, :])
+		self.g.autoRange()
+	
+	def fitplot(self, fitresults: ndarray):
+		self.g.clear()
+		self.g.addLegend()
+		# 1st plot is for original data and residuals
+		self.g.plot(fitresults[0][:, 0], fitresults[0][:, 1], symbol='o', pen=None, symbolBrush=mkBrush(randint(50, 220, (1, 3))[0]), name='Original data')
+		self.g.plot(fitresults[0][:, 0], fitresults[0][:, 2], symbol='+', pen=None, symbolBrush=mkBrush(list(randint(50, 220, (1, 3))[0])+[0.8]), name='Residuals')
+		# The remaining plots are for each peak
+		for i in range(fitresults[2].shape[1] - 1):
+			self.g.plot(fitresults[1], fitresults[2][:, i], pen=mkPen(randint(50, 220, (1, 3))[0], width=1), name='Peak %i' % (i + 1))
+		# Last one is for total (sum of peaks)
+		self.g.plot(fitresults[1], fitresults[2][:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
+		# Finally, performs auto-range
 		self.g.autoRange()
 		
 	#

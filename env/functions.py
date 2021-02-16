@@ -64,12 +64,14 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: List, lower: List, 
 def fit_guess(x: ndarray, y: ndarray, peaks: int, center: List, shape_id: str, asymmetry=None):
 	guess = []
 	for i in range(peaks):
+		# Ratio for values
+		r, d = 1 - 0.4*(i/peaks), x[-1] - x[0]
 		# Height/Area, Width, Center, Asymmetry
-		guess.append( max(y)/(1 + i) ) # Intensity is the highest value
-		guess.append( (x[-1] - x[0]) / (2 + i) ) # Width approximation by half of interval
+		guess.append(r * max(y)) # Intensity is the highest value
+		guess.append(r * d / 4) # Width approximation by 1/4 of interval
 		if 'voigt' in shape_id.lower():
-			guess[-2] = ((x[-1] - x[0]) * max(y)) / (2 + i)  # Area approximation by triangle
-			guess.append( (x[-1] - x[0]) / (2 + i*0.99) ) # Width approximation by half of interval
+			guess[-2] = r * max(y) * d / 2  # Area approximation by triangle
+			guess.append(r * d / 4) # Width approximation by 1/4 of interval
 		if 'fixed' not in shape_id.lower():
 			guess.append(center[i]) # Center (user entered value)
 		if ('asymmetric' in shape_id.lower()) or ('asym' in shape_id.lower() and 'center fixed' in shape_id.lower()):
@@ -142,7 +144,10 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, me
 				# If mean1st is True, take the mean of iso_counts[i][j] and pass it to perform fit
 				average_spectrum = mean(ci, axis=1)
 				guess = fit_guess(x=x, y=average_spectrum, peaks=len(center), center=center, shape_id=shape, asymmetry=asym)
-				optimized = least_squares(residuals, guess, args=(x, average_spectrum, shape), kwargs=scd)
+				optimized = least_squares(residuals, guess,
+				                          args=(x, average_spectrum, shape),
+				                          kwargs=scd, ftol=1e-7, gtol=1e-7,
+				                          xtol=1e-7, max_nfev=1000)
 				# solution, residual, nfev, convergence = optimized.x, optimized.fun, optimized.nfev, optimized.success
 				# Gets the result based on optimized solution
 				results = fit_results(x, average_spectrum, optimized, shape, len(center), scd)
