@@ -20,13 +20,13 @@
 #
 
 # Imports
-from numpy import zeros, int16, ones, ndarray
+from numpy import zeros, int16, ones, ndarray, std
 from numpy.random import randint, uniform, random
 from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
-from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen
+from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem
 from pathlib import PosixPath
 from string import punctuation
 
@@ -312,19 +312,50 @@ class LIBSsaGUI(object):
 		self.g.autoRange()
 	
 	def fitplot(self, fitresults: ndarray):
+		"""
+		:param fitresults: A parameter containing all values and information for proper fit plotting
+		:return: Nothing. Just do the plotting with additional information for user
+		
+		fitresults is an array with the following fields:
+		
+		[0] = Original (x,y) and residuals
+		[1] = x-axis with more points (linspace)
+		[2] = Total y-axis of fit, where each column is for a fit, and the last one is the SUM
+		[3] = Shape of the fit
+		[4] = Optimized results for Height, Width and Area. Size depends on peak numbers
+		[5] = Number of functions evaluations for convergence
+		[6] = Convergence (boolean)
+		"""
 		self.g.clear()
 		self.g.addLegend()
+		# important variables
+		npeaks = fitresults[2].shape[1] - 1
+		conv, nfev, shape = fitresults[6], fitresults[5], fitresults[3]
+		height, width, area, rmsd =  [], [], [], std(fitresults[0][:, 2])
 		# 1st plot is for original data and residuals
 		self.g.plot(fitresults[0][:, 0], fitresults[0][:, 1], symbol='o', pen=None, symbolBrush=mkBrush(randint(50, 220, (1, 3))[0]), name='Original data')
 		self.g.plot(fitresults[0][:, 0], fitresults[0][:, 2], symbol='+', pen=None, symbolBrush=mkBrush(list(randint(50, 220, (1, 3))[0])+[0.8]), name='Residuals')
 		# The remaining plots are for each peak
-		for i in range(fitresults[2].shape[1] - 1):
+		for i in range(npeaks):
 			self.g.plot(fitresults[1], fitresults[2][:, i], pen=mkPen(randint(50, 220, (1, 3))[0], width=1), name='Peak %i' % (i + 1))
+			height.append('%.1E' % fitresults[4][i][0])
+			width.append('%.1E' % fitresults[4][i][1])
+			area.append('%.1E' % fitresults[4][i][2])
 		# Last one is for total (sum of peaks)
 		self.g.plot(fitresults[1], fitresults[2][:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
+		fitbox = TextItem(html=f'Shape: <b>{shape}</b><br>'
+		                       f'Peaks: <b>{npeaks}</b><br>'
+		                       f'Evaluations: <b>{nfev}</b><br>'
+		                       f'Convergence: <b>{conv}</b><br>'
+		                       f'Height: <b>{height}</b><br>'
+		                       f'Width: <b>{width}</b><br>'
+		                       f'Area: <b>{area}</b><br>'
+		                       f'RMSD: <b>{"%.1E" %rmsd}</b>',
+		                  anchor=(1, 0), angle=0, border='#6600cc', fill='#f2e6ff')
+		self.g.addItem(fitbox)
+		fitbox.setPos(max(fitresults[1]), max(max(fitresults[0][:, 1]), max(fitresults[2][:, -1])))
 		# Finally, performs auto-range
 		self.g.autoRange()
-		
 	#
 	# GUI/helper functions
 	#

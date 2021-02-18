@@ -108,22 +108,22 @@ def fit_results(x, y, optimized, shape, npeaks, sdict):
 		nx = linspace(x[0], x[-1], 1000)
 		# creates the total result
 		total = zeros((nx.size, npeaks + 1))
-		results = empty((3, npeaks))
+		results = []
 		for i, individuals in enumerate(individuals_solution):
 			indv_dict = {'Center': [sdict['Center'][i]], 'Asymmetry': sdict['Asymmetry']}
 			total[:, i] = sdict[shape](nx, *individuals, **indv_dict)
-			results[:, i] = fit_values(total[:, i], shape, individuals)
+			results.append(fit_values(total[:, i], shape, individuals))
 		total[:, -1] = nsum(total[:, :-1], 1)
 	else:
 		nx, total = x, column_stack((y, y))
 		nfev, convergence = 1, True
 		results = array(([max(y), (x[-1]-x[0])/4, trapz(y, x)])) # h, w, a
-	return column_stack((x, y, residual)), nx, total, results, nfev, convergence
+	return column_stack((x, y, residual)), nx, total, shape, results, nfev, convergence
 
 def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, mean1st: bool):
 	# Creates exit array
 	# needs: y, nx, ny
-	fit_w_counts = array([[[None] * 6] * len(iso_counts[0])] * len(iso_wavelengths))
+	fit_w_counts = array([[[None] * 7] * len(iso_counts[0])] * len(iso_wavelengths))
 	# Goes in element level: same size as iso_wavelengths
 	for i, w in enumerate(iso_wavelengths):
 		# Extra relevant information:
