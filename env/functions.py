@@ -19,7 +19,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, nanmean, nanstd, zeros_like, linspace, column_stack, zeros
+from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, std, zeros_like, linspace, column_stack, zeros
 from scipy.optimize import least_squares
 from PySide2.QtCore import Signal
 from typing import List, Tuple
@@ -120,7 +120,7 @@ def fit_results(x, y, optimized, shape, npeaks, sdict):
 		results = array(([max(y), (x[-1]-x[0])/4, trapz(y, x)])) # h, w, a
 	return column_stack((x, y, residual)), nx, total, shape, results, nfev, convergence
 
-def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, mean1st: bool):
+def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, mean1st: bool, progress: Signal):
 	# Creates exit array
 	# needs: y, nx, ny
 	fit_w_counts = array([[[None] * 7] * len(iso_counts[0])] * len(iso_wavelengths))
@@ -148,15 +148,66 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, parameters: List, me
 				                          args=(x, average_spectrum, shape),
 				                          kwargs=scd, ftol=1e-7, gtol=1e-7,
 				                          xtol=1e-7, max_nfev=1000)
-				# solution, residual, nfev, convergence = optimized.x, optimized.fun, optimized.nfev, optimized.success
 				# Gets the result based on optimized solution
 				results = fit_results(x, average_spectrum, optimized, shape, len(center), scd)
 				# Finally, saves result
 				fit_w_counts[i][j][:] = results # average_spectrum, nx, ny
 			else:
 				# If mean1st is False, area1st is select, and so we will need to iterates over each individual spectrum
-				pass
-		return fit_w_counts
+				average_spectrum, shoots, result, residual, npeaks = mean(ci, axis=1), ci.shape[1], None, None, len(center)
+				[nfev, conv] = [zeros(shoots) for z in range(2)]
+				if shape != 'Trapezoidal rule':
+					[height, width, area] = [zeros((shoots, npeaks)) for z in range(3)]
+				else:
+					[height, width, area] = [zeros(shoots) for z in range(3)]
+				for k in range(shoots):
+					guess = fit_guess(x=x, y=ci[:, k],
+					                  peaks=npeaks, center=center,
+					                  shape_id=shape, asymmetry=asym)
+					k_optimized = least_squares(residuals, guess,
+					                          args=(
+					                          x, average_spectrum, shape),
+					                          kwargs=scd, ftol=1e-7, gtol=1e-7,
+					                          xtol=1e-7, max_nfev=1000)
+					results = fit_results(x, average_spectrum, k_optimized, shape, len(center), scd)
+					# saves values
+					nfev[k], conv[k] = results[5], results[6]
+					if shape != 'Trapezoidal rule':
+						for l in range(npeaks):
+							height[k, l], width[k, l], area[k, l] = results[4][l]
+					else:
+						height[k], width[k], area[k] = results[4]
+					if k == 0:
+						# 1st loop
+						nx = results[1]
+						residual = results[0][:, 2]
+						result = results[2]
+					else:
+						# other loops
+						residual += results[0][:, 2]
+						for l in range(results[2].shape[1]):
+							result[:, l] += results[2][:, l]
+				# Outside the k-loop, we need to reorganize data for saving
+				[nfev_avg, conv_avg] = [(mean(x).round(2), std(x).round(2)) for x in [nfev, conv]]
+				[height_avg, width_avg, area_avg] = [(mean(x, axis=0), std(x, axis=0)) for x in [height, width, area]]
+				h, w, a = [], [], []
+				for l in range(npeaks):
+					if shape != 'Trapezoidal rule':
+						h.append((height_avg[0][l], height_avg[1][l]))
+						w.append((width_avg[0][l], width_avg[1][l]))
+						a.append((area_avg[0][l], area_avg[1][l]))
+					else:
+						h.append((height_avg[0], height_avg[1]))
+						w.append((width_avg[0], width_avg[1]))
+						a.append((area_avg[0], area_avg[1]))
+						break
+				results = [(x, y, z) for x, y, z in zip(h, w, a)]
+				residual /= shoots
+				result /= shoots
+				# Finally, saves result
+				fit_w_counts[i][j][:] = column_stack((x, average_spectrum, residual)), nx, result, shape, results, nfev_avg, conv_avg
+			progress.emit(j)
+	return fit_w_counts
 
 def equations_translator(center: List, asymmetry: float):
 	shapes_and_curves_dict = {'Lorentzian' : lorentz,

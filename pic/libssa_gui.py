@@ -338,9 +338,19 @@ class LIBSsaGUI(object):
 		# The remaining plots are for each peak
 		for i in range(npeaks):
 			self.g.plot(fitresults[1], fitresults[2][:, i], pen=mkPen(randint(50, 220, (1, 3))[0], width=1), name='Peak %i' % (i + 1))
-			height.append('%.1E' % fitresults[4][i][0])
-			width.append('%.1E' % fitresults[4][i][1])
-			area.append('%.1E' % fitresults[4][i][2])
+			try:
+				height.append('%.1E' % fitresults[4][i][0])
+				width.append('%.1E' % fitresults[4][i][1])
+				area.append('%.1E' % fitresults[4][i][2])
+			except TypeError:
+				height.append('%s' % ['%.1E' %x for x in fitresults[4][i][0]])
+				width.append('%s' % ['%.1E' %x for x in fitresults[4][i][1]])
+				area.append('%s' % ['%.1E' %x for x in fitresults[4][i][2]])
+			except IndexError:
+				height = '%.1E' % fitresults[4][0]
+				width = '%.1E' % fitresults[4][1]
+				area = '%.1E' % fitresults[4][2]
+				break
 		# Last one is for total (sum of peaks)
 		self.g.plot(fitresults[1], fitresults[2][:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
 		fitbox = TextItem(html=f'Shape: <b>{shape}</b><br>'

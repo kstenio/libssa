@@ -128,7 +128,7 @@ class LIBSSA2(QObject):
 			self.gui.g.addLegend()
 			i = idx // self.spec.nsamples
 			j = idx - (i * self.spec.nsamples)
-			fitresults = self.spec.counts_fit[i][j]
+			fitresults = self.spec.fitresults[i][j]
 			self.gui.g.setTitle( 'Fitted peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
 			self.gui.fitplot(fitresults)
 		elif self.gui.g_current == 'PCA':
@@ -431,16 +431,35 @@ class LIBSSA2(QObject):
 			self.gui.guimsg('Error', 'Please enter isolation parameters in the <b>table</b> before using this feature.', 'w')
 			
 	def peakfit(self):
+		# inner function to receive result from worker
+		def result(returned):
+			# saves result
+			self.spec.fitresults = returned
+			# enable apply button
+			self.gui.p3_fitapply.setEnabled(True)
+			# outputs timer
+			print('Timestamp:', time(), 'MSG: Peak fitting count timer: %.2f seconds. ' % (time() - self.timer))
+			# updates gui elements
+			self.ranged = False
+			self.gui.g_selector.setCurrentIndex(4)
+			self.doplot()
+		
 		if self.spec.wavelength_iso.size:
+			changestatus(self.gui.sb, 'Please Wait. Performing peak fitting...', 'p', 1)
+			self.gui.p3_fitapply.setEnabled(False)
 			# Iterates over fit table rows to get selected values of shapes and asymmetry
 			fittable_rows = self.gui.p3_fittb.rowCount()
 			shapes = [x.split(')')[1][1:] for x in [self.gui.p3_fittb.cellWidget(y, 1).currentText() for y in range(fittable_rows)]]
 			asymmetry = [float(z) for z in [self.gui.p3_fittb.item(w, 2).text() for w in range(fittable_rows)]]
-			# Run the fit function
-			self.spec.counts_fit = fitpeaks(self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)), self.gui.p3_mean1st.isChecked())
-			self.ranged = False
-			self.gui.g_selector.setCurrentIndex(4)
-			self.doplot()
+			# Run fit function inside pool
+			self.gui.dynamicbox('Fitting peaks', '<b>Please wait</b>. This may take a while...', self.spec.nsamples)
+			worker = Worker(fitpeaks, self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)), self.gui.p3_mean1st.isChecked())
+			worker.signals.progress.connect(self.gui.updatedynamicbox)
+			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Peak fitting finished'))
+			worker.signals.result.connect(result)
+			self.configthread()
+			self.timer = time()
+			self.threadpool.start(worker)
 		else:
 			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
 		
