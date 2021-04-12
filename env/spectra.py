@@ -35,7 +35,7 @@ class Spectra(object):
 		self.counts_iso = array(([None]), dtype=object)
 		self.counts_out = array(([None]), dtype=object)
 		self.fitresults = array(([None]), dtype=object)
-		self.pearson_ref = array(([None]), dtype=object)
+		self.ref = array(([None]), dtype=object)
 		self.pearson = array(([None]), dtype=object)
 		self.pca = array(([None]), dtype=object)
 		self.pls = array(([None]), dtype=object)

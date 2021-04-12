@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 21 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0 alpha 22 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -47,7 +47,7 @@
          <item>
           <widget class="QToolBox" name="operationsMainToolBox">
            <property name="currentIndex">
-            <number>0</number>
+            <number>3</number>
            </property>
            <widget class="QWidget" name="p1">
             <property name="geometry">
@@ -880,7 +880,263 @@
              </item>
             </layout>
            </widget>
-           <widget class="QWidget" name="page_4">
+           <widget class="QWidget" name="p4">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>382</width>
+              <height>384</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Calibration curve</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_9">
+             <item>
+              <layout class="QGridLayout" name="gridLayout_2">
+               <property name="leftMargin">
+                <number>10</number>
+               </property>
+               <property name="rightMargin">
+                <number>10</number>
+               </property>
+               <property name="horizontalSpacing">
+                <number>30</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="p4lB1">
+                 <property name="text">
+                  <string>Peak</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="p4lB2">
+                 <property name="text">
+                  <string>Reference</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QComboBox" name="p4cBox1"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="p4cBox2"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QLabel" name="p4lB3">
+                 <property name="text">
+                  <string>Base parameter:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="p4rB1">
+                 <property name="text">
+                  <string>Areas</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">p4bG1</string>
+                 </attribute>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="p4rB2">
+                 <property name="text">
+                  <string>Intensities</string>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">p4bG1</string>
+                 </attribute>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>17</width>
+                 <height>34</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="Line" name="p4l1">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="p4rB3">
+               <property name="text">
+                <string>Without normalization</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">p4bG2</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <item>
+                <widget class="QRadioButton" name="p4rB4">
+                 <property name="text">
+                  <string>By peak:</string>
+                 </property>
+                 <attribute name="buttonGroup">
+                  <string notr="true">p4bG2</string>
+                 </attribute>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="p4cBox3">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="p4rB5">
+               <property name="text">
+                <string>By every peak</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">p4bG2</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <widget class="Line" name="p4l2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_8">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <item>
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="p4pB1">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Apply</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="p5">
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -893,20 +1149,7 @@
              <string>PCA and PLS Regression</string>
             </attribute>
            </widget>
-           <widget class="QWidget" name="page_5">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>382</width>
-              <height>384</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>Calibration curve</string>
-            </attribute>
-           </widget>
-           <widget class="QWidget" name="page_7">
+           <widget class="QWidget" name="p6">
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -1014,17 +1257,17 @@
            </item>
            <item>
             <property name="text">
+             <string>Calibration curve</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>PCA</string>
             </property>
            </item>
            <item>
             <property name="text">
              <string>PLS</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Calibration curve</string>
             </property>
            </item>
            <item>
@@ -1338,4 +1581,8 @@
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="p4bG1"/>
+  <buttongroup name="p4bG2"/>
+ </buttongroups>
 </ui>

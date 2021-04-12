@@ -24,6 +24,7 @@ import sys
 try:
 	from time import time
 	from os import listdir
+	from pandas import DataFrame
 	from pathlib import Path, PosixPath
 	from env.worker import Worker
 	from env.spectra import Spectra
@@ -91,6 +92,8 @@ class LIBSSA2(QObject):
 		# Page 3
 		self.gui.p3_isoapply.clicked.connect(self.peakiso)
 		self.gui.p3_fitapply.clicked.connect(self.peakfit)
+		# Page 4
+		self.gui.p4_apply.clicked.connect(self.docalibrationcurve)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -114,7 +117,7 @@ class LIBSSA2(QObject):
 			self.gui.mplot(self.spec.wavelength, self.spec.counts_out[idx])
 		elif self.gui.g_current == 'Correlation':
 			self.gui.g.clear()
-			self.gui.g.setTitle('Correlation spectrum for <b>%s</b>' % self.spec.pearson_ref.columns[idx])
+			self.gui.g.setTitle('Correlation spectrum for <b>%s</b>' % self.spec.ref.columns[idx])
 			self.gui.splot(self.spec.wavelength, self.spec.pearson[0][:, idx], False)
 			self.gui.splot(self.spec.wavelength, self.spec.pearson[1], False)
 			self.gui.splot(self.spec.wavelength, self.spec.pearson[2], False)
@@ -178,8 +181,8 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText(str(self.spec.nsamples))
 		elif idx == 2:
 			# Correlation spectrum
-			self.gui.g_current_sb.setRange(1, self.spec.pearson_ref.columns.__len__())
-			self.gui.g_max.setText(str(self.spec.pearson_ref.columns.__len__()))
+			self.gui.g_current_sb.setRange(1, self.spec.ref.columns.__len__())
+			self.gui.g_max.setText(str(self.spec.ref.columns.__len__()))
 		elif idx == 3:
 			# Isolated peaks
 			rvalue = self.spec.nsamples * self.spec.wavelength_iso.__len__()
@@ -191,15 +194,15 @@ class LIBSSA2(QObject):
 			self.gui.g_current_sb.setRange(1, rvalue)
 			self.gui.g_max.setText(str(rvalue))
 		elif idx == 5:
+			# Linear curve
+			self.gui.g_current_sb.setRange(1, 2)
+			self.gui.g_max.setText('2')
+		elif idx == 6:
 			# PCA
 			self.gui.g_current_sb.setRange(1, 5)
 			self.gui.g_max.setText('5')
-		elif idx == 6:
-			# PLS
-			self.gui.g_current_sb.setRange(1, 2)
-			self.gui.g_max.setText('2')
 		elif idx == 7:
-			# Linear curve
+			# PLS
 			self.gui.g_current_sb.setRange(1, 2)
 			self.gui.g_max.setText('2')
 		elif idx == 8:
@@ -215,11 +218,11 @@ class LIBSSA2(QObject):
 		self.mode = 'Multiple' if self.gui.p1_smm.isChecked() else 'Single'
 		# gets folder from file dialog
 		folder = Path(self.gui.guifd(self.parent, 'ged', 'Select spectra folder for %s mode' % self.mode))
-		if folder.as_posix() == '.':
+		if str(folder) == '.':
 			self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
 		else:
 			# lists all in folder
-			samples = listdir(folder.as_posix())
+			samples = listdir(str(folder))
 			samples.sort()
 			samples_pathlib = [folder.joinpath(x) for x in samples]
 			for s in samples_pathlib:
@@ -231,7 +234,7 @@ class LIBSSA2(QObject):
 					break
 			else:
 				self.parent = folder
-				self.gui.p1_fdtext.setText(folder.as_posix())
+				self.gui.p1_fdtext.setText(str(folder))
 				self.gui.p1_fdtext.setEnabled(True)
 				# self.spec.nsamples = len(samples)
 				self.spec.samples = samples
@@ -332,7 +335,7 @@ class LIBSSA2(QObject):
 		else:
 			# gets file from dialog
 			ref_file = Path(self.gui.guifd(self.parent, 'gof', 'Select reference spreadsheet file', 'Excel Spreadsheet Files (*.xls *.xlsx)')[0])
-			if ref_file.as_posix() == '.':
+			if str(ref_file) == '.':
 				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
 			else:
 				ref_spreadsheet = refcorrel(ref_file)
@@ -345,9 +348,12 @@ class LIBSSA2(QObject):
 						                samples=self.spec.nsamples), 'c')
 				else:
 					# enables gui element and saves val
-					self.spec.pearson_ref = ref_spreadsheet
+					self.spec.ref = ref_spreadsheet
 					self.gui.p2_correl_lb.setText('Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name )
 					self.gui.p2_apply_correl.setEnabled(True)
+					# puts values inside reference for calibration curve combo box
+					self.gui.p4_ref.addItems(self.spec.ref.columns)
+					
 	
 	def docorrel(self):
 		# inner function to receive result from worker
@@ -369,9 +375,9 @@ class LIBSSA2(QObject):
 		changestatus(self.gui.sb, 'Please Wait. Creating correlation spectrum...', 'p', 1)
 		self.gui.dynamicbox('Creating correlation spectrum',
 		                    '<b>Please wait</b>. This may take a while...',
-		                    self.spec.pearson_ref.columns.__len__())
+		                    self.spec.ref.columns.__len__())
 		self.gui.p2_apply_correl.setEnabled(False)
-		worker = Worker(domulticorrel, self.spec.wavelength.__len__(), self.spec.counts, self.spec.pearson_ref)
+		worker = Worker(domulticorrel, self.spec.wavelength.__len__(), self.spec.counts, self.spec.ref)
 		worker.signals.progress.connect(self.gui.updatedynamicbox)
 		worker.signals.finished.connect(
 			lambda: self.gui.updatedynamicbox(val=0, update=False,
@@ -443,6 +449,10 @@ class LIBSSA2(QObject):
 			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(4)
 			self.doplot()
+			# prepares elements for page 4
+			self.gui.p4_peak.clear()
+			self.gui.p4_peak.addItems([x[0] for x in self.spec.wavelength_iso])
+			# self.setpeaknorm()
 		
 		if self.spec.wavelength_iso.size:
 			changestatus(self.gui.sb, 'Please Wait. Performing peak fitting...', 'p', 1)
@@ -462,8 +472,27 @@ class LIBSSA2(QObject):
 			self.threadpool.start(worker)
 		else:
 			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
-		
-	
+
+
+	#
+	# Methods for page 4 == Calibration curve
+	#
+	def docalibrationcurve(self):
+		errorstr = 'You must <i>load references</i> <b>and</b> <i>perform peak fitting</i> before using this feature.'
+		try:
+			values = [x[0] for x in self.spec.wavelength_iso]
+			refs = self.spec.ref.columns
+		except (TypeError, AttributeError):
+			self.gui.guimsg('Warning', errorstr, 'w')
+		else:
+			if self.spec.fitresults[0] is None or len(values) < 1:
+				self.gui.guimsg('Warning', errorstr, 'w')
+			else:
+				# now, we have the main basis for the models
+				# what to do will depend on model mode (norm, no norm, all norm)
+				'TODO'
+				
+				
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
 	uif = Path.cwd().joinpath('pic').joinpath('libssa.ui')

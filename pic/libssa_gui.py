@@ -87,6 +87,10 @@ class LIBSsaGUI(object):
 			self.p3_isoadd = self.p3_isorem = self.p3_isoapply = self.p3_fitapply = QtWidgets.QToolButton()
 			self.p3_linear = self.p3_norm = QtWidgets.QCheckBox()
 			self.p3_mean1st = QtWidgets.QRadioButton()
+			# Page 4 == Calibration curve
+			self.p4_peak = self.p4_ref = self.p4_pnorm_combo = QtWidgets.QComboBox()
+			self.p4_areas = self.p4_int = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = QtWidgets.QRadioButton()
+			self.p4_apply = QtWidgets.QPushButton()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -184,10 +188,16 @@ class LIBSsaGUI(object):
 		self.p3_norm = self.mw.findChild(QtWidgets.QCheckBox, 'p3cBox2')
 		self.p3_mean1st = self.mw.findChild(QtWidgets.QRadioButton, 'p3rB1')
 		
-		
-	
 	def loadp4(self):
-		pass
+		self.p4_peak  = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox1')
+		self.p4_ref = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox2')
+		self.p4_areas = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB1')
+		self.p4_int = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB2')
+		self.p4_wnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB3')
+		self.p4_pnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB4')
+		self.p4_pnorm_combo = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox3')
+		self.p4_anorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB5')
+		self.p4_apply = self.mw.findChild(QtWidgets.QPushButton, 'p4pB1')
 	
 	def loadp5(self):
 		pass
@@ -208,6 +218,9 @@ class LIBSsaGUI(object):
 		self.p3_isorem.clicked.connect(lambda: self.changetable(False))
 		self.p3_isotb.cellChanged.connect(self.checktable)
 		self.p3_linear.stateChanged.connect(self.normenable)
+		# p4
+		self.p4_peak.currentIndexChanged.connect(self.setpeaknorm)
+		self.p4_pnorm.toggled.connect(self.curvechanger)
 		# settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
@@ -226,6 +239,12 @@ class LIBSsaGUI(object):
 		else:
 			self.p1_wcol.setEnabled(is_multi)
 			self.p1_ccol.setEnabled(is_multi)
+	
+	def curvechanger(self):
+		if self.p4_pnorm.isChecked():
+			self.p4_pnorm_combo.setEnabled(True)
+		else:
+			self.p4_pnorm_combo.setEnabled(False)
 	
 	def setoutliers(self):
 		self.p2_apply_out.setEnabled(True)
@@ -260,8 +279,12 @@ class LIBSsaGUI(object):
 		elif ci == 4:
 			self.g_current = 'Fit'
 			self.g_op = ['Wavelenght', 'nm', 'Intensity', 'a.u.']
-		# PCA plot
+		# Linear model regression
 		elif ci == 5:
+			self.g_current = 'Linear'
+			self.g_op = ['True value', 'ref', 'Peak intensity', 'a.u.']
+		# PCA plot
+		elif ci == 6:
 			self.g_current = 'PCA'
 			pca = self.g_current_sb.value()
 			if pca == 1:
@@ -275,17 +298,13 @@ class LIBSsaGUI(object):
 			elif pca == 5:
 				self.g_op = ['Attributes', 'nm', 'PCA Loadings', 'a.u.']
 		# PLS regression
-		elif ci == 6:
+		elif ci == 7:
 			self.g_current = 'PLS'
 			pls = self.g_current_sb.value()
 			if pls == 1:
 				self.g_op = ['True value', 'ref', 'Predicted values', 'r.u.']
 			elif pls == 2:
 				self.g_op = ['Predicted values', 'r.u.', 'Amount', 'r.u.']
-		# Linear model regression
-		elif ci == 7:
-			self.g_current = 'Linear'
-			self.g_op = ['True value', 'ref', 'Peak intensity', 'a.u.']
 		# Saha-Boltzmann energy plot
 		elif ci == 8:
 			self.g_current = 'Temperature'
@@ -630,8 +649,12 @@ class LIBSsaGUI(object):
 			# Locks editing name
 			self.p3_fittb.item(r, 0).setFlags(Qt.ItemIsEditable)
 		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-		
 	
+	def setpeaknorm(self):
+		peakitems = [self.p4_peak.itemText(i) for i in range(self.p4_peak.count()) if self.p4_peak.itemText(i) != self.p4_peak.currentText()]
+		self.p4_pnorm_combo.clear()
+		self.p4_pnorm_combo.addItems(peakitems)
+		
 #
 # Extra functions
 #
