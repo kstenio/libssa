@@ -19,28 +19,98 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# imports
+# Imports
 from numpy import array
+from pandas import DataFrame
+from pathlib import Path
+from PySide2.QtCore import QObject, QRunnable, Signal, Slot
+from traceback import print_exc, format_exc
 
+
+# Signals for Qt worker
+class WorkerSignals(QObject):
+	def __init__(self):
+		super(WorkerSignals, self).__init__()
+	# Types of signals for LIBSsa
+	progress = Signal(int)
+	error = Signal(tuple)
+	result = Signal(object)
+	finished = Signal()
+
+
+# Main QThreadPool worker
+class Worker(QRunnable):
+	def __init__(self, fn, *args, **kwargs):
+		super(Worker, self).__init__()
+		# Base args
+		self.fn = fn
+		self.args = args
+		self.kwargs = kwargs
+		self.signals = WorkerSignals()
+		# Adds callback (progress) to kwargs
+		self.kwargs['progress'] = self.signals.progress
+	
+	@Slot(name='run')
+	def run(self):
+		try:
+			# Normal run of function
+			result = self.fn(*self.args, **self.kwargs)
+		except Exception as ex:
+			# Return error message as signal
+			print(f'An error of type {type(ex).__name__} occurred.\nMSG: {ex}\n')
+			print_exc()
+			self.signals.error.emit((type(ex).__name__, str(ex)))
+		else:
+			# Returns result of functions
+			self.signals.result.emit(result)
+		finally:
+			# Sends finished signal
+			self.signals.finished.emit()
+
+
+# LIBSsa main spectra class
 class Spectra(object):
 	"""
 	LIBSsa: Spectra
 	
-	Class for store and organize entire LIBSsa environment.
+	Class for storing and organizing entire LIBSsa environment.
+	
+	It is divided in:
+	 properties = size, sample names and file
+	 base data = wavelengths and counts/intensities
+	 references = values for correlation and models
+	 models = values that store models properties and predictions
+	 plasma information = for temperature and plasma density
 	"""
 	def __init__(self):
-		self.wavelength = array(([None]), dtype=object)
-		self.wavelength_iso  = array(([None]), dtype=object)
-		self.counts = array(([None]), dtype=object)
-		self.counts_iso = array(([None]), dtype=object)
-		self.counts_out = array(([None]), dtype=object)
-		self.fitresults = array(([None]), dtype=object)
-		self.ref = array(([None]), dtype=object)
-		self.pearson = array(([None]), dtype=object)
-		self.pca = array(([None]), dtype=object)
-		self.pls = array(([None]), dtype=object)
-		self.linear = array(([None]), dtype=object)
-		self.temperature = array(([None]), dtype=object)
-		self.nsamples = 0
-		self.samples = [None]
-		self.samples_path = [None]
+		# Base element
+		self.base = array([None], dtype=object)
+		# Sample set and properties
+		self.samples = {'Count': 0, 'Name': tuple([None]), 'Path': tuple([Path()])}
+		# Base spectra elements: Wavelengths and Counts
+		self.wavelength = {'Raw': self.base, 'Isolated': self.base}
+		self.intensities = {'Count': 0, 'Raw': self.base, 'Isolated': self.base, 'Outliers': self.base, 'Removed': self.base}
+		# Models and references
+		self.ref = DataFrame()
+		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
+		self.models = {'Linear': self.base, 'PCA': self.base, 'PLS': self.base}
+		# Results from peak fitting
+		self.fit = {'Count': 0, 'Elements': self.base,
+		            'Areas': self.base, 'Width': self.base, 'Height': self.base,
+		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,
+		            'Results': self.base}
+		# Plasma properties
+		self.plasma = {'Temperature': self.base, 'Ne': self.base}
+	
+	def clear(self):
+		self.__init__()
+	
+	def save(self):
+		pass
+	
+	def load(self):
+		pass
+
+# a = Spectra()
+# a.samples['Count'] = 1
+# print(a.samples['Count'])

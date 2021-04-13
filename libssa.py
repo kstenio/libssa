@@ -26,8 +26,8 @@ try:
 	from os import listdir
 	from pandas import DataFrame
 	from pathlib import Path, PosixPath
-	from env.worker import Worker
-	from env.spectra import Spectra
+	# from env.worker import Worker
+	from env.spectra import Spectra, Worker
 	from pic.libssa_gui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from env.functions import isopeaks, fitpeaks
@@ -110,27 +110,27 @@ class LIBSSA2(QObject):
 		idx = self.gui.g_current_sb.value() - 1
 		# Perform plot based on actual settings
 		if self.gui.g_current == 'Raw':
-			self.gui.g.setTitle('Raw LIBS spectra from sample <b>%s</b>' % self.spec.samples_path[idx].stem)
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			self.gui.g.setTitle('Raw LIBS spectra from sample <b>%s</b>' % self.spec.samples['Name'][idx])
+			self.gui.mplot(self.spec.wavelength['Raw'], self.spec.intensities['Raw'][idx])
 		elif self.gui.g_current == 'Outliers':
-			self.gui.g.setTitle('Outliers removed LIBS spectra from sample <b>%s</b>' % self.spec.samples_path[idx].stem)
-			self.gui.mplot(self.spec.wavelength, self.spec.counts_out[idx])
+			self.gui.g.setTitle('Outliers removed LIBS spectra from sample <b>%s</b>' % self.spec.samples['Name'][idx])
+			self.gui.mplot(self.spec.wavelength['Raw'], self.spec.intensities['Outliers'][idx])
 		elif self.gui.g_current == 'Correlation':
 			self.gui.g.clear()
 			self.gui.g.setTitle('Correlation spectrum for <b>%s</b>' % self.spec.ref.columns[idx])
-			self.gui.splot(self.spec.wavelength, self.spec.pearson[0][:, idx], False)
-			self.gui.splot(self.spec.wavelength, self.spec.pearson[1], False)
-			self.gui.splot(self.spec.wavelength, self.spec.pearson[2], False)
+			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Data'][:, idx], False)
+			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Full-Mean'], False)
+			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Zeros'], False)
 		elif self.gui.g_current == 'Isolated':
-			i = idx // self.spec.nsamples
-			j = idx - (i * self.spec.nsamples)
+			i = idx // self.spec.samples['Count']
+			j = idx - (i * self.spec.samples['Count'])
 			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
 			self.gui.mplot(self.spec.wavelength_iso[i][2], self.spec.counts_iso[i][j])
 		elif self.gui.g_current == 'Fit':
 			self.gui.g.clear()
 			self.gui.g.addLegend()
-			i = idx // self.spec.nsamples
-			j = idx - (i * self.spec.nsamples)
+			i = idx // self.spec.samples['Count']
+			j = idx - (i * self.spec.samples['Count'])
 			fitresults = self.spec.fitresults[i][j]
 			self.gui.g.setTitle( 'Fitted peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
 			self.gui.fitplot(fitresults)
@@ -173,24 +173,24 @@ class LIBSSA2(QObject):
 		# Sets correct range based on current graph
 		if idx == 0:
 			# Raw spectra
-			self.gui.g_current_sb.setRange(1, self.spec.nsamples)
-			self.gui.g_max.setText(str(self.spec.nsamples))
+			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
+			self.gui.g_max.setText(str(self.spec.samples['Count']))
 		elif idx == 1:
 			# Spectra after having outliers removed
-			self.gui.g_current_sb.setRange(1, self.spec.nsamples)
-			self.gui.g_max.setText(str(self.spec.nsamples))
+			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
+			self.gui.g_max.setText(str(self.spec.samples['Count']))
 		elif idx == 2:
 			# Correlation spectrum
 			self.gui.g_current_sb.setRange(1, self.spec.ref.columns.__len__())
 			self.gui.g_max.setText(str(self.spec.ref.columns.__len__()))
 		elif idx == 3:
 			# Isolated peaks
-			rvalue = self.spec.nsamples * self.spec.wavelength_iso.__len__()
+			rvalue = self.spec.samples['Count'] * self.spec.wavelength_iso.__len__()
 			self.gui.g_current_sb.setRange(1, rvalue)
 			self.gui.g_max.setText(str(rvalue))
 		elif idx == 4:
 			# Fitted peaks
-			rvalue = self.spec.nsamples * self.spec.wavelength_iso.__len__()
+			rvalue = self.spec.samples['Count'] * self.spec.wavelength_iso.__len__()
 			self.gui.g_current_sb.setRange(1, rvalue)
 			self.gui.g_max.setText(str(rvalue))
 		elif idx == 5:
@@ -207,8 +207,8 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText('2')
 		elif idx == 8:
 			# Saha-Boltzmann plot
-			self.gui.g_current_sb.setRange(1, self.spec.nsamples)
-			self.gui.g_max.setText(str(self.spec.nsamples))
+			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
+			self.gui.g_max.setText(str(self.spec.samples['Count']))
 			
 	#
 	# Methods for page 1 == Load spectra
@@ -222,7 +222,7 @@ class LIBSSA2(QObject):
 			self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
 		else:
 			# lists all in folder
-			samples = listdir(str(folder))
+			samples = listdir(folder)
 			samples.sort()
 			samples_pathlib = [folder.joinpath(x) for x in samples]
 			for s in samples_pathlib:
@@ -230,22 +230,25 @@ class LIBSSA2(QObject):
 					self.gui.guimsg('Error', 'Wrong file structure for <b>%s</b> mode.' % self.mode, 'c')
 					self.gui.p1_fdtext.setText('')
 					self.gui.p1_fdtext.setEnabled(False)
-					self.spec.samples = [None]
+					self.spec.samples = self.spec.base
 					break
 			else:
+				# saves variables for further steps
 				self.parent = folder
+				self.spec.samples['Count'] = len(samples)
+				self.spec.samples['Name'] = tuple([x.stem for x in samples_pathlib])
+				self.spec.samples['Path'] = tuple(samples_pathlib)
+				# updates gui elements
 				self.gui.p1_fdtext.setText(str(folder))
 				self.gui.p1_fdtext.setEnabled(True)
-				# self.spec.nsamples = len(samples)
-				self.spec.samples = samples
-				self.spec.samples_path = samples_pathlib
 	
 	def spload(self):
 		# inner function to receive result from worker
 		def result(returned):
 			# saves result
-			self.spec.wavelength, self.spec.counts = returned
-			self.spec.nsamples = len(self.spec.samples)
+			self.spec.wavelength['Raw'] = returned[0]
+			self.spec.intensities['Raw'] = returned[1]
+			self.spec.intensities['Count'] = self.spec.samples['Count']
 			# enable gui elements
 			self.gui.graphenable(True)
 			self.gui.p1_ldspectra.setEnabled(True)
@@ -272,19 +275,19 @@ class LIBSSA2(QObject):
 			runerror_message = 'Could not import data properly! ' \
 			                   'Try recheck a spectrum file and change import parameters (mostly <b>header</b> or <b>delimiter</b>).' \
 			                   '<p>Error type: <b><i><u>%s</u></i></b></p>' \
-			                   '<p>Error message:<br><b>%s</b></p>' % (runerror[0].__name__, str(runerror[1]))
+			                   '<p>Error message:<br><b>%s</b></p>' % (runerror[0], runerror[1])
 			self.gui.guimsg('Error!', runerror_message, 'c')
 			
 		# the method itself
-		if not self.spec.samples[0]:
+		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error', 'Please select <b>spectra folder</b> in order to load spectra.', 'w')
 		else:
 			# disable load button
 			self.gui.p1_ldspectra.setEnabled(False)
 			# configures worker
 			changestatus(self.gui.sb, 'Please Wait. Loading spectra...', 'p', 1)
-			self.gui.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.samples.__len__())
-			worker = Worker(load, self.spec.samples_path, self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value())
+			self.gui.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.samples['Count'])
+			worker = Worker(load, self.spec.samples['Path'], self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value())
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Spectra loaded into LIBSsa'))
 			worker.signals.result.connect(result)
@@ -300,7 +303,7 @@ class LIBSSA2(QObject):
 		# inner function to receive result from worker
 		def result(returned):
 			# saves result
-			self.spec.counts_out = returned
+			self.spec.intensities['Outliers'], self.spec.intensities['Removed'] = returned
 			# enable apply button
 			self.gui.p2_apply_out.setEnabled(True)
 			# outputs timer
@@ -311,7 +314,7 @@ class LIBSSA2(QObject):
 			self.doplot()
 		
 		# main method itself
-		if self.spec.nsamples <= 0:
+		if not self.spec.intensities['Count']:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
 		else:
 			# defines type of outliers removal (and selected criteria)
@@ -319,9 +322,9 @@ class LIBSSA2(QObject):
 			criteria = self.gui.p2_dot_c.value() if self.gui.p2_dot.isChecked() else self.gui.p2_mad_c.value()
 			# now, setup some configs and initialize worker
 			changestatus(self.gui.sb, 'Please Wait. Removing outliers...', 'p', 1)
-			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, self.spec.nsamples)
+			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, self.spec.intensities['Count'])
 			self.gui.p2_apply_out.setEnabled(False)
-			worker = Worker(outliers, out_type, criteria, self.spec.counts)
+			worker = Worker(outliers, out_type, criteria, self.spec.intensities)
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Outliers removed from set'))
 			worker.signals.result.connect(result)
@@ -330,22 +333,22 @@ class LIBSSA2(QObject):
 			self.threadpool.start(worker)
 	
 	def loadrefcorrel(self):
-		if self.spec.nsamples <= 0:
+		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
 		else:
 			# gets file from dialog
 			ref_file = Path(self.gui.guifd(self.parent, 'gof', 'Select reference spreadsheet file', 'Excel Spreadsheet Files (*.xls *.xlsx)')[0])
 			if str(ref_file) == '.':
-				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+				self.gui.guimsg('Error', 'Cancelled by the user.', 'i')
 			else:
 				ref_spreadsheet = refcorrel(ref_file)
-				if ref_spreadsheet.index.__len__() != self.spec.nsamples:
+				if ref_spreadsheet.index.size != self.spec.samples['Count']:
 					self.gui.guimsg('Error',
 					                'Total of rows in spreadsheet: <b>{rows}</b><br>'
 					                'Total of samples in sample set: <b>{samples}</b><br><br>'
 					                'Number of rows <b>must</b> be the same as total of samples!'.format(
 						                rows=ref_spreadsheet.index.__len__(),
-						                samples=self.spec.nsamples), 'c')
+						                samples=self.spec.samples['Count']), 'c')
 				else:
 					# enables gui element and saves val
 					self.spec.ref = ref_spreadsheet
@@ -354,12 +357,13 @@ class LIBSSA2(QObject):
 					# puts values inside reference for calibration curve combo box
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
 					
-	
 	def docorrel(self):
 		# inner function to receive result from worker
 		def result(returned):
 			# saves result
-			self.spec.pearson = returned
+			self.spec.pearson['Data'] = returned[0]
+			self.spec.pearson['Full-Mean'] = returned[1]
+			self.spec.pearson['Zeros'] = returned[2]
 			# enable apply button
 			self.gui.p2_apply_correl.setEnabled(True)
 			# outputs timer
@@ -377,7 +381,7 @@ class LIBSSA2(QObject):
 		                    '<b>Please wait</b>. This may take a while...',
 		                    self.spec.ref.columns.__len__())
 		self.gui.p2_apply_correl.setEnabled(False)
-		worker = Worker(domulticorrel, self.spec.wavelength.__len__(), self.spec.counts, self.spec.ref)
+		worker = Worker(domulticorrel, self.spec.wavelength['Raw'].size, self.spec.intensities['Raw'], self.spec.ref)
 		worker.signals.progress.connect(self.gui.updatedynamicbox)
 		worker.signals.finished.connect(
 			lambda: self.gui.updatedynamicbox(val=0, update=False,
@@ -462,7 +466,7 @@ class LIBSSA2(QObject):
 			shapes = [x.split(')')[1][1:] for x in [self.gui.p3_fittb.cellWidget(y, 1).currentText() for y in range(fittable_rows)]]
 			asymmetry = [float(z) for z in [self.gui.p3_fittb.item(w, 2).text() for w in range(fittable_rows)]]
 			# Run fit function inside pool
-			self.gui.dynamicbox('Fitting peaks', '<b>Please wait</b>. This may take a while...', self.spec.nsamples)
+			self.gui.dynamicbox('Fitting peaks', '<b>Please wait</b>. This may take a while...', self.spec.samples['Count'])
 			worker = Worker(fitpeaks, self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)), self.gui.p3_mean1st.isChecked())
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Peak fitting finished'))

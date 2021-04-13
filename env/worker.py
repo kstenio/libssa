@@ -19,12 +19,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# imports
+# Imports
 from sys import exc_info
 from traceback import print_exc, format_exc
 from PySide2.QtCore import QObject, QRunnable, Signal, Slot
 
-# signals for Qt worker
+# Signals for Qt worker
 class WorkerSignals(QObject):
 	# types of signals for LIBSsa
 	finished = Signal()

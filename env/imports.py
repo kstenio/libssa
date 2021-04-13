@@ -29,7 +29,7 @@ from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, m
 from scipy.linalg import norm
 from scipy.stats import pearsonr
 
-def load(folder: List[Path], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
+def load(folder: Tuple[Path], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
 	"""
 	This method loads spectra and returns global variables wavelength and counts
 	:param folder: PosixPath list of input folder/files (sorted)
@@ -100,39 +100,48 @@ def load(folder: List[Path], mode: str, delim: str, header: int, wcol: int, ccol
 	else:
 		raise ValueError('Wrong reading mode.')
 
-def outliers(mode: str, criteria: float, counts: ndarray, progress: Signal) -> ndarray:
+def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> Tuple[ndarray, ndarray]:
 	# creates counts new vector
-	out_counts = array(([None] * counts.__len__()), dtype=object)
+	out_counts = array(([None] * counts['Count']), dtype=object)
+	removed_report = []
 	if mode == 'SAM':
-		for i in range(counts.__len__()):
-			out_average = mean(counts[i], 1)
+		for i in range(counts['Count']):
+			out_average = mean(counts['Raw'][i], 1)
 			out_counts[i] = out_average
-			for j in range(counts[i].shape[1]):
-				costheta = dot(out_average, counts[i][:, j]) / ( norm(out_average)*norm(counts[i][:, j]) )
+			removed = [0, counts['Raw'][i].shape[1]]
+			for j in range(counts['Raw'][i].shape[1]):
+				costheta = dot(out_average, counts['Raw'][i][:, j]) / ( norm(out_average)*norm(counts['Raw'][i][:, j]) )
 				if costheta >= criteria:
-					out_counts[i] = column_stack((out_counts[i], counts[i][:, j]))
+					out_counts[i] = column_stack((out_counts[i], counts['Raw'][i][:, j]))
+				else:
+					removed[0] += 1
 			out_counts[i] = out_counts[i][:, 1:]
+			removed_report.append(removed)
 			progress.emit(i)
 	elif mode == 'MAD':
 		b = 1.4826
-		for i in range(counts.__len__()):
+		for i in range(counts['Count']):
 			# calculates MAD for each wavelength
-			ith_mad_vector = zeros(counts[i].shape[0])
-			ith_median = median(counts[i], 1)
-			ith_mad_vector = b * median(nabs(subtract(counts[i].T, ith_median).T), 1)
+			ith_mad_vector = zeros(counts['Raw'][i].shape[0])
+			ith_median = median(counts['Raw'][i], 1)
+			ith_mad_vector = b * median(nabs(subtract(counts['Raw'][i].T, ith_median).T), 1)
 			# now, check if each shoot is or isn't an outlier
-			zero_counts = zeros(counts[i].shape[0])
-			bool_checker = array([criteria] * counts[i].shape[0])
-			for k in range(counts[i].shape[1]):
-				criteria_ = (counts[i][:, k] - ith_median) / ith_mad_vector
+			zero_counts = zeros(counts['Raw'][i].shape[0])
+			bool_checker = array([criteria] * counts['Raw'][i].shape[0])
+			removed = [0, counts['Raw'][i].shape[1]]
+			for k in range(counts['Raw'][i].shape[1]):
+				criteria_ = (counts['Raw'][i][:, k] - ith_median) / ith_mad_vector
 				criteria_bool = nabs(criteria_) < bool_checker
-				if criteria_bool.sum() / counts[i].shape[0] >= 0.95:
-					zero_counts = column_stack((zero_counts, counts[i][:, k]))
+				if criteria_bool.sum() / counts['Raw'][i].shape[0] >= 0.95:
+					zero_counts = column_stack((zero_counts, counts['Raw'][i][:, k]))
+				else:
+					removed[0] += 1
 			# saves corrected values
 			out_counts[i] = zero_counts[:, 1:]
+			removed_report.append(removed)
 			progress.emit(i)
 	# return result
-	return out_counts
+	return out_counts, array(removed_report)
 
 def refcorrel(file: Path) -> DataFrame:
 	return read_excel(file)
