@@ -110,22 +110,24 @@ class LIBSSA2(QObject):
 		idx = self.gui.g_current_sb.value() - 1
 		# Perform plot based on actual settings
 		if self.gui.g_current == 'Raw':
-			self.gui.g.setTitle('Raw LIBS spectra from sample <b>%s</b>' % self.spec.samples['Name'][idx])
+			self.gui.g.setTitle(f"Raw LIBS spectra from sample <b>{self.spec.samples['Name'][idx]}</b>")
 			self.gui.mplot(self.spec.wavelength['Raw'], self.spec.intensities['Raw'][idx])
 		elif self.gui.g_current == 'Outliers':
-			self.gui.g.setTitle('Outliers removed LIBS spectra from sample <b>%s</b>' % self.spec.samples['Name'][idx])
+			self.gui.g.setTitle(f"Outliers removed LIBS spectra from sample <b>{self.spec.samples['Name'][idx]}</b>")
 			self.gui.mplot(self.spec.wavelength['Raw'], self.spec.intensities['Outliers'][idx])
 		elif self.gui.g_current == 'Correlation':
 			self.gui.g.clear()
-			self.gui.g.setTitle('Correlation spectrum for <b>%s</b>' % self.spec.ref.columns[idx])
+			self.gui.g.setTitle(f"Correlation spectrum for <b>{self.spec.ref.columns[idx]}</b>")
 			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Data'][:, idx], False)
 			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Full-Mean'], False)
 			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Zeros'], False)
 		elif self.gui.g_current == 'Isolated':
+			# i == index for elements
+			# j == index for samples
 			i = idx // self.spec.samples['Count']
 			j = idx - (i * self.spec.samples['Count'])
-			self.gui.g.setTitle('Isolated peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
-			self.gui.mplot(self.spec.wavelength_iso[i][2], self.spec.counts_iso[i][j])
+			self.gui.g.setTitle(f"Isolated peak of <b>{self.spec.isolated['Element'][i]}</b> for sample <b>{self.spec.samples['Name'][j]}</b>")
+			self.gui.mplot(self.spec.wavelength['Isolated'][i], self.spec.intensities['Isolated'][i][j])
 		elif self.gui.g_current == 'Fit':
 			self.gui.g.clear()
 			self.gui.g.addLegend()
@@ -185,12 +187,12 @@ class LIBSSA2(QObject):
 			self.gui.g_max.setText(str(self.spec.ref.columns.__len__()))
 		elif idx == 3:
 			# Isolated peaks
-			rvalue = self.spec.samples['Count'] * self.spec.wavelength_iso.__len__()
+			rvalue = self.spec.samples['Count'] * self.spec.isolated['Count']
 			self.gui.g_current_sb.setRange(1, rvalue)
 			self.gui.g_max.setText(str(rvalue))
 		elif idx == 4:
 			# Fitted peaks
-			rvalue = self.spec.samples['Count'] * self.spec.wavelength_iso.__len__()
+			rvalue = self.spec.samples['Count'] * self.spec.isolated['Count']
 			self.gui.g_current_sb.setRange(1, rvalue)
 			self.gui.g_max.setText(str(rvalue))
 		elif idx == 5:
@@ -397,8 +399,14 @@ class LIBSSA2(QObject):
 	def peakiso(self):
 		# inner function to receive result from worker
 		def result(returned):
-			# saves result
-			self.spec.wavelength_iso, self.spec.counts_iso = returned
+			# Saves returned values into Spectra object
+			self.spec.wavelength['Isolated'] = returned[0]
+			self.spec.intensities['Isolated'] = returned[1]
+			self.spec.isolated['Element'] = returned[2]
+			self.spec.isolated['Lower'] = returned[3]
+			self.spec.isolated['Upper'] = returned[4]
+			self.spec.isolated['Center'] = returned[5]
+			self.spec.isolated['Count'] = returned[2].size
 			# enable apply button
 			self.gui.p3_isoapply.setEnabled(True)
 			# outputs timer
@@ -412,10 +420,12 @@ class LIBSSA2(QObject):
 		# Checks if iso table is complete
 		if self.gui.p3_isotb.rowCount() > 0:
 			# Checks if values are OK
-			if self.gui.checktablevalues(self.spec.wavelength[0], self.spec.wavelength[-1]):
+			if self.gui.checktablevalues(self.spec.wavelength['Raw'][0], self.spec.wavelength['Raw'][-1]):
+				# Update some gui elements
 				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
 				self.gui.p3_isoapply.setEnabled(False)
-				counts = self.spec.counts_out if len(self.spec.counts_out) > 1 else self.spec.counts
+				# Defines if will use raw or outliers for isolation
+				counts = self.spec.intensities['Outliers'] if self.spec.intensities['Outliers'].size > 1 else self.spec.intensities['Raw']
 				elements, lower, upper, center = [], [], [], []
 				for tb in range(self.gui.p3_isotb.rowCount()):
 					elements.append(self.gui.p3_isotb.item(tb, 0).text())
@@ -428,7 +438,7 @@ class LIBSSA2(QObject):
 					else:
 						center.append([float(self.gui.p3_isotb.item(tb, 3).text())])
 				self.gui.dynamicbox('Isolating peaks', '<b>Please wait</b>. This may take a while...', len(elements))
-				worker = Worker(isopeaks, self.spec.wavelength, counts, elements, lower, upper, center, self.gui.p3_linear.isChecked(), self.gui.p3_norm.isChecked())
+				worker = Worker(isopeaks, self.spec.wavelength['Raw'], counts, elements, lower, upper, center, self.gui.p3_linear.isChecked(), self.gui.p3_norm.isChecked())
 				worker.signals.progress.connect(self.gui.updatedynamicbox)
 				worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Peak isolation finished'))
 				worker.signals.result.connect(result)
@@ -443,6 +453,7 @@ class LIBSSA2(QObject):
 	def peakfit(self):
 		# inner function to receive result from worker
 		def result(returned):
+			print(returned)
 			# saves result
 			self.spec.fitresults = returned
 			# enable apply button
@@ -458,7 +469,10 @@ class LIBSSA2(QObject):
 			self.gui.p4_peak.addItems([x[0] for x in self.spec.wavelength_iso])
 			# self.setpeaknorm()
 		
-		if self.spec.wavelength_iso.size:
+		if not self.spec.isolated['Count']:
+			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
+		else:
+			# updates gui elements
 			changestatus(self.gui.sb, 'Please Wait. Performing peak fitting...', 'p', 1)
 			self.gui.p3_fitapply.setEnabled(False)
 			# Iterates over fit table rows to get selected values of shapes and asymmetry
@@ -467,15 +481,13 @@ class LIBSSA2(QObject):
 			asymmetry = [float(z) for z in [self.gui.p3_fittb.item(w, 2).text() for w in range(fittable_rows)]]
 			# Run fit function inside pool
 			self.gui.dynamicbox('Fitting peaks', '<b>Please wait</b>. This may take a while...', self.spec.samples['Count'])
-			worker = Worker(fitpeaks, self.spec.wavelength_iso, self.spec.counts_iso, list(zip(shapes, asymmetry)), self.gui.p3_mean1st.isChecked())
+			worker = Worker(fitpeaks, self.spec.wavelength['Isolated'], self.spec.intensities['Isolated'], shapes, asymmetry, self.spec.isolated, self.gui.p3_mean1st.isChecked())
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Peak fitting finished'))
 			worker.signals.result.connect(result)
 			self.configthread()
 			self.timer = time()
 			self.threadpool.start(worker)
-		else:
-			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
 
 
 	#

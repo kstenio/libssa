@@ -89,16 +89,17 @@ class Spectra(object):
 		self.samples = {'Count': 0, 'Name': tuple([None]), 'Path': tuple([Path()])}
 		# Base spectra elements: Wavelengths and Counts
 		self.wavelength = {'Raw': self.base, 'Isolated': self.base}
-		self.intensities = {'Count': 0, 'Raw': self.base, 'Isolated': self.base, 'Outliers': self.base, 'Removed': self.base}
+		self.intensities = {'Count': 0, 'Raw': self.base, 'Outliers': self.base, 'Removed': self.base, 'Isolated': self.base}
 		# Models and references
 		self.ref = DataFrame()
 		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
 		self.models = {'Linear': self.base, 'PCA': self.base, 'PLS': self.base}
-		# Results from peak fitting
-		self.fit = {'Count': 0, 'Elements': self.base,
-		            'Areas': self.base, 'Width': self.base, 'Height': self.base,
+		# Results from isolation and peak fitting
+		self.isolated = {'Count': 0, 'Element': self.base,
+		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base}
+		self.fit = {'Area': self.base, 'Width': self.base, 'Height': self.base,
 		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,
-		            'Results': self.base}
+		            'Data': self.base, 'Total': self.base}
 		# Plasma properties
 		self.plasma = {'Temperature': self.base, 'Ne': self.base}
 	
