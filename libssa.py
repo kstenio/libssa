@@ -28,7 +28,7 @@ try:
 	from pathlib import Path, PosixPath
 	# from env.worker import Worker
 	from env.spectra import Spectra, Worker
-	from pic.libssa_gui import LIBSsaGUI, changestatus
+	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from env.functions import isopeaks, fitpeaks
 	from PySide2.QtGui import QKeyEvent
@@ -136,7 +136,7 @@ class LIBSSA2(QObject):
 			k = self.spec.fit
 			self.gui.g.setTitle(f"Fitted peak of <b>{self.spec.isolated['Element'][i]}</b> for sample <b>{self.spec.samples['Name'][j]}</b>")
 			self.gui.fitplot(self.spec.wavelength['Isolated'][i],
-							 k['Area'][i][j], k['Width'][i][j],
+							 k['Area'][i][j], k['AreaSTD'][i][j], k['Width'][i][j],
 							 k['Height'][i][j], k['Shape'][i],
 							 k['NFev'][i][j], k['Convergence'][i][j],
 							 k['Data'][i][j], k['Total'][i][j])
@@ -467,15 +467,16 @@ class LIBSSA2(QObject):
 			self.spec.fit['Height'] = returned[4]
 			self.spec.fit['Width'] = returned[5]
 			self.spec.fit['Area'] = returned[6]
-			self.spec.fit['Shape'] = returned[7]
-			print('NFev', self.spec.fit['NFev'])
-			print('Convergence',self.spec.fit['Convergence'])
-			print('Data',self.spec.fit['Data'])
-			print('Total',self.spec.fit['Total'])
-			print('Height',self.spec.fit['Height'])
-			print('Width',self.spec.fit['Width'])
-			print('Area',self.spec.fit['Area'])
-			print('Shape',self.spec.fit['Shape'])
+			self.spec.fit['AreaSTD'] = returned[7]
+			self.spec.fit['Shape'] = returned[8]
+			# print('NFev', self.spec.fit['NFev'])
+			# print('Convergence',self.spec.fit['Convergence'])
+			# print('Data',self.spec.fit['Data'])
+			# print('Total',self.spec.fit['Total'])
+			# print('Height',self.spec.fit['Height'])
+			# print('Width',self.spec.fit['Width'])
+			# print('Area',self.spec.fit['Area'])
+			# print('Shape',self.spec.fit['Shape'])
 			# enable apply button
 			self.gui.p3_fitapply.setEnabled(True)
 			# outputs timer

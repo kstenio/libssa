@@ -131,7 +131,7 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 	convegences = zeros((isolated['Count'], isolated['NSamples']), dtype=bool)
 	data = [zeros((isolated['NSamples'], iw.size, 2), dtype=float) for iw in iso_wavelengths]
 	total = [zeros((isolated['NSamples'], 1000, c.size + 1), dtype=float) if s != 'Trapezoidal rule' else zeros((isolated['NSamples'], iw.size, c.size + 1), dtype=float) for c, s, iw in zip(isolated['Center'], shape, iso_wavelengths)]
-	[areas, widths, heights] = [[zeros((isolated['NSamples'], c.size), dtype=float) for c in isolated['Center']] for val in range(3)]
+	[areas, areas_std, widths, heights] = [[zeros((isolated['NSamples'], c.size), dtype=float) for c in isolated['Center']] for val in range(4)]
 	# defines values for tolerances
 	tols = [1e-7, 1e-7, 1e-7, 1000]
 	# variable: self.fit = {'Area': self.base, 'Width': self.base, 'Height': self.base,
@@ -173,12 +173,8 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 				areas[i][j] = results[4]
 			else:
 				# If mean1st is False, area1st is select, and so we will need to iterates over each individual spectrum
-				average_spectrum, shoots, result, residual, npeaks = mean(ci, axis=1), ci.shape[1], None, None, len(center)
-				[nfev, conv] = [zeros(shoots) for z in range(2)]
-				if shape[i] != 'Trapezoidal rule':
-					[height, width, area] = [zeros((shoots, npeaks)) for z in range(3)]
-				else:
-					[height, width, area] = [zeros(shoots) for z in range(3)]
+				average_spectrum, shoots, npeaks = mean(ci, axis=1), ci.shape[1], len(center)
+				k_data, k_total, k_heights, k_widths, k_areas = None, None, [], [], []
 				for k in range(shoots):
 					guess = fit_guess(x=w, y=ci[:, k],
 					                  peaks=npeaks, center=center,
@@ -194,47 +190,30 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 					#   [2] results -> h, w, a (size depends on number of peaks)
 					results = fit_results(w, average_spectrum, k_optimized, shape[i], len(center), scd)
 					# Saves some values
-					nfev[k], conv[k] = k_optimized.nfev, k_optimized.success
-					if shape[i] != 'Trapezoidal rule':
-						for l in range(npeaks):
-							height[k, l], width[k, l], area[k, l] = results[2][l]
-					else:
-						height[k], width[k], area[k] = results[2]
+					nfevs[i, j] += k_optimized.nfev
+					convegences[i, j] += k_optimized.success
+					k_heights.append(results[2])
+					k_widths.append(results[3])
+					k_areas.append(results[4])
 					if k == 0:
 						# 1st loop
-						residual = results[0][:, 1]
-						result = results[1]
+						k_data = results[0]
+						k_total = results[1]
 					else:
 						# other loops
-						residual += results[0][:, 1]
-						for l in range(results[1].shape[1]):
-							result[:, l] += results[1][:, l]
+						k_data += results[0]
+						k_total += results[1]
 				# Outside the k-loop, we need to reorganize data for saving
-				[nfev_avg, conv_avg] = [(mean(x).round(2), std(x).round(2)) for x in [nfev, conv]]
-				[height_avg, width_avg, area_avg] = [(mean(x, axis=0), std(x, axis=0)) for x in [height, width, area]]
-				h, wi, a = [], [], []
-				for l in range(npeaks):
-					if shape[i] != 'Trapezoidal rule':
-						h.append((height_avg[0][l], height_avg[1][l]))
-						wi.append((width_avg[0][l], width_avg[1][l]))
-						a.append((area_avg[0][l], area_avg[1][l]))
-					else:
-						h.append((height_avg[0], height_avg[1]))
-						wi.append((width_avg[0], width_avg[1]))
-						a.append((area_avg[0], area_avg[1]))
-						break
-				residual /= shoots
-				result /= shoots
-				# Finally, appends results into the return variables
-				nfevs.append(nfev_avg)
-				convegences(conv_avg)
-				data.append(column_stack((average_spectrum, residual)))
-				total.append(result)
-				heights.append(h)
-				widths.append(wi)
-				areas.append(a)
+				nfevs[i, j] /= shoots
+				convegences[i, j] /= shoots
+				data[i][j] = k_data / shoots
+				total[i][j] = k_total / shoots
+				heights[i][j] = array(k_heights).mean()
+				widths[i][j] = array(k_widths).mean()
+				areas[i][j] = array(k_areas).mean()
+				areas_std[i][j] = array(k_areas).std()
 			progress.emit(j)
-	return tuple(map(array, [nfevs, convegences, data, total, heights, widths, areas, shape]))
+	return tuple(map(array, [nfevs, convegences, data, total, heights, widths, areas, areas_std, shape]))
 
 def equations_translator(center: list, asymmetry: float):
 	shapes_and_curves_dict = {'Lorentzian' : lorentz,

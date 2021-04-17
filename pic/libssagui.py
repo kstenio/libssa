@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  libssa_gui.py
+#  libssagui.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -330,7 +330,7 @@ class LIBSsaGUI(object):
 			self.g.plot(x, matrix[:, i], pen=colors[i, :])
 		self.g.autoRange()
 	
-	def fitplot(self, wavelength_iso: ndarray, area: ndarray, width: ndarray, height: ndarray, shape: str, nfev: int, conv: bool, data: ndarray, total: ndarray):
+	def fitplot(self, wavelength_iso: ndarray, area: ndarray, area_std: ndarray, width: ndarray, height: ndarray, shape: str, nfev: int, conv: bool, data: ndarray, total: ndarray):
 		"""
 		:param fitresults: A parameter containing all values and information for proper fit plotting
 		:return: Nothing. Just do the plotting with additional information for user
@@ -350,6 +350,10 @@ class LIBSsaGUI(object):
 		# important variables
 		rmsd = std(data[:, 1])
 		x =  linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
+		height_str = ', '.join([f'{h:.0E}' for h in height])
+		width_str = ', '.join([f'{w:.0E}' for w in width])
+		area_str = ', '.join([f'{a:.0E}' for a in area])
+		areastd_str = ', '.join([f'{s:.0E}' for s in area_std])
 		# 1st plot is for original data and residuals
 		self.g.plot(wavelength_iso, data[:, 0], symbol='o', pen=None, symbolBrush=mkBrush(randint(50, 220, (1, 3))[0]), name='Original data')
 		self.g.plot(wavelength_iso, data[:, 1], symbol='+', pen=None, symbolBrush=mkBrush(list(randint(50, 220, (1, 3))[0])+[0.8]), name='Residuals')
@@ -371,16 +375,26 @@ class LIBSsaGUI(object):
 			# 	break
 		# Last one is for total (sum of peaks)
 		self.g.plot(x, total[:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
-		fitbox = TextItem(html=f'Shape: <b>{shape}</b><br>'
-		                       f'Evaluations: <b>{nfev}</b><br>'
-		                       f'Convergence: <b>{conv}</b><br>'
-		                       f'Height: <b>{height}</b><br>'
-		                       f'Width: <b>{width}</b><br>'
-		                       f'Area: <b>{area}</b><br>'
-		                       f'RMSD: <b>{"%.1E" %rmsd}</b>',
-		                  anchor=(1, 0), angle=0, border='#6600cc', fill='#f2e6ff')
+		# Organizes string for fit box
+		fitbox_str = f'Shape: <b>{shape}</b><br>' \
+		             f'Evaluations: <b>{nfev}</b><br>' \
+		             f'Convergence: <b>{conv}</b><br>' \
+		             f'Height: <b>{height_str}</b><br>' \
+		             f'Width: <b>{width_str}</b><br>'
+		if area_std.mean() > 0:
+			fitbox_str += f'Area: <b>{area_str}</b><br>' \
+			              f'AreaSTD: <b>{areastd_str}</b><br>' \
+			              f'RMSD: <b>{rmsd:.0E}</b>'
+		else:
+			fitbox_str += f'Area: <b>{area_str}</b><br>' \
+			              f'RMSD: <b>{rmsd:.0E}</b>'
+		fitbox = TextItem(html=fitbox_str, anchor=(1, 0), angle=0, border='#6600cc', fill='#f2e6ff')
+		# Adds fit box to graphic and sets its position
 		self.g.addItem(fitbox)
-		fitbox.setPos(max(x), max(max(data[:, 0]), max(total[:, -1])))
+		my = (data, 0) if max(data[:, 0]) > max(total[:, -1]) else (total, -1)
+		xpos = x[-1] + (x[-1] - x[0])/20
+		ypos = max(my[0][:, my[1]]) + (max(my[0][:, my[1]]) - min(my[0][:, my[1]]))/20
+		fitbox.setPos(xpos, ypos)
 		# Finally, performs auto-range
 		self.g.autoRange()
 	#
