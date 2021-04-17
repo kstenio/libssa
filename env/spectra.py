@@ -24,7 +24,7 @@ from numpy import array
 from pandas import DataFrame
 from pathlib import Path
 from PySide2.QtCore import QObject, QRunnable, Signal, Slot
-from traceback import print_exc, format_exc
+from traceback import print_exc
 
 
 # Signals for Qt worker
@@ -95,7 +95,7 @@ class Spectra(object):
 		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
 		self.models = {'Linear': self.base, 'PCA': self.base, 'PLS': self.base}
 		# Results from isolation and peak fitting
-		self.isolated = {'Count': 0, 'Element': self.base,
+		self.isolated = {'Count': 0, 'NSamples': 0, 'Element': self.base,
 		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base}
 		self.fit = {'Area': self.base, 'Width': self.base, 'Height': self.base,
 		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,

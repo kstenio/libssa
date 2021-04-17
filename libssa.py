@@ -80,7 +80,7 @@ class LIBSSA2(QObject):
 		self.gui.g_selector.activated.connect(self.setgrange)
 		self.gui.g_current_sb.valueChanged.connect(self.doplot)
 		# Menu
-		self.gui.menu_import_ref.triggered.connect(self.loadrefcorrel)
+		self.gui.menu_import_ref.triggered.connect(self.loadref)
 		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
@@ -133,9 +133,14 @@ class LIBSSA2(QObject):
 			self.gui.g.addLegend()
 			i = idx // self.spec.samples['Count']
 			j = idx - (i * self.spec.samples['Count'])
-			fitresults = self.spec.fitresults[i][j]
-			self.gui.g.setTitle( 'Fitted peak of <b>%s</b> for sample <b>%s</b>' % (self.spec.wavelength_iso[i][0], self.spec.samples_path[j].stem))
-			self.gui.fitplot(fitresults)
+			k = self.spec.fit
+			self.gui.g.setTitle(f"Fitted peak of <b>{self.spec.isolated['Element'][i]}</b> for sample <b>{self.spec.samples['Name'][j]}</b>")
+			self.gui.fitplot(self.spec.wavelength['Isolated'][i],
+							 k['Area'][i][j], k['Width'][i][j],
+							 k['Height'][i][j], k['Shape'][i],
+							 k['NFev'][i][j], k['Convergence'][i][j],
+							 k['Data'][i][j], k['Total'][i][j])
+			del k
 		elif self.gui.g_current == 'PCA':
 			if idx == 0:
 				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
@@ -334,7 +339,7 @@ class LIBSSA2(QObject):
 			self.timer = time()
 			self.threadpool.start(worker)
 	
-	def loadrefcorrel(self):
+	def loadref(self):
 		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
 		else:
@@ -407,6 +412,7 @@ class LIBSSA2(QObject):
 			self.spec.isolated['Upper'] = returned[4]
 			self.spec.isolated['Center'] = returned[5]
 			self.spec.isolated['Count'] = returned[2].size
+			self.spec.isolated['NSamples'] = self.spec.samples['Count']
 			# enable apply button
 			self.gui.p3_isoapply.setEnabled(True)
 			# outputs timer
@@ -453,9 +459,23 @@ class LIBSSA2(QObject):
 	def peakfit(self):
 		# inner function to receive result from worker
 		def result(returned):
-			print(returned)
-			# saves result
-			self.spec.fitresults = returned
+			# saves result into each corresponding value inside Spectra
+			self.spec.fit['NFev'] = returned[0]
+			self.spec.fit['Convergence'] = returned[1]
+			self.spec.fit['Data'] = returned[2]
+			self.spec.fit['Total'] = returned[3]
+			self.spec.fit['Height'] = returned[4]
+			self.spec.fit['Width'] = returned[5]
+			self.spec.fit['Area'] = returned[6]
+			self.spec.fit['Shape'] = returned[7]
+			print('NFev', self.spec.fit['NFev'])
+			print('Convergence',self.spec.fit['Convergence'])
+			print('Data',self.spec.fit['Data'])
+			print('Total',self.spec.fit['Total'])
+			print('Height',self.spec.fit['Height'])
+			print('Width',self.spec.fit['Width'])
+			print('Area',self.spec.fit['Area'])
+			print('Shape',self.spec.fit['Shape'])
 			# enable apply button
 			self.gui.p3_fitapply.setEnabled(True)
 			# outputs timer
@@ -466,7 +486,7 @@ class LIBSSA2(QObject):
 			self.doplot()
 			# prepares elements for page 4
 			self.gui.p4_peak.clear()
-			self.gui.p4_peak.addItems([x[0] for x in self.spec.wavelength_iso])
+			self.gui.p4_peak.addItems(self.spec.isolated['Element'] )
 			# self.setpeaknorm()
 		
 		if not self.spec.isolated['Count']:

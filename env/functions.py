@@ -19,7 +19,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from numpy import ndarray, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, std, zeros_like, linspace, column_stack, zeros
+from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, std, zeros_like, linspace, column_stack, zeros
 from scipy.optimize import least_squares
 from PySide2.QtCore import Signal
 from typing import Tuple
@@ -105,7 +105,7 @@ def fit_values(ny, shape, param):
 def fit_results(x, y, optimized, shape, npeaks, sdict):
 	solution, residual = optimized.x, optimized.fun
 	individuals_solution = array_split(nabs(solution), npeaks)
-	[heights, widths, areas] = [[None]*npeaks for val in range(3)]
+	[heights, widths, areas] = [zeros(npeaks) for val in range(3)]
 	# With optimized, we can have the x-axis
 	if shape != 'Trapezoidal rule':
 		nx = linspace(x[0], x[-1], 1000)
@@ -119,12 +119,19 @@ def fit_results(x, y, optimized, shape, npeaks, sdict):
 		total_fit[:, -1] = nsum(total_fit[:, :-1], 1)
 	else:
 		total_fit = column_stack((y, y))
-		heights[0], widths[0], areas[0] = max(y), (x[-1]-x[0])/4, trapz(y, x)
+		heights[:], widths[:], areas[:] = max(y), (x[-1]-x[0])/4, trapz(y, x)
 	return column_stack((y, residual)), total_fit, heights, widths, areas
 
 def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmetry: list, isolated: dict, mean1st: bool, progress: Signal):
 	# creates empty lists for appending all needed elements
-	[areas, widths, heights, nfevs, convegences, data, total] = [[] for li in range(7)]
+	# in this case, we have for each variable a matrix of objects where
+	# the rows are the elements, and the columns the sample
+	# a cell may contain a list if it is more than one peak
+	nfevs = zeros((isolated['Count'], isolated['NSamples']), dtype=int)
+	convegences = zeros((isolated['Count'], isolated['NSamples']), dtype=bool)
+	data = [zeros((isolated['NSamples'], iw.size, 2), dtype=float) for iw in iso_wavelengths]
+	total = [zeros((isolated['NSamples'], 1000, c.size + 1), dtype=float) if s != 'Trapezoidal rule' else zeros((isolated['NSamples'], iw.size, c.size + 1), dtype=float) for c, s, iw in zip(isolated['Center'], shape, iso_wavelengths)]
+	[areas, widths, heights] = [[zeros((isolated['NSamples'], c.size), dtype=float) for c in isolated['Center']] for val in range(3)]
 	# defines values for tolerances
 	tols = [1e-7, 1e-7, 1e-7, 1000]
 	# variable: self.fit = {'Area': self.base, 'Width': self.base, 'Height': self.base,
@@ -132,7 +139,8 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 	# 		            'Results': self.base}
 	# Creates exit array
 	# needs: y, nx, ny
-	fit_w_counts = array([[[None] * 7] * len(iso_counts[0])] * len(iso_wavelengths))
+	# fit_w_counts = array([[[None] * 7] * len(iso_counts[0])] * len(iso_wavelengths))
+
 	# Goes in element level: same size as iso_wavelengths
 	for i, w in enumerate(iso_wavelengths):
 		# Gets a dict for shapes and fit equations
@@ -156,13 +164,13 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 				#   [2] heights, [3] widths, [4] areas -> size depends on number of peaks
 				results = fit_results(w, average_spectrum, optimized, shape[i], len(center), scd)
 				# Finally, appends results into the return variables
-				nfevs.append(optimized.nfev)
-				convegences.append(optimized.success)
-				data.append(results[0])
-				total.append(results[1])
-				heights.append(results[2])
-				widths.append(results[3])
-				areas.append(results[4])
+				nfevs[i, j] = optimized.nfev
+				convegences[i, j] = optimized.success
+				data[i][j] = results[0]
+				total[i][j] = results[1]
+				heights[i][j] = results[2]
+				widths[i][j] = results[3]
+				areas[i][j] = results[4]
 			else:
 				# If mean1st is False, area1st is select, and so we will need to iterates over each individual spectrum
 				average_spectrum, shoots, result, residual, npeaks = mean(ci, axis=1), ci.shape[1], None, None, len(center)
@@ -226,7 +234,7 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 				widths.append(wi)
 				areas.append(a)
 			progress.emit(j)
-	return tuple(map(array, [nfevs, convegences, data, total, heights, widths, areas]))
+	return tuple(map(array, [nfevs, convegences, data, total, heights, widths, areas, shape]))
 
 def equations_translator(center: list, asymmetry: float):
 	shapes_and_curves_dict = {'Lorentzian' : lorentz,

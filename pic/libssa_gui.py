@@ -20,7 +20,7 @@
 #
 
 # Imports
-from numpy import zeros, int16, ones, ndarray, std
+from numpy import zeros, int16, ones, ndarray, std, linspace
 from numpy.random import randint, uniform, random
 from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
@@ -330,7 +330,7 @@ class LIBSsaGUI(object):
 			self.g.plot(x, matrix[:, i], pen=colors[i, :])
 		self.g.autoRange()
 	
-	def fitplot(self, fitresults: ndarray):
+	def fitplot(self, wavelength_iso: ndarray, area: ndarray, width: ndarray, height: ndarray, shape: str, nfev: int, conv: bool, data: ndarray, total: ndarray):
 		"""
 		:param fitresults: A parameter containing all values and information for proper fit plotting
 		:return: Nothing. Just do the plotting with additional information for user
@@ -348,32 +348,30 @@ class LIBSsaGUI(object):
 		self.g.clear()
 		self.g.addLegend()
 		# important variables
-		npeaks = fitresults[2].shape[1] - 1
-		conv, nfev, shape = fitresults[6], fitresults[5], fitresults[3]
-		height, width, area, rmsd =  [], [], [], std(fitresults[0][:, 2])
+		rmsd = std(data[:, 1])
+		x =  linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
 		# 1st plot is for original data and residuals
-		self.g.plot(fitresults[0][:, 0], fitresults[0][:, 1], symbol='o', pen=None, symbolBrush=mkBrush(randint(50, 220, (1, 3))[0]), name='Original data')
-		self.g.plot(fitresults[0][:, 0], fitresults[0][:, 2], symbol='+', pen=None, symbolBrush=mkBrush(list(randint(50, 220, (1, 3))[0])+[0.8]), name='Residuals')
+		self.g.plot(wavelength_iso, data[:, 0], symbol='o', pen=None, symbolBrush=mkBrush(randint(50, 220, (1, 3))[0]), name='Original data')
+		self.g.plot(wavelength_iso, data[:, 1], symbol='+', pen=None, symbolBrush=mkBrush(list(randint(50, 220, (1, 3))[0])+[0.8]), name='Residuals')
 		# The remaining plots are for each peak
-		for i in range(npeaks):
-			self.g.plot(fitresults[1], fitresults[2][:, i], pen=mkPen(randint(50, 220, (1, 3))[0], width=1), name='Peak %i' % (i + 1))
-			try:
-				height.append('%.1E' % fitresults[4][i][0])
-				width.append('%.1E' % fitresults[4][i][1])
-				area.append('%.1E' % fitresults[4][i][2])
-			except TypeError:
-				height.append('%s' % ['%.1E' %x for x in fitresults[4][i][0]])
-				width.append('%s' % ['%.1E' %x for x in fitresults[4][i][1]])
-				area.append('%s' % ['%.1E' %x for x in fitresults[4][i][2]])
-			except IndexError:
-				height = '%.1E' % fitresults[4][0]
-				width = '%.1E' % fitresults[4][1]
-				area = '%.1E' % fitresults[4][2]
-				break
+		for i in range(len(area)):
+			self.g.plot(x, total[:, i], pen=mkPen(randint(50, 220, (1, 3))[0], width=1), name='Peak %i' % (i + 1))
+			# try:
+			# 	height.append('%.1E' % fitresults[4][i][0])
+			# 	width.append('%.1E' % fitresults[4][i][1])
+			# 	area.append('%.1E' % fitresults[4][i][2])
+			# except TypeError:
+			# 	height.append('%s' % ['%.1E' %x for x in fitresults[4][i][0]])
+			# 	width.append('%s' % ['%.1E' %x for x in fitresults[4][i][1]])
+			# 	area.append('%s' % ['%.1E' %x for x in fitresults[4][i][2]])
+			# except IndexError:
+			# 	height = '%.1E' % fitresults[4][0]
+			# 	width = '%.1E' % fitresults[4][1]
+			# 	area = '%.1E' % fitresults[4][2]
+			# 	break
 		# Last one is for total (sum of peaks)
-		self.g.plot(fitresults[1], fitresults[2][:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
+		self.g.plot(x, total[:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
 		fitbox = TextItem(html=f'Shape: <b>{shape}</b><br>'
-		                       f'Peaks: <b>{npeaks}</b><br>'
 		                       f'Evaluations: <b>{nfev}</b><br>'
 		                       f'Convergence: <b>{conv}</b><br>'
 		                       f'Height: <b>{height}</b><br>'
@@ -382,7 +380,7 @@ class LIBSsaGUI(object):
 		                       f'RMSD: <b>{"%.1E" %rmsd}</b>',
 		                  anchor=(1, 0), angle=0, border='#6600cc', fill='#f2e6ff')
 		self.g.addItem(fitbox)
-		fitbox.setPos(max(fitresults[1]), max(max(fitresults[0][:, 1]), max(fitresults[2][:, -1])))
+		fitbox.setPos(max(x), max(max(data[:, 0]), max(total[:, -1])))
 		# Finally, performs auto-range
 		self.g.autoRange()
 	#
