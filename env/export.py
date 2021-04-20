@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  export.py
+#  ./env/export.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #

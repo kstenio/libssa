@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  spectra.py
+#  ./env/spectra.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #

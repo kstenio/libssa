@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  libssagui.py
+#  ./pic/libssagui.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -27,7 +27,7 @@ from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
 from PySide2.QtUiTools import QUiLoader
 from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem
-from pathlib import PosixPath
+from pathlib import Path
 from string import punctuation
 
 # Graph global configurations
@@ -413,7 +413,7 @@ class LIBSsaGUI(object):
 			QtWidgets.QMessageBox.critical(self.mw, 'Erro', 'Wrong MSG ID!')
 			raise ValueError('Wrong MSG ID!')
 	
-	def guifd(self, parent: PosixPath, tp: str, st1: str, st2: str = ''):
+	def guifd(self, parent: Path, tp: str, st1: str, st2: str = ''):
 		if tp in ('ged', 'getExistingDirectory'):
 			return QtWidgets.QFileDialog.getExistingDirectory(parent=self.mw, caption=st1, dir=parent.as_posix())
 		elif tp in ('gof', 'getOpenFileName'):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  functions.py
+#  ./env/functions.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -19,14 +19,29 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, std, zeros_like, linspace, column_stack, zeros
-from scipy.optimize import least_squares
-from PySide2.QtCore import Signal
-from typing import Tuple
+# Imports
 from env.equations import *
+from PySide2.QtCore import Signal
+from scipy.optimize import least_squares, OptimizeResult
+from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros
 
 
-def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, upper: list, center: list, linear: bool, anorm: bool, progress: Signal) -> Tuple[ndarray, ndarray, ndarray, ndarray, ndarray, ndarray]:
+# Peak isolation functions
+def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, upper: list, center: list, linear: bool, anorm: bool, progress: Signal) -> tuple:
+	"""
+	Isolates peaks based on input from user.
+
+	:param wavelength: full spectrum wavelength
+	:param counts: count array for all samples (each element is a matrix)
+	:param elements: list of elements to be isolated
+	:param lower: lower wavelength for the i-th element
+	:param upper: upper wavelength for the i-th element
+	:param center: center wavelength(s) for the i-th element (it might be a list for multi peak element)
+	:param linear: boolean to enable or disable normalization by the baseline
+	:param anorm: boolean to enable or disable normalization by the area of the baseline
+	:param progress: PySide Signal object (for multithreading)
+	:return: tuple of results: new_wavelength, new_counts, elements, lower, upper, center
+	"""
 	# Allocate data
 	new_wavelength = array([None] * len(elements))
 	new_counts = array([array([None for X in range(len(counts))]) for Y in range(len(elements))], dtype=object)
@@ -63,7 +78,20 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 	[elements, lower, upper, center] = list(map(array, [elements, lower, upper, center]))
 	return new_wavelength, new_counts, elements, lower, upper, center
 
-def fit_guess(x: ndarray, y: ndarray, peaks: int, center: list, shape_id: str, asymmetry=None):
+
+# Peak fitting functions
+def fit_guess(x: ndarray, y: ndarray, peaks: int, center: list, shape_id: str, asymmetry=None) -> list:
+	"""
+	Creates fit guess for peak fitting. The method will vary depending on the shape of the signal.
+
+	:param x: values of the wavelength
+	:param y: values of the intensities
+	:param peaks: number of peaks
+	:param center: list containing the center wavelength (size == peaks)
+	:param shape_id: string containing the shape of the signal
+	:param asymmetry: value for the asymmetry of the signal (for Asymmetric Lorentzian)
+	:return: list with the initial guess
+	"""
 	guess = []
 	for i in range(peaks):
 		# Ratio for values
@@ -80,14 +108,33 @@ def fit_guess(x: ndarray, y: ndarray, peaks: int, center: list, shape_id: str, a
 			guess.append(asymmetry)  # Asymmetry (auto or user entered value)
 	return guess
 
-def residuals(guess, x, y, shape_id, **kwargs):
+def residuals(guess: list, x: ndarray, y: ndarray, shape_id: str, **kwargs) -> ndarray:
+	"""
+	Special function to be used side-by-side with least_squares, allowing the minimization of guess.
+	This function acts like a decorator for the fit_results function.
+
+	:param guess: initial guess (== the parameters to be minimized)
+	:param x: wavelength array
+	:param y: intensities array (observed values)
+	:param shape_id: the shape of the signal
+	:param kwargs: extra arguments to be passed away
+	:return: difference between the observed (y) and the fitted (passed as dict)
+	"""
 	function_kwargs = {'Center': kwargs['Center'], 'Asymmetry': kwargs['Asymmetry']}
 	if shape_id == 'Trapezoidal rule':
 		return zeros_like(y)
 	else:
 		return y - kwargs[shape_id](x, *guess, **function_kwargs)
 
-def fit_values(ny, shape, param):
+def fit_values(ny: ndarray, shape: str, param: ndarray) -> tuple:
+	"""
+	Function to return the fitted values of an individual peak after fitting is performed.
+
+	:param ny: fitted intensities
+	:param shape: shape of the signal
+	:param param: params of the fit (optimized values of guess)
+	:return: values of height, width and area for the passed peak
+	"""
 	if 'Voigt' in shape:
 		a, wl, wg = param[:3]
 		w = 0.5346*wl + (0.2166*(wl**2) + wg**2)**0.5
@@ -102,16 +149,27 @@ def fit_values(ny, shape, param):
 			a = 0
 	return h, w, a
 
-def fit_results(x, y, optimized, shape, npeaks, sdict):
+def fit_results(x: ndarray, y:ndarray, optimized: OptimizeResult, shape: str, npeaks: int, sdict: dict) -> tuple:
+	"""
+	Function to return all of the results of multi peak for an element.
+
+	:param x: wavelength array
+	:param y: intensities array (observed values)
+	:param optimized: parameters of the multi peak fitting (size depends on number of peaks)
+	:param shape: shape of the signal
+	:param npeaks: number of peaks
+	:param sdict: special dict created by the equation_translator
+	:return: result of multi peak fitting: data[y, residual], total_fit[every_peak, ..., sum of peaks], heights, widths, areas
+	"""
+	# Organizes variables
 	solution, residual = optimized.x, optimized.fun
 	individuals_solution = array_split(nabs(solution), npeaks)
 	[heights, widths, areas] = [zeros(npeaks) for val in range(3)]
-	# With optimized, we can have the x-axis
+	# With optimized, we can have the new  linspace x-axis
 	if shape != 'Trapezoidal rule':
 		nx = linspace(x[0], x[-1], 1000)
 		# creates the total result
 		total_fit = zeros((nx.size, npeaks + 1))
-		results = []
 		for i, individuals in enumerate(individuals_solution):
 			indv_dict = {'Center': [sdict['Center'][i]], 'Asymmetry': sdict['Asymmetry']}
 			total_fit[:, i] = sdict[shape](nx, *individuals, **indv_dict)
@@ -122,25 +180,34 @@ def fit_results(x, y, optimized, shape, npeaks, sdict):
 		heights[:], widths[:], areas[:] = max(y), (x[-1]-x[0])/4, trapz(y, x)
 	return column_stack((y, residual)), total_fit, heights, widths, areas
 
-def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmetry: list, isolated: dict, mean1st: bool, progress: Signal):
-	# creates empty lists for appending all needed elements
-	# in this case, we have for each variable a matrix of objects where
-	# the rows are the elements, and the columns the sample
-	# a cell may contain a list if it is more than one peak
+def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmetry: list, isolated: dict, mean1st: bool, progress: Signal) -> tuple:
+	"""
+	Main function to create multi element and multi peak fitting for a large sample set.
+
+	:param iso_wavelengths: array of arrays, where each individual one is the isolated wavelength
+	:param iso_counts: array of array of matrices, where each individual one are the intensities for each sample and element: [element...[samples...[counts[wavelengths, shoots]]]]
+	:param shape: list of shapes for each element
+	:param asymmetry: list of asymmetries (only !=0 for Asym. Lorentzian [center/as. fixed])
+	:param isolated: Spectra.isolated structure/dict that carries values of count, nsamples, element, center, upper and lower for all peaks
+	:param mean1st: boolean that says of fit method is mean first or area first
+	:param progress: PySide Signal object (for multithreading)
+	:return: tuple of results to be added to the Spectra.fit dict of results (nfevs, convegences, data, total, heights, widths, areas, areas_std, shape)
+	"""
+	# Creates empty arrays to save all needed elements while fitting is being performed
+	# Sizes and types will be different, depending the properties we are going to save:
+	#   nfevs: 1D array (size of elements), type is int
+	#   convergence: 1D array (size of elements), type is bool
+	#   data: 3D array (rows = wavelengths of isolated peak, columns = 2 [observed and residuals], depth = number of samples) inside 1D array (size of elements)
+	#   total: 3D array (rows = 1000 [linspace size] , columns = number of peaks + 1 [for sum], depth = number of samples) inside 1D array (size of elements)
+	#   areas (+std), widths, heights: 2D array (rows = number of samples, columns = number of peaks) inside a 1D array (size of elements)
 	nfevs = zeros((isolated['Count'], isolated['NSamples']), dtype=int)
 	convegences = zeros((isolated['Count'], isolated['NSamples']), dtype=bool)
-	data = [zeros((isolated['NSamples'], iw.size, 2), dtype=float) for iw in iso_wavelengths]
-	total = [zeros((isolated['NSamples'], 1000, c.size + 1), dtype=float) if s != 'Trapezoidal rule' else zeros((isolated['NSamples'], iw.size, c.size + 1), dtype=float) for c, s, iw in zip(isolated['Center'], shape, iso_wavelengths)]
-	[areas, areas_std, widths, heights] = [[zeros((isolated['NSamples'], c.size), dtype=float) for c in isolated['Center']] for val in range(4)]
-	# defines values for tolerances
+	data = array(([zeros((isolated['NSamples'], iw.size, 2), dtype=float) for iw in iso_wavelengths]))
+	total = array(([zeros((isolated['NSamples'], 1000, c.size + 1), dtype=float) if s != 'Trapezoidal rule' else zeros((isolated['NSamples'], iw.size, 2), dtype=float) for c, s, iw in zip(isolated['Center'], shape, iso_wavelengths)]))
+	[areas, areas_std, widths, heights] = [array(([zeros((isolated['NSamples'], c.size), dtype=float) for c in isolated['Center']])) for val in range(4)]
+	shape = array(shape)
+	# Defines values for tolerances
 	tols = [1e-7, 1e-7, 1e-7, 1000]
-	# variable: self.fit = {'Area': self.base, 'Width': self.base, 'Height': self.base,
-	# 		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,
-	# 		            'Results': self.base}
-	# Creates exit array
-	# needs: y, nx, ny
-	# fit_w_counts = array([[[None] * 7] * len(iso_counts[0])] * len(iso_wavelengths))
-
 	# Goes in element level: same size as iso_wavelengths
 	for i, w in enumerate(iso_wavelengths):
 		# Gets a dict for shapes and fit equations
@@ -184,10 +251,7 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 					                          w, average_spectrum, shape[i]),
 					                          kwargs=scd, ftol=tols[0], gtol=tols[1],
 					                          xtol=tols[2], max_nfev=tols[3])
-					# The function returns:
-					#   [0] data -> original_intensities and residuals (columns)
-					#   [1] total_fit -> each column is a fit based on peak number (which is based on center size) and the last one is the sum
-					#   [2] results -> h, w, a (size depends on number of peaks)
+					# Gets the result based on optimized solution
 					results = fit_results(w, average_spectrum, k_optimized, shape[i], len(center), scd)
 					# Saves some values
 					nfevs[i, j] += k_optimized.nfev
@@ -213,9 +277,16 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 				areas[i][j] = array(k_areas).mean()
 				areas_std[i][j] = array(k_areas).std()
 			progress.emit(j)
-	return tuple(map(array, [nfevs, convegences, data, total, heights, widths, areas, areas_std, shape]))
+	return nfevs, convegences, data, total, heights, widths, areas, areas_std, shape
 
 def equations_translator(center: list, asymmetry: float):
+	"""
+	Convenient function to return correct function to call (for fit).
+	
+	:param center: list values of center of peaks
+	:param asymmetry: value for peak asymmetry
+	:return: dict to be used in fitpeaks
+	"""
 	shapes_and_curves_dict = {'Lorentzian' : lorentz,
 	                          'Lorentzian [center fixed]' : lorentz_fixed_center,
 	                          'Asymmetric Lorentzian' : lorentz_asymmetric,

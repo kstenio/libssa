@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  imports.py
+#  ./env/imports.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -19,37 +19,38 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# imports
+# Imports
 from os import listdir
 from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import Path
-from typing import List, Tuple
 from PySide2.QtCore import Signal
 from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract
 from scipy.linalg import norm
 from scipy.stats import pearsonr
 
-def load(folder: Tuple[Path], mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> Tuple[ndarray, ndarray]:
+def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> tuple:
 	"""
-	This method loads spectra and returns global variables wavelength and counts
+	This method loads spectra and returns global variables wavelength and counts.
+
 	:param folder: PosixPath list of input folder/files (sorted)
-	:param mode: File reading mode. 'Single' for one file per sample, or 'Multiple' for one folder per sample, multiple files per shoot
-	:param delim: Delimiter (space, tab, comma and semicolon)
-	:param header: Rows to skip in the spectra files
-	:param wcol: Which column is wavelength
-	:param ccol: Which column is counts
-	:param progress: Qt signal for multithreading
-	:return: Wavelength and Counts arrays
+	:param mode: file reading mode. 'Single' for one file per sample, or 'Multiple' for one folder per sample, multiple files per shoot
+	:param delim: delimiter (space, tab, comma and semicolon)
+	:param header: rows to skip in the spectra files
+	:param wcol: which column is wavelength
+	:param ccol: which column is counts
+	:param dec: decimals values for round
+	:param progress: PySide Signal object (for multithreading)
+	:return: wavelength and counts arrays
 	"""
-	# organizes delimiter
+	# Organizes delimiter
 	if delim == 'TAB':
 		delim = '\t'
 	elif delim == 'SPACE':
 		delim = '\s+'
-	# creates wavelength and counts vectors
+	# Creates wavelength and counts vectors
 	wavelength, counts, count, sort = array(([None])), array(([None]*len(folder)), dtype=object), None, False
 	if mode == "Single":
-		# reads all files
+		# Reads all files
 		for i, file in enumerate(folder):
 			if i == 0:
 				matrix = read_csv(file, delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)
@@ -58,50 +59,59 @@ def load(folder: Tuple[Path], mode: str, delim: str, header: int, wcol: int, cco
 					sort = True
 					counts[i] = counts[i][wavelength.argsort()]
 			else:
-				# after reading wavelength and defining if sort is needed, reads counts
+				# After reading wavelength and defining if sort is needed, reads counts
 				counts[i] = read_csv(file, delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)[:, 1:]
 				if sort:
 					counts[i] = counts[i][wavelength.argsort()]
-			# emits signal for GUI
+			# Emits signal for GUI
 			progress.emit(i+1)
-		# by the end - if needed - sorts wavelength
+		# By the end - if needed - sorts wavelength
 		if sort:
 			wavelength.sort()
-		# return values
+		# Return values
 		return wavelength, counts
 	elif mode == "Multiple":
-		# reads all files in each folder
+		# Reads all files in each folder
 		for j, folders in enumerate(folder):
 			files = listdir(folders)
 			files.sort()
 			files = [folders.joinpath(x) for x in files]
 			for k, spectrum in enumerate(files):
-				# reads wavelength
+				# Reads wavelength
 				if (j == 0) and (k == 0):
 					wavelength = read_csv(spectrum, usecols=[wcol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec).T[0]
 					if not array_equal(wavelength, wavelength[wavelength.argsort()]):
 						sort = True
-				# reads counts
+				# Reads counts
 				if k == 0:
 					count = read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)
 				else:
 					count = column_stack((count, read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)))
-			# back in j loop, save count in counts vector and sort if needed
+			# Back in j loop, save count in counts vector and sort if needed
 			counts[j] = count
 			if sort:
 				counts[j] = counts[j][wavelength.argsort()]
-			# emits signal for GUI
+			# Emits signal for GUI
 			progress.emit(j + 1)
-		# by the end - if needed - sorts wavelength
+		# By the end - if needed - sorts wavelength
 		if sort:
 			wavelength.sort()
-		# return values
+		# Return values
 		return wavelength, counts
 	else:
 		raise ValueError('Wrong reading mode.')
 
-def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> Tuple[ndarray, ndarray]:
-	# creates counts new vector
+def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tuple:
+	"""
+	Function to perform outliers removal for spectra.
+	
+	:param mode: operation mode, SAM (Spectral Angle Mapper) or MAD (median Absolute Deviation)
+	:param criteria: criteria for exclusion (0:1 for SAM, 2:2.5:3 for MAD)
+	:param counts: full Spectra object with intensities for sample set
+	:param progress: PySide Signal object (for multithreading)
+	:return: retults of exclusion (out_counts and removed_report)
+	"""
+	# Creates counts new vector
 	out_counts = array(([None] * counts['Count']), dtype=object)
 	removed_report = []
 	if mode == 'SAM':
@@ -121,11 +131,10 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> Tupl
 	elif mode == 'MAD':
 		b = 1.4826
 		for i in range(counts['Count']):
-			# calculates MAD for each wavelength
-			ith_mad_vector = zeros(counts['Raw'][i].shape[0])
+			# Calculates MAD for each wavelength
 			ith_median = median(counts['Raw'][i], 1)
 			ith_mad_vector = b * median(nabs(subtract(counts['Raw'][i].T, ith_median).T), 1)
-			# now, check if each shoot is or isn't an outlier
+			# Now, check if each shoot is or isn't an outlier
 			zero_counts = zeros(counts['Raw'][i].shape[0])
 			bool_checker = array([criteria] * counts['Raw'][i].shape[0])
 			removed = [0, counts['Raw'][i].shape[1]]
@@ -136,18 +145,33 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> Tupl
 					zero_counts = column_stack((zero_counts, counts['Raw'][i][:, k]))
 				else:
 					removed[0] += 1
-			# saves corrected values
+			# Saves corrected values
 			out_counts[i] = zero_counts[:, 1:]
 			removed_report.append(removed)
 			progress.emit(i)
-	# return result
+	# Return result
 	return out_counts, array(removed_report)
 
 def refcorrel(file: Path) -> DataFrame:
+	"""
+	Convenient function to read references. For now, does little, but I'll add some checkups later...
+	
+	:param file: path of file of reference (xls, xlsx)
+	:return: dataframe after the loading
+	"""
 	return read_excel(file)
 
 def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:
-	# extra functions
+	"""
+	Function that calculates bitwise Pearson correlation
+	
+	:param wsize: size of wavelength
+	:param counts: intensities for every sample
+	:param ref: values of reference (each element in a column)
+	:param progress: PySide Signal object (for multithreading)
+	:return: object array containing Pearson, zeros and mean of sample set (I'll change this to a proper 3D array later...)
+	"""
+	# Extra functions
 	def meanmatrix(rows: int, full_matrix: ndarray):
 		mean_ = zeros((rows, full_matrix.__len__()))
 		for i, m in enumerate(full_matrix):
@@ -160,17 +184,17 @@ def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal)
 			p[i], _ = pearsonr(m_matrix[i, :], one_ref)
 		return p
 	
-	# main function
+	# Main function
 	pearson = zeros((wsize, ref.columns.__len__()))
 	mean_matrix = meanmatrix(wsize, counts)
-	# now, for each column in ref, we must calculate one pearson
+	# Now, for each column in ref, we must calculate one pearson
 	for i, r in enumerate(ref.columns):
 		pearson[:, i] = onepearson(wsize, mean_matrix, ref[r])
 		progress.emit(i)
-	# calculates full_mean
+	# Calculates full_mean
 	full_mean = mean(mean_matrix, 1)
 	full_mean /= max(full_mean)
-	# organizes return array
+	# Organizes return array
 	return_array = array(([None]*3), dtype=object)
 	return_array[0], return_array[1], return_array[2] = pearson, full_mean, zeros(wsize)
 	return return_array

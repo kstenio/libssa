@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  equations.py
+#  ./env/equations.py
 #
 #  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
 #
@@ -19,6 +19,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Imports
 from scipy.special import wofz
 from numpy import sum as nsum, abs as nabs
 from numpy import ndarray, empty, sum, array_split, exp, real, log, pi

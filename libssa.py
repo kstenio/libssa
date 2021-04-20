@@ -19,14 +19,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# imports
+# Imports
 import sys
 try:
 	from time import time
 	from os import listdir
 	from pandas import DataFrame
 	from pathlib import Path, PosixPath
-	# from env.worker import Worker
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
