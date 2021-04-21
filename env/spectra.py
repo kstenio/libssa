@@ -91,7 +91,7 @@ class Spectra(object):
 		self.wavelength = {'Raw': self.base, 'Isolated': self.base}
 		self.intensities = {'Count': 0, 'Raw': self.base, 'Outliers': self.base, 'Removed': self.base, 'Isolated': self.base}
 		# Models and references
-		self.ref = DataFrame()
+		self.ref = DataFrame({'Empty': [0]})
 		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
 		self.models = {'Linear': self.base, 'PCA': self.base, 'PLS': self.base}
 		# Results from isolation and peak fitting

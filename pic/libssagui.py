@@ -50,6 +50,7 @@ class LIBSsaGUI(object):
 			self.mw = QtWidgets.QMainWindow()
 			self.loadui(uifile)
 			self.logofile = logofile
+			self.peaknormitems = []
 		except Exception as err:
 			raise ValueError('Could not initialize UI file. Error message:\n\t%s' % str(err))
 		# If no error was found, loads all remaining widgets
@@ -89,8 +90,9 @@ class LIBSsaGUI(object):
 			self.p3_mean1st = QtWidgets.QRadioButton()
 			# Page 4 == Calibration curve
 			self.p4_peak = self.p4_ref = self.p4_pnorm_combo = QtWidgets.QComboBox()
-			self.p4_areas = self.p4_int = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = QtWidgets.QRadioButton()
+			self.p4_areas = self.p4_ints = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = QtWidgets.QRadioButton()
 			self.p4_apply = QtWidgets.QPushButton()
+			self.p4_npeak = QtWidgets.QSpinBox()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -190,9 +192,10 @@ class LIBSsaGUI(object):
 		
 	def loadp4(self):
 		self.p4_peak  = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox1')
+		self.p4_npeak = self.mw.findChild(QtWidgets.QSpinBox, 'p4sB1')
 		self.p4_ref = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox2')
 		self.p4_areas = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB1')
-		self.p4_int = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB2')
+		self.p4_ints = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB2')
 		self.p4_wnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB3')
 		self.p4_pnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB4')
 		self.p4_pnorm_combo = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox3')
@@ -663,9 +666,17 @@ class LIBSsaGUI(object):
 		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 	
 	def setpeaknorm(self):
-		peakitems = [self.p4_peak.itemText(i) for i in range(self.p4_peak.count()) if self.p4_peak.itemText(i) != self.p4_peak.currentText()]
+		# Constructs list for normalization combo box
+		self.peaknormitems = [self.p4_peak.itemText(i) for i in range(self.p4_peak.count()) if self.p4_peak.itemText(i) != self.p4_peak.currentText()]
 		self.p4_pnorm_combo.clear()
-		self.p4_pnorm_combo.addItems(peakitems)
+		self.p4_pnorm_combo.addItems(self.peaknormitems)
+		# Sets correct values for number of peaks
+		for np in range(self.p3_isotb.rowCount()):
+			if self.p4_peak.currentText() == self.p3_isotb.item(np, 0).text():
+				val = int(self.p3_isotb.item(np, 4).text())
+				self.p4_npeak.setValue(1)
+				self.p4_npeak.setRange(1, val)
+				break
 		
 #
 # Extra functions

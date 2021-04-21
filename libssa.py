@@ -29,7 +29,7 @@ try:
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks, fitpeaks
+	from env.functions import isopeaks, fitpeaks, where
 	from PySide2.QtGui import QKeyEvent
 	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -140,6 +140,13 @@ class LIBSSA2(QObject):
 							 k['NFev'][i][j], k['Convergence'][i][j],
 							 k['Data'][i][j], k['Total'][i][j])
 			del k
+		elif self.gui.g_current == 'Linear':
+			if idx == 0:
+				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Height</u> as <i>Intensity</i>' % 'Element')
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			if idx == 1:
+				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Area</u> as <i>Intensity</i>' % 'Element')
+				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 		elif self.gui.g_current == 'PCA':
 			if idx == 0:
 				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
@@ -159,13 +166,6 @@ class LIBSSA2(QObject):
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 			if idx == 1:
 				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % 'Element')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
-		elif self.gui.g_current == 'Linear':
-			if idx == 0:
-				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Height</u> as <i>Intensity</i>' % 'Element')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
-			if idx == 1:
-				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Area</u> as <i>Intensity</i>' % 'Element')
 				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 		elif self.gui.g_current == 'Temperature':
 			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
@@ -241,6 +241,7 @@ class LIBSSA2(QObject):
 			else:
 				# saves variables for further steps
 				self.parent = folder
+				self.spec.clear()
 				self.spec.samples['Count'] = len(samples)
 				self.spec.samples['Name'] = tuple([x.stem for x in samples_pathlib])
 				self.spec.samples['Path'] = tuple(samples_pathlib)
@@ -468,14 +469,6 @@ class LIBSSA2(QObject):
 			self.spec.fit['Area'] = returned[6]
 			self.spec.fit['AreaSTD'] = returned[7]
 			self.spec.fit['Shape'] = returned[8]
-			# print('NFev', self.spec.fit['NFev'])
-			# print('Convergence',self.spec.fit['Convergence'])
-			# print('Data',self.spec.fit['Data'])
-			# print('Total',self.spec.fit['Total'])
-			# print('Height',self.spec.fit['Height'])
-			# print('Width',self.spec.fit['Width'])
-			# print('Area',self.spec.fit['Area'])
-			# print('Shape',self.spec.fit['Shape'])
 			# enable apply button
 			self.gui.p3_fitapply.setEnabled(True)
 			# outputs timer
@@ -486,7 +479,8 @@ class LIBSSA2(QObject):
 			self.doplot()
 			# prepares elements for page 4
 			self.gui.p4_peak.clear()
-			self.gui.p4_peak.addItems(self.spec.isolated['Element'] )
+			self.gui.p4_peak.addItems(self.spec.isolated['Element'])
+			self.gui.p4_npeak.setEnabled(True)
 			# self.setpeaknorm()
 		
 		if not self.spec.isolated['Count']:
@@ -514,19 +508,17 @@ class LIBSSA2(QObject):
 	# Methods for page 4 == Calibration curve
 	#
 	def docalibrationcurve(self):
-		errorstr = 'You must <i>load references</i> <b>and</b> <i>perform peak fitting</i> before using this feature.'
-		try:
-			values = [x[0] for x in self.spec.wavelength_iso]
-			refs = self.spec.ref.columns
-		except (TypeError, AttributeError):
-			self.gui.guimsg('Warning', errorstr, 'w')
+		if (not self.spec.isolated['Count'] and (self.spec.fit['Area'] == self.spec.base)) or (self.spec.ref.columns[0] == 'Empty'):
+			self.gui.guimsg('Warning', 'You must <i>load references</i> <b>and</b> <i>perform peak fitting</i> <b style="color:red">before</b> using this feature.', 'w')
 		else:
-			if self.spec.fitresults[0] is None or len(values) < 1:
-				self.gui.guimsg('Warning', errorstr, 'w')
-			else:
-				# now, we have the main basis for the models
-				# what to do will depend on model mode (norm, no norm, all norm)
-				'TODO'
+			# Sets parameter to be used: areas or intensities
+			param = 'Area' if self.gui.p4_areas.isChecked() else 'Height'
+			index = where(self.spec.isolated['Element'] == self.gui.p4_peak.currentText())[0][0]
+			# No norm mode
+			if self.gui.p4_wnorm.isChecked():
+				x_ref = self.spec.ref[self.gui.p4_ref.currentText()].to_numpy()
+				y_obs = self.spec.fit[param][index][:, self.gui.p4_npeak.value() - 1]
+				self.gui.splot(x_ref, y_obs, True, 'x', 'Modelo')
 				
 				
 if __name__ == '__main__':

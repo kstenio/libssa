@@ -74,9 +74,7 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 		# Saves new wavelength
 		new_wavelength[i] = x
 		progress.emit(i)
-	# Saves exit-list as arrays
-	[elements, lower, upper, center] = list(map(array, [elements, lower, upper, center]))
-	return new_wavelength, new_counts, elements, lower, upper, center
+	return new_wavelength, new_counts, array(elements), array(lower), array(upper), array(center, dtype=object)
 
 
 # Peak fitting functions
@@ -197,14 +195,14 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 	# Sizes and types will be different, depending the properties we are going to save:
 	#   nfevs: 1D array (size of elements), type is int
 	#   convergence: 1D array (size of elements), type is bool
-	#   data: 3D array (rows = wavelengths of isolated peak, columns = 2 [observed and residuals], depth = number of samples) inside 1D array (size of elements)
-	#   total: 3D array (rows = 1000 [linspace size] , columns = number of peaks + 1 [for sum], depth = number of samples) inside 1D array (size of elements)
-	#   areas (+std), widths, heights: 2D array (rows = number of samples, columns = number of peaks) inside a 1D array (size of elements)
+	#   data: 3D array (rows = wavelengths of isolated peak, columns = 2 [observed and residuals], depth = number of samples) inside 1D tuple (size of elements)
+	#   total: 3D array (rows = 1000 [linspace size] , columns = number of peaks + 1 [for sum], depth = number of samples) inside 1D tuple (size of elements)
+	#   areas (+std), widths, heights: 2D array (rows = number of samples, columns = number of peaks) inside a 1D tuple (size of elements)
 	nfevs = zeros((isolated['Count'], isolated['NSamples']), dtype=int)
 	convegences = zeros((isolated['Count'], isolated['NSamples']), dtype=bool)
-	data = array(([zeros((isolated['NSamples'], iw.size, 2), dtype=float) for iw in iso_wavelengths]))
-	total = array(([zeros((isolated['NSamples'], 1000, c.size + 1), dtype=float) if s != 'Trapezoidal rule' else zeros((isolated['NSamples'], iw.size, 2), dtype=float) for c, s, iw in zip(isolated['Center'], shape, iso_wavelengths)]))
-	[areas, areas_std, widths, heights] = [array(([zeros((isolated['NSamples'], c.size), dtype=float) for c in isolated['Center']])) for val in range(4)]
+	data = [zeros((isolated['NSamples'], iw.size, 2), dtype=float) for iw in iso_wavelengths]
+	total = [zeros((isolated['NSamples'], 1000, len(c) + 1), dtype=float) if s != 'Trapezoidal rule' else zeros((isolated['NSamples'], iw.size, 2), dtype=float) for c, s, iw in zip(isolated['Center'], shape, iso_wavelengths)]
+	[areas, areas_std, widths, heights] = [[zeros((isolated['NSamples'], len(c)), dtype=float) for c in isolated['Center']] for val in range(4)]
 	shape = array(shape)
 	# Defines values for tolerances
 	tols = [1e-7, 1e-7, 1e-7, 1000]
@@ -219,7 +217,7 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 			if mean1st:
 				# If mean1st is True, take the mean of iso_counts[i][j] and pass it to perform fit
 				average_spectrum = mean(ci, axis=1)
-				guess = fit_guess(x=w, y=average_spectrum, peaks=center.size, center=center, shape_id=shape[i], asymmetry=asymmetry[i])
+				guess = fit_guess(x=w, y=average_spectrum, peaks=len(center), center=center, shape_id=shape[i], asymmetry=asymmetry[i])
 				optimized = least_squares(residuals, guess,
 				                          args=(w, average_spectrum, shape[i]),
 				                          kwargs=scd, ftol=tols[0], gtol=tols[1],
@@ -277,7 +275,7 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 				areas[i][j] = array(k_areas).mean()
 				areas_std[i][j] = array(k_areas).std()
 			progress.emit(j)
-	return nfevs, convegences, data, total, heights, widths, areas, areas_std, shape
+	return nfevs, convegences, tuple(data), tuple(total), tuple(heights), tuple(widths), tuple(areas), tuple(areas_std), shape
 
 def equations_translator(center: list, asymmetry: float):
 	"""
