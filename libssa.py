@@ -29,7 +29,7 @@ try:
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks, fitpeaks, where
+	from env.functions import isopeaks, fitpeaks, linear_model
 	from PySide2.QtGui import QKeyEvent
 	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -63,8 +63,8 @@ class LIBSSA2(QObject):
 			self.threadpool = QThreadPool()
 			self.parent = PosixPath()
 			self.mbox = QMessageBox()
-			self.mode = self.delimiter = ''
-			self.cores = self.ranged = self.timer = 0
+			self.mode, self.delimiter = '', ''
+			self.cores, self.timer = 0, 0
 			# connects
 			self.connects()
 			# extra variables
@@ -102,10 +102,53 @@ class LIBSSA2(QObject):
 	#
 	# Methods for Graphics
 	#
+	def setgrange(self):
+		# Helper idx variable
+		idx = self.gui.g_selector.currentIndex()
+		# Sets correct range based on current graph
+		if idx == 0:
+			# Raw spectra
+			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
+			self.gui.g_max.setText(str(self.spec.samples['Count']))
+		elif idx == 1:
+			# Spectra after having outliers removed
+			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
+			self.gui.g_max.setText(str(self.spec.samples['Count']))
+		elif idx == 2:
+			# Correlation spectrum
+			self.gui.g_current_sb.setRange(1, self.spec.ref.columns.__len__())
+			self.gui.g_max.setText(str(self.spec.ref.columns.__len__()))
+		elif idx == 3:
+			# Isolated peaks
+			rvalue = self.spec.samples['Count'] * self.spec.isolated['Count']
+			self.gui.g_current_sb.setRange(1, rvalue)
+			self.gui.g_max.setText(str(rvalue))
+		elif idx == 4:
+			# Fitted peaks
+			rvalue = self.spec.samples['Count'] * self.spec.isolated['Count']
+			self.gui.g_current_sb.setRange(1, rvalue)
+			self.gui.g_max.setText(str(rvalue))
+		elif idx == 5:
+			# Linear curve
+			self.gui.g_current_sb.setRange(1, self.spec.linear['R2'].size)
+			self.gui.g_max.setText(str(self.spec.linear['R2'].size))
+		elif idx == 6:
+			# PCA
+			self.gui.g_current_sb.setRange(1, 5)
+			self.gui.g_max.setText('5')
+		elif idx == 7:
+			# PLS
+			self.gui.g_current_sb.setRange(1, 2)
+			self.gui.g_max.setText('2')
+		elif idx == 8:
+			# Saha-Boltzmann plot
+			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
+			self.gui.g_max.setText(str(self.spec.samples['Count']))
+		# Do plot after correcting the ranges
+		self.doplot()
+	
 	def doplot(self):
-		# Rechecks current ranges
-		if not self.ranged: self.setgrange()
-		# Sets current index
+		# Gets current index
 		idx = self.gui.g_current_sb.value() - 1
 		# Perform plot based on actual settings
 		if self.gui.g_current == 'Raw':
@@ -141,12 +184,8 @@ class LIBSSA2(QObject):
 							 k['Data'][i][j], k['Total'][i][j])
 			del k
 		elif self.gui.g_current == 'Linear':
-			if idx == 0:
-				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Height</u> as <i>Intensity</i>' % 'Element')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
-			if idx == 1:
-				self.gui.g.setTitle('Calibration curve for <b>%s</b> using <u>Area</u> as <i>Intensity</i>' % 'Element')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			self.gui.g.setTitle(f"Linear model of {self.spec.linear['Predict'][idx, 0]}")
+			self.gui.linplot(self.spec.linear, idx)
 		elif self.gui.g_current == 'PCA':
 			if idx == 0:
 				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
@@ -171,51 +210,6 @@ class LIBSSA2(QObject):
 			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
 			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
 	
-	def setgrange(self):
-		# Enable ranged global variable
-		self.ranged = True
-		# Helper idx variable
-		idx = self.gui.g_selector.currentIndex()
-		# Sets correct range based on current graph
-		if idx == 0:
-			# Raw spectra
-			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
-			self.gui.g_max.setText(str(self.spec.samples['Count']))
-		elif idx == 1:
-			# Spectra after having outliers removed
-			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
-			self.gui.g_max.setText(str(self.spec.samples['Count']))
-		elif idx == 2:
-			# Correlation spectrum
-			self.gui.g_current_sb.setRange(1, self.spec.ref.columns.__len__())
-			self.gui.g_max.setText(str(self.spec.ref.columns.__len__()))
-		elif idx == 3:
-			# Isolated peaks
-			rvalue = self.spec.samples['Count'] * self.spec.isolated['Count']
-			self.gui.g_current_sb.setRange(1, rvalue)
-			self.gui.g_max.setText(str(rvalue))
-		elif idx == 4:
-			# Fitted peaks
-			rvalue = self.spec.samples['Count'] * self.spec.isolated['Count']
-			self.gui.g_current_sb.setRange(1, rvalue)
-			self.gui.g_max.setText(str(rvalue))
-		elif idx == 5:
-			# Linear curve
-			self.gui.g_current_sb.setRange(1, 2)
-			self.gui.g_max.setText('2')
-		elif idx == 6:
-			# PCA
-			self.gui.g_current_sb.setRange(1, 5)
-			self.gui.g_max.setText('5')
-		elif idx == 7:
-			# PLS
-			self.gui.g_current_sb.setRange(1, 2)
-			self.gui.g_max.setText('2')
-		elif idx == 8:
-			# Saha-Boltzmann plot
-			self.gui.g_current_sb.setRange(1, self.spec.samples['Count'])
-			self.gui.g_max.setText(str(self.spec.samples['Count']))
-			
 	#
 	# Methods for page 1 == Load spectra
 	#
@@ -263,9 +257,8 @@ class LIBSSA2(QObject):
 			# outputs timer
 			print('Timestamp:', time(), 'MSG: Load spectra count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
-			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(0)
-			self.doplot()
+			self.setgrange()
 		
 		# inner function to receive errors from worker
 		def error(runerror):
@@ -316,9 +309,8 @@ class LIBSSA2(QObject):
 			# outputs timer
 			print('Timestamp:', time(), 'MSG: Outliers removal count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
-			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(1)
-			self.doplot()
+			self.setgrange()
 		
 		# main method itself
 		if not self.spec.intensities['Count']:
@@ -343,6 +335,15 @@ class LIBSSA2(QObject):
 		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
 		else:
+			# shows warning
+			msg_str = 'Reference spreadsheet file (<i>XLS</i> or <i>XLSX</i>) <b style="color: red">must</b> be structured in the following manner:' \
+			          '<ol>' \
+			          '<li>First column containing the identifier of the sample;</li>' \
+			          '<li>Samples has to be in the same order as the spectra files/folders;</li>' \
+			          '<li>Remaining columns containing the values for each reference.</li>' \
+			          '</ol>' \
+			          'Check the example bellow:'
+			self.gui.guimsg('Instructions', msg_str, 'r')
 			# gets file from dialog
 			ref_file = Path(self.gui.guifd(self.parent, 'gof', 'Select reference spreadsheet file', 'Excel Spreadsheet Files (*.xls *.xlsx)')[0])
 			if str(ref_file) == '.':
@@ -378,9 +379,8 @@ class LIBSSA2(QObject):
 			      'MSG: Correlation spectrum count timer: %.2f seconds. ' % (
 						      time() - self.timer))
 			# updates gui elements
-			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(2)
-			self.doplot()
+			self.setgrange()
 		
 		# setup some configs and initialize worker
 		changestatus(self.gui.sb, 'Please Wait. Creating correlation spectrum...', 'p', 1)
@@ -418,9 +418,8 @@ class LIBSSA2(QObject):
 			# outputs timer
 			print('Timestamp:', time(), 'MSG: Peak isolation count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
-			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(3)
-			self.doplot()
+			self.setgrange()
 			self.gui.create_fit_table()
 		
 		# Checks if iso table is complete
@@ -474,9 +473,8 @@ class LIBSSA2(QObject):
 			# outputs timer
 			print('Timestamp:', time(), 'MSG: Peak fitting count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
-			self.ranged = False
 			self.gui.g_selector.setCurrentIndex(4)
-			self.doplot()
+			self.setgrange()
 			# prepares elements for page 4
 			self.gui.p4_peak.clear()
 			self.gui.p4_peak.addItems(self.spec.isolated['Element'])
@@ -513,12 +511,29 @@ class LIBSSA2(QObject):
 		else:
 			# Sets parameter to be used: areas or intensities
 			param = 'Area' if self.gui.p4_areas.isChecked() else 'Height'
-			index = where(self.spec.isolated['Element'] == self.gui.p4_peak.currentText())[0][0]
-			# No norm mode
+			values = self.spec.fit[param]
+			# Checks the mode of analysis
 			if self.gui.p4_wnorm.isChecked():
-				x_ref = self.spec.ref[self.gui.p4_ref.currentText()].to_numpy()
-				y_obs = self.spec.fit[param][index][:, self.gui.p4_npeak.value() - 1]
-				self.gui.splot(x_ref, y_obs, True, 'x', 'Modelo')
+				mode = 'No Norm'
+			elif self.gui.p4_pnorm.isChecked():
+				mode = 'Peak Norm'
+			else:
+				mode = 'All Norm'
+			# Defines variables to be passed to linear model function
+			base, base_peak = self.gui.p4_peak.currentText(), self.gui.p4_npeak.value() - 1
+			selected, selected_peak = self.gui.p4_pnorm_combo.currentText(), self.gui.p4_npeak_norm.value() - 1
+			elements, reference = self.spec.isolated['Element'], self.spec.ref[self.gui.p4_ref.currentText()]
+			linear = linear_model(mode, reference, values, base, base_peak, selected, selected_peak, elements, param)
+			self.spec.linear['Reference'] = linear[0]
+			self.spec.linear['Predict'] = linear[1]
+			self.spec.linear['R2'] = linear[2]
+			self.spec.linear['RMSE'] = linear[3]
+			self.spec.linear['Slope'] = linear[4]
+			self.spec.linear['Intercept'] = linear[5]
+			# Updates gui elements
+			self.gui.g_selector.setCurrentIndex(5)
+			self.setgrange()
+			
 				
 				
 if __name__ == '__main__':

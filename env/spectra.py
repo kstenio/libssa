@@ -93,7 +93,10 @@ class Spectra(object):
 		# Models and references
 		self.ref = DataFrame({'Empty': [0]})
 		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
-		self.models = {'Linear': self.base, 'PCA': self.base, 'PLS': self.base}
+		self.linear = {'Reference': self.base, 'Predict': self.base,
+		               'R2': self.base, 'RMSE': self.base,
+		               'Slope': self.base, 'Intercept': self.base}
+		self.models = {'PCA': self.base, 'PLS': self.base}
 		# Results from isolation and peak fitting
 		self.isolated = {'Count': 0, 'NSamples': 0, 'Element': self.base,
 		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base}

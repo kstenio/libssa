@@ -159,7 +159,7 @@ def refcorrel(file: Path) -> DataFrame:
 	:param file: path of file of reference (xls, xlsx)
 	:return: dataframe after the loading
 	"""
-	return read_excel(file)
+	return read_excel(file, index_col=0)
 
 def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:
 	"""

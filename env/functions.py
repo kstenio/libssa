@@ -21,9 +21,12 @@
 
 # Imports
 from env.equations import *
+from pandas import Series
 from PySide2.QtCore import Signal
 from scipy.optimize import least_squares, OptimizeResult
 from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 
 
 # Peak isolation functions
@@ -298,3 +301,58 @@ def equations_translator(center: list, asymmetry: float):
 	                          'Center': center,
 	                          'Asymmetry': asymmetry}
 	return shapes_and_curves_dict
+
+def linear_model(mode: str, reference: Series, values: tuple, base: str, base_peak: int, selected: str, selected_peak: int, elements: ndarray, param: str):
+	# Defines base variables
+	idx_b = where(elements == base)[0][0]
+	val_b = values[idx_b][:, base_peak]
+	pred_name, pred_val, r2, rmse, slope, intercept = [], [], [], [], [], []
+	# Does the calculations depending on the mode
+	if mode == 'No Norm':
+		title = '<b>{0}-P{1}</b> (No Normalization) [Ref: <u>{2}</u>] (Param: <i>{3}</i>)'
+		parameter = val_b.reshape(-1, 1)
+		model = LinearRegression().fit(parameter, reference)
+		pred_name.append(title.format(base, base_peak+1, reference.name, param))
+		pred_val.append(model.predict(parameter))
+		r2.append(model.score(parameter, reference))
+		rmse.append(mean_squared_error(reference, pred_val[-1]) ** 0.5)
+		slope.append(model.coef_[0])
+		intercept.append(model.intercept_)
+	else:
+		title_norm = '<b><sup>{0}-P{1}</sup>&frasl;<sub>{2}-P{3}</sub></b> [Ref: <u>{4}</u>] (Param: <i>{5}</i>)'
+		if mode == 'Peak Norm':
+			idx_s = where(elements == selected)[0][0]
+			val_s = values[idx_s][:, selected_peak]
+			parameter = (val_b / val_s).reshape(-1, 1)
+			model = LinearRegression().fit(parameter, reference)
+			pred_name.append(title_norm.format(base, base_peak + 1, selected, selected_peak+1, reference.name, param))
+			pred_val.append(model.predict(parameter))
+			r2.append(model.score(parameter, reference))
+			rmse.append(mean_squared_error(reference, pred_val[-1]) ** 0.5)
+			slope.append(model.coef_[0])
+			intercept.append(model.intercept_)
+		elif mode == 'All Norm':
+			# Gets list for all but base
+			n_elements = list(elements)
+			for i, p in enumerate(n_elements):
+				if p == base:
+					n_elements.pop(i)
+					break
+			# Creates empty lists for saving results
+			pred_name, pred_val, r2, slope, intercept = [], [], [], [], []
+			for e in n_elements:
+				idx_e = where(elements == e)[0][0]
+				val_e = values[idx_e]
+				for c in range(val_e.shape[1]):
+					parameter = (val_b / val_e[:, c]).reshape(-1, 1)
+					model = LinearRegression().fit(parameter, reference)
+					pred_name.append(title_norm.format(base, base_peak + 1, e, c + 1, reference.name, param))
+					pred_val.append(model.predict(parameter))
+					r2.append(model.score(parameter, reference))
+					rmse.append(mean_squared_error(reference, pred_val[-1]) ** 0.5)
+					slope.append(model.coef_[0])
+					intercept.append(model.intercept_)
+	# Organizes variables to return
+	ref = array((reference.name, reference.to_numpy(), param), dtype=object)
+	predict = array((list(zip(pred_name, pred_val))), dtype=object)
+	return ref, predict, array(r2), array(rmse), array(slope), array(intercept)

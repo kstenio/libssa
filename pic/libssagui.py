@@ -21,7 +21,8 @@
 
 # Imports
 from numpy import zeros, int16, ones, ndarray, std, linspace
-from numpy.random import randint, uniform, random
+from pandas import DataFrame
+from numpy.random import randint, uniform, random, rand
 from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide2.QtCore import QFile, Qt
 from PySide2 import QtWidgets, QtGui
@@ -90,9 +91,9 @@ class LIBSsaGUI(object):
 			self.p3_mean1st = QtWidgets.QRadioButton()
 			# Page 4 == Calibration curve
 			self.p4_peak = self.p4_ref = self.p4_pnorm_combo = QtWidgets.QComboBox()
-			self.p4_areas = self.p4_ints = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = QtWidgets.QRadioButton()
+			self.p4_areas = self.p4_heights = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = QtWidgets.QRadioButton()
 			self.p4_apply = QtWidgets.QPushButton()
-			self.p4_npeak = QtWidgets.QSpinBox()
+			self.p4_npeak = self.p4_npeak_norm = QtWidgets.QSpinBox()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -193,9 +194,10 @@ class LIBSsaGUI(object):
 	def loadp4(self):
 		self.p4_peak  = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox1')
 		self.p4_npeak = self.mw.findChild(QtWidgets.QSpinBox, 'p4sB1')
+		self.p4_npeak_norm = self.mw.findChild(QtWidgets.QSpinBox, 'p4sB2')
 		self.p4_ref = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox2')
 		self.p4_areas = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB1')
-		self.p4_ints = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB2')
+		self.p4_heights = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB2')
 		self.p4_wnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB3')
 		self.p4_pnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB4')
 		self.p4_pnorm_combo = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox3')
@@ -223,6 +225,7 @@ class LIBSsaGUI(object):
 		self.p3_linear.stateChanged.connect(self.normenable)
 		# p4
 		self.p4_peak.currentIndexChanged.connect(self.setpeaknorm)
+		self.p4_pnorm_combo.currentIndexChanged.connect(self.setnpeaksnorm)
 		self.p4_pnorm.toggled.connect(self.curvechanger)
 		# settings
 		self.graphenable(False)
@@ -235,29 +238,20 @@ class LIBSsaGUI(object):
 		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
 	
 	def modechanger(self):
-		is_multi = self.p1_smm.isChecked()
-		if not is_multi:
-			self.p1_wcol.setEnabled(is_multi)
-			self.p1_ccol.setEnabled(is_multi)
-		else:
-			self.p1_wcol.setEnabled(is_multi)
-			self.p1_ccol.setEnabled(is_multi)
+		is_multi = True if self.p1_smm.isChecked() else False
+		self.p1_wcol.setEnabled(is_multi)
+		self.p1_ccol.setEnabled(is_multi)
 	
 	def curvechanger(self):
-		if self.p4_pnorm.isChecked():
-			self.p4_pnorm_combo.setEnabled(True)
-		else:
-			self.p4_pnorm_combo.setEnabled(False)
+		status = True if self.p4_pnorm.isChecked() else False
+		self.p4_pnorm_combo.setEnabled(status)
+		self.p4_npeak_norm.setEnabled(status)
 	
 	def setoutliers(self):
 		self.p2_apply_out.setEnabled(True)
-		dot = self.p2_dot.isChecked()
-		if dot:
-			self.p2_dot_c.setEnabled(dot)
-			self.p2_mad_c.setEnabled(not dot)
-		else:
-			self.p2_dot_c.setEnabled(dot)
-			self.p2_mad_c.setEnabled(not dot)
+		dot = True if self.p2_dot.isChecked() else False
+		self.p2_dot_c.setEnabled(dot)
+		self.p2_mad_c.setEnabled(not dot)
 			
 	def setgoptions(self):
 		# Current Index selected
@@ -285,7 +279,7 @@ class LIBSsaGUI(object):
 		# Linear model regression
 		elif ci == 5:
 			self.g_current = 'Linear'
-			self.g_op = ['True value', 'ref', 'Peak intensity', 'a.u.']
+			self.g_op = ['True value', 'a.u.', 'Predicted value', 'a.u.']
 		# PCA plot
 		elif ci == 6:
 			self.g_current = 'PCA'
@@ -400,6 +394,27 @@ class LIBSsaGUI(object):
 		fitbox.setPos(xpos, ypos)
 		# Finally, performs auto-range
 		self.g.autoRange()
+	
+	def linplot(self, linear: dict, index: int):
+		x, y = linear['Reference'][1], linear['Predict'][index, 1]
+		self.splot(x, x, clear=True, symbol=None, name='Ideal', width=2)
+		self.splot(x, y, clear=False, symbol='o', name='Model')
+		linbox_str = f"Slope: <b>{linear['Slope'][index]:.3f}</b><br>" \
+		             f"Intercept: <b>{linear['Intercept'][index]:.3f}</b><br>" \
+		             f"R2: <b>{linear['R2'][index]:.3f}</b><br>" \
+		             f"RMSE: <b>{linear['RMSE'][index]:.3f}</b><br>" \
+		             f"Correlation: <b>{linear['R2'][index] ** 0.5:.0%}</b>"
+		linbox = TextItem(html=linbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff')
+		self.g.addItem(linbox)
+		may = y if max(y) > max(x) else x
+		miy = y if min(y) < min(x) else x
+		xpos = x[-1] + (x[-1] - x[0]) / 20
+		ypos = max(may) + (max(may) - min(miy))/20
+		linbox.setPos(xpos, ypos)
+		# Finally, performs auto-range (twice)
+		self.g.autoRange()
+		self.g.autoRange()
+	
 	#
 	# GUI/helper functions
 	#
@@ -412,6 +427,9 @@ class LIBSsaGUI(object):
 			return QtWidgets.QMessageBox.question(self.mw, top, main)
 		elif tp.lower() in ('c', 'critical'):
 			return QtWidgets.QMessageBox.critical(self.mw, top, main)
+		elif tp.lower() in ('r', 'reference'):
+			df = DataFrame(columns=['Ref_1', '...', 'Ref_n'], index=['Sample_1', '...', 'Sample_n'], data=rand(3,3)*10).round(3).to_html()
+			return QtWidgets.QMessageBox.information(self.mw, top, f'{main}<p style="text-align: center">{df}</p>')
 		else:
 			QtWidgets.QMessageBox.critical(self.mw, 'Erro', 'Wrong MSG ID!')
 			raise ValueError('Wrong MSG ID!')
@@ -676,6 +694,14 @@ class LIBSsaGUI(object):
 				val = int(self.p3_isotb.item(np, 4).text())
 				self.p4_npeak.setValue(1)
 				self.p4_npeak.setRange(1, val)
+				break
+	
+	def setnpeaksnorm(self):
+		for ap in range(self.p3_isotb.rowCount()):
+			if self.p3_isotb.item(ap, 0).text() == self.p4_pnorm_combo.currentText():
+				val = int(self.p3_isotb.item(ap, 4).text())
+				self.p4_npeak_norm.setValue(1)
+				self.p4_npeak_norm.setRange(1, val)
 				break
 		
 #
