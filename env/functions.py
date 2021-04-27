@@ -43,10 +43,11 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 	:param linear: boolean to enable or disable normalization by the baseline
 	:param anorm: boolean to enable or disable normalization by the area of the baseline
 	:param progress: PySide Signal object (for multithreading)
-	:return: tuple of results: new_wavelength, new_counts, elements, lower, upper, center
+	:return: tuple of results: new_wavelength, new_counts, elements, lower, upper, center, noise
 	"""
 	# Allocate data
 	new_wavelength = array([None] * len(elements))
+	noise = zeros((len(elements), len(counts), 2))
 	new_counts = array([array([None for X in range(len(counts))]) for Y in range(len(elements))], dtype=object)
 	# Cut data for each element in iso table
 	for i, e in enumerate(elements):
@@ -74,10 +75,15 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 						pass
 			# Saves new count
 			new_counts[i][j] = y
+			# Gets the noise (Standard deviation of beginning and end of the peak)
+			ym = y.mean(1)
+			get = int(0.2*y.shape[0]) if 0.2*y.shape[0] >= 2 else 2
+			nz = ym[:get].std(), ym[-get:].std()
+			noise[i][j, :] = nz[0], nz[1]
 		# Saves new wavelength
 		new_wavelength[i] = x
 		progress.emit(i)
-	return new_wavelength, new_counts, array(elements), array(lower), array(upper), array(center, dtype=object)
+	return new_wavelength, new_counts, array(elements), array(lower), array(upper), array(center, dtype=object), array(noise)
 
 
 # Peak fitting functions
@@ -302,11 +308,28 @@ def equations_translator(center: list, asymmetry: float):
 	                          'Asymmetry': asymmetry}
 	return shapes_and_curves_dict
 
-def linear_model(mode: str, reference: Series, values: tuple, base: str, base_peak: int, selected: str, selected_peak: int, elements: ndarray, param: str):
+def linear_model(mode: str, reference: Series, values: tuple, base: str, base_peak: int, selected: str, selected_peak: int, elements: ndarray, noise: ndarray, param: str):
+	"""
+	Performs linear model of two dependant variables: reference (true value) and the values (dependant).
+	Values can be areas or heights. The function fits a curve of type: Predict = INTERCEPT + SLOPE * Reference
+
+	:param mode: Mode of operation. Will defines if normalization is or isn't needed
+	:param reference: Vaules of reference
+	:param values: Values to be used for predicitons
+	:param base: String of the base peak
+	:param base_peak: Which peak is being used for base (if the peak is resulted as a multi-fitting)
+	:param selected: String of the selected peak (for single normalization)
+	:param selected_peak: Which peak is being used for select (if the peak is resulted as a multi-fitting)
+	:param elements: Full elements isolated (for all normalization)
+	:param noise: Array containing values of the standard deviation of noise for each sample (for LoD and LoQ)
+	:param param: Which parameter is being used (area or height)
+	:return: Tuple uf results to be stored in Spectra.linear (ref, predict, r2, rmse, slope, intercept, lod, loq)
+	"""
 	# Defines base variables
 	idx_b = where(elements == base)[0][0]
 	val_b = values[idx_b][:, base_peak]
-	pred_name, pred_val, r2, rmse, slope, intercept = [], [], [], [], [], []
+	sigma = noise[idx_b][reference == min(reference)].min()
+	pred_name, pred_val, r2, rmse, slope, intercept, lod, loq = [], [], [], [], [], [], [], []
 	# Does the calculations depending on the mode
 	if mode == 'No Norm':
 		title = '<b>{0}-P{1}</b> (No Normalization) [Ref: <u>{2}</u>] (Param: <i>{3}</i>)'
@@ -318,6 +341,10 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 		rmse.append(mean_squared_error(reference, pred_val[-1]) ** 0.5)
 		slope.append(model.coef_[0])
 		intercept.append(model.intercept_)
+		# Calculates Limit of detection (LoD) and Limit of quantification (LoQ)
+		s = polyfit(reference, parameter, 1)[0][0]
+		lod.append(3.3*sigma/s)
+		loq.append(10*sigma/s)
 	else:
 		title_norm = '<b><sup>{0}-P{1}</sup>&frasl;<sub>{2}-P{3}</sub></b> [Ref: <u>{4}</u>] (Param: <i>{5}</i>)'
 		if mode == 'Peak Norm':
@@ -331,6 +358,11 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 			rmse.append(mean_squared_error(reference, pred_val[-1]) ** 0.5)
 			slope.append(model.coef_[0])
 			intercept.append(model.intercept_)
+			# Calculates Limit of detection (LoD) and Limit of quantification (LoQ)
+			sigma_n = noise[idx_s][reference == min(reference)].min()
+			s = polyfit(reference, parameter, 1)[0][0]
+			lod.append(3.3 * sigma / sigma_n * s)
+			loq.append(10 * sigma / sigma_n * s)
 		elif mode == 'All Norm':
 			# Gets list for all but base
 			n_elements = list(elements)
@@ -352,7 +384,12 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 					rmse.append(mean_squared_error(reference, pred_val[-1]) ** 0.5)
 					slope.append(model.coef_[0])
 					intercept.append(model.intercept_)
+					# Calculates Limit of detection (LoD) and Limit of quantification (LoQ)
+					sigma_n = noise[idx_e][reference == min(reference)].min()
+					s = polyfit(reference, parameter, 1)[0][0]
+					lod.append(3.3 * sigma / sigma_n*s)
+					loq.append(10 * sigma / sigma_n*s)
 	# Organizes variables to return
 	ref = array((reference.name, reference.to_numpy(), param), dtype=object)
 	predict = array((list(zip(pred_name, pred_val))), dtype=object)
-	return ref, predict, array(r2), array(rmse), array(slope), array(intercept)
+	return ref, predict, array(r2), array(rmse), array(slope), array(intercept), array(lod), array(loq)

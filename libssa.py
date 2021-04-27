@@ -411,6 +411,7 @@ class LIBSSA2(QObject):
 			self.spec.isolated['Lower'] = returned[3]
 			self.spec.isolated['Upper'] = returned[4]
 			self.spec.isolated['Center'] = returned[5]
+			self.spec.isolated['Noise'] = returned[6]
 			self.spec.isolated['Count'] = returned[2].size
 			self.spec.isolated['NSamples'] = self.spec.samples['Count']
 			# enable apply button
@@ -421,7 +422,7 @@ class LIBSSA2(QObject):
 			self.gui.g_selector.setCurrentIndex(3)
 			self.setgrange()
 			self.gui.create_fit_table()
-		
+
 		# Checks if iso table is complete
 		if self.gui.p3_isotb.rowCount() > 0:
 			# Checks if values are OK
@@ -520,16 +521,19 @@ class LIBSSA2(QObject):
 			else:
 				mode = 'All Norm'
 			# Defines variables to be passed to linear model function
+			noise =  self.spec.isolated['Noise']
 			base, base_peak = self.gui.p4_peak.currentText(), self.gui.p4_npeak.value() - 1
 			selected, selected_peak = self.gui.p4_pnorm_combo.currentText(), self.gui.p4_npeak_norm.value() - 1
 			elements, reference = self.spec.isolated['Element'], self.spec.ref[self.gui.p4_ref.currentText()]
-			linear = linear_model(mode, reference, values, base, base_peak, selected, selected_peak, elements, param)
+			linear = linear_model(mode, reference, values, base, base_peak, selected, selected_peak, elements, noise, param)
 			self.spec.linear['Reference'] = linear[0]
 			self.spec.linear['Predict'] = linear[1]
 			self.spec.linear['R2'] = linear[2]
 			self.spec.linear['RMSE'] = linear[3]
 			self.spec.linear['Slope'] = linear[4]
 			self.spec.linear['Intercept'] = linear[5]
+			self.spec.linear['LoD'] = linear[6]
+			self.spec.linear['LoQ'] = linear[7]
 			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(5)
 			self.setgrange()

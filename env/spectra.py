@@ -90,19 +90,22 @@ class Spectra(object):
 		# Base spectra elements: Wavelengths and Counts
 		self.wavelength = {'Raw': self.base, 'Isolated': self.base}
 		self.intensities = {'Count': 0, 'Raw': self.base, 'Outliers': self.base, 'Removed': self.base, 'Isolated': self.base}
-		# Models and references
+		# References and correlation
 		self.ref = DataFrame({'Empty': [0]})
 		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
-		self.linear = {'Reference': self.base, 'Predict': self.base,
-		               'R2': self.base, 'RMSE': self.base,
-		               'Slope': self.base, 'Intercept': self.base}
-		self.models = {'PCA': self.base, 'PLS': self.base}
 		# Results from isolation and peak fitting
 		self.isolated = {'Count': 0, 'NSamples': 0, 'Element': self.base,
-		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base}
+		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base,
+						 'Noise': self.base}
 		self.fit = {'Area': self.base, 'AreaSTD': self.base, 'Width': self.base, 'Height': self.base,
 		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,
 		            'Data': self.base, 'Total': self.base}
+		# Models
+		self.linear = {'Reference': self.base, 'Predict': self.base,
+					   'R2': self.base, 'RMSE': self.base,
+					   'Slope': self.base, 'Intercept': self.base,
+					   'LoD': self.base, 'LoQ': self.base}
+		self.models = {'PCA': self.base, 'PLS': self.base}
 		# Plasma properties
 		self.plasma = {'Temperature': self.base, 'Ne': self.base}
 	

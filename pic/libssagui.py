@@ -403,7 +403,9 @@ class LIBSsaGUI(object):
 		             f"Intercept: <b>{linear['Intercept'][index]:.3f}</b><br>" \
 		             f"R2: <b>{linear['R2'][index]:.3f}</b><br>" \
 		             f"RMSE: <b>{linear['RMSE'][index]:.3f}</b><br>" \
-		             f"Correlation: <b>{linear['R2'][index] ** 0.5:.0%}</b>"
+					 f"LoD: <b>{linear['LoD'][index]:.3f}</b><br>"\
+					 f"LoQ: <b>{linear['LoQ'][index]:.3f}</b><br>" \
+					 f"Correlation: <b>{linear['R2'][index] ** 0.5:.0%}</b>"
 		linbox = TextItem(html=linbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff')
 		self.g.addItem(linbox)
 		may = y if max(y) > max(x) else x
