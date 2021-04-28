@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.1 beta 1 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.1 beta 2 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -1046,7 +1046,7 @@
                <item>
                 <widget class="QRadioButton" name="p4rB4">
                  <property name="text">
-                  <string>By peak:</string>
+                  <string>Normalization by peak:</string>
                  </property>
                  <attribute name="buttonGroup">
                   <string notr="true">p4bG2</string>
@@ -1081,7 +1081,17 @@
              <item>
               <widget class="QRadioButton" name="p4rB5">
                <property name="text">
-                <string>By every peak</string>
+                <string>Normalization by every peak</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">p4bG2</string>
+               </attribute>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="p4rB6">
+               <property name="text">
+                <string>Using every equivalent peak</string>
                </property>
                <attribute name="buttonGroup">
                 <string notr="true">p4bG2</string>
@@ -1177,8 +1187,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>382</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1190,8 +1200,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>382</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">

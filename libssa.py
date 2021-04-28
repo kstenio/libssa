@@ -518,8 +518,10 @@ class LIBSSA2(QObject):
 				mode = 'No Norm'
 			elif self.gui.p4_pnorm.isChecked():
 				mode = 'Peak Norm'
-			else:
+			elif self.gui.p4_anorm.isChecked():
 				mode = 'All Norm'
+			else:
+				mode = 'Equivalent Peak'
 			# Defines variables to be passed to linear model function
 			noise =  self.spec.isolated['Noise']
 			base, base_peak = self.gui.p4_peak.currentText(), self.gui.p4_npeak.value() - 1

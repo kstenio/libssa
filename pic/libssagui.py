@@ -91,7 +91,7 @@ class LIBSsaGUI(object):
 			self.p3_mean1st = QtWidgets.QRadioButton()
 			# Page 4 == Calibration curve
 			self.p4_peak = self.p4_ref = self.p4_pnorm_combo = QtWidgets.QComboBox()
-			self.p4_areas = self.p4_heights = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = QtWidgets.QRadioButton()
+			self.p4_areas = self.p4_heights = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = self.p4_epeak = QtWidgets.QRadioButton()
 			self.p4_apply = QtWidgets.QPushButton()
 			self.p4_npeak = self.p4_npeak_norm = QtWidgets.QSpinBox()
 			# loads all elements
@@ -202,6 +202,7 @@ class LIBSsaGUI(object):
 		self.p4_pnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB4')
 		self.p4_pnorm_combo = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox3')
 		self.p4_anorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB5')
+		self.p4_epeak = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB6')
 		self.p4_apply = self.mw.findChild(QtWidgets.QPushButton, 'p4pB1')
 	
 	def loadp5(self):

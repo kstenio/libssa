@@ -332,7 +332,7 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 	pred_name, pred_val, r2, rmse, slope, intercept, lod, loq = [], [], [], [], [], [], [], []
 	# Does the calculations depending on the mode
 	if mode == 'No Norm':
-		title = '<b>{0}-P{1}</b> (No Normalization) [Ref: <u>{2}</u>] (Param: <i>{3}</i>)'
+		title = '<b>{0}<sub>{1}</sub></b> (No Normalization) [Ref: <u>{2}</u>] (Param: <i>{3}</i>)'
 		parameter = val_b.reshape(-1, 1)
 		model = LinearRegression().fit(parameter, reference)
 		pred_name.append(title.format(base, base_peak+1, reference.name, param))
@@ -346,7 +346,7 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 		lod.append(3.3*sigma/s)
 		loq.append(10*sigma/s)
 	else:
-		title_norm = '<b><sup>{0}-P{1}</sup>&frasl;<sub>{2}-P{3}</sub></b> [Ref: <u>{4}</u>] (Param: <i>{5}</i>)'
+		title_norm = '<b>{0}<sub>{1}</sub></b> / <b>{2}<sub>{3}</sub></b> [Ref: <u>{4}</u>] (Param: <i>{5}</i>)'
 		if mode == 'Peak Norm':
 			idx_s = where(elements == selected)[0][0]
 			val_s = values[idx_s][:, selected_peak]
@@ -361,22 +361,28 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 			# Calculates Limit of detection (LoD) and Limit of quantification (LoQ)
 			sigma_n = noise[idx_s][reference == min(reference)].min()
 			s = polyfit(reference, parameter, 1)[0][0]
-			lod.append(3.3 * sigma / sigma_n * s)
-			loq.append(10 * sigma / sigma_n * s)
-		elif mode == 'All Norm':
+			lod.append((3.3 * (sigma+sigma_n)*0.5)/s)
+			loq.append((10 * (sigma+sigma_n)*0.5)/s)
+		else:
 			# Gets list for all but base
 			n_elements = list(elements)
 			for i, p in enumerate(n_elements):
 				if p == base:
 					n_elements.pop(i)
 					break
-			# Creates empty lists for saving results
-			pred_name, pred_val, r2, slope, intercept = [], [], [], [], []
+			# Perform normalized/equivalent model for each peak
 			for e in n_elements:
 				idx_e = where(elements == e)[0][0]
 				val_e = values[idx_e]
+				sigma_n = noise[idx_e][reference == min(reference)].min()
+				sigma_e = (sigma + sigma_n) / 2
 				for c in range(val_e.shape[1]):
-					parameter = (val_b / val_e[:, c]).reshape(-1, 1)
+					if mode == 'All Norm':
+						parameter = (val_b / val_e[:, c]).reshape(-1, 1)
+					else:
+						title_norm = '<b>{0}<sub>{1}</sub>*{2}<sub>{3}</sub></b> / <b>{0}<sub>{1}</sub>+{2}<sub>{3}</sub></b> [Ref: <u>{4}</u>] (Param: <i>{5}</i>)'
+						parameter = ((val_b * val_e[:, c]) / (val_b + val_e[:, c])).reshape(-1, 1)
+						sigma_e = (sigma * sigma_n) / (sigma + sigma_n)
 					model = LinearRegression().fit(parameter, reference)
 					pred_name.append(title_norm.format(base, base_peak + 1, e, c + 1, reference.name, param))
 					pred_val.append(model.predict(parameter))
@@ -385,10 +391,9 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 					slope.append(model.coef_[0])
 					intercept.append(model.intercept_)
 					# Calculates Limit of detection (LoD) and Limit of quantification (LoQ)
-					sigma_n = noise[idx_e][reference == min(reference)].min()
 					s = polyfit(reference, parameter, 1)[0][0]
-					lod.append(3.3 * sigma / sigma_n*s)
-					loq.append(10 * sigma / sigma_n*s)
+					lod.append(3.3 * sigma_e / s)
+					loq.append(10 * sigma_e / s)
 	# Organizes variables to return
 	ref = array((reference.name, reference.to_numpy(), param), dtype=object)
 	predict = array((list(zip(pred_name, pred_val))), dtype=object)
