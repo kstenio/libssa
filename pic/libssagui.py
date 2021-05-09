@@ -20,7 +20,7 @@
 #
 
 # Imports
-from numpy import zeros, int16, ones, ndarray, std, linspace
+from numpy import zeros, int16, ones, ndarray, std, linspace, arange, hstack
 from pandas import DataFrame
 from numpy.random import randint, uniform, random, rand
 from colorsys import hsv_to_rgb, hls_to_rgb
@@ -72,6 +72,7 @@ class LIBSsaGUI(object):
 			self.g_max = QtWidgets.QLabel()
 			self.g_current = ''
 			self.g_op = ['Wavelenght', 'nm', 'Counts', 'a.u.']
+			self.g_legend = None
 			# Page 1 == Load Spectra
 			self.p1_smm = self.p1_sms = QtWidgets.QRadioButton()
 			self.p1_fdtext = QtWidgets.QLineEdit()
@@ -94,6 +95,11 @@ class LIBSsaGUI(object):
 			self.p4_areas = self.p4_heights = self.p4_wnorm = self.p4_pnorm = self.p4_anorm = self.p4_epeak = QtWidgets.QRadioButton()
 			self.p4_apply = QtWidgets.QPushButton()
 			self.p4_npeak = self.p4_npeak_norm = QtWidgets.QSpinBox()
+			# Page 5 == PCA and PLSR
+			self.p5_pca_raw = self.p5_pca_iso = self.p5_pca_areas = self.p5_pca_heights = QtWidgets.QRadioButton()
+			self.p5_pca_fs = QtWidgets.QCheckBox()
+			self.p5_pca_cscan = self.p5_pca_do = QtWidgets.QPushButton()
+			self.p5_pca_ncomps = QtWidgets.QSpinBox()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -140,8 +146,10 @@ class LIBSsaGUI(object):
 	# Load methods
 	def loadconfigs(self):
 		self.g.setTitle('LIBS Spectum')
+		self.g_legend = self.g.addLegend()
 		self.loadstyle(self.logofile)
 		self.setgoptions()
+		self.modechanger()
 		
 	def loadmain(self):
 		# main tab element and logo
@@ -206,7 +214,14 @@ class LIBSsaGUI(object):
 		self.p4_apply = self.mw.findChild(QtWidgets.QPushButton, 'p4pB1')
 	
 	def loadp5(self):
-		pass
+		self.p5_pca_raw = self.mw.findChild(QtWidgets.QRadioButton, 'p5rB1')
+		self.p5_pca_iso = self.mw.findChild(QtWidgets.QRadioButton, 'p5rB2')
+		self.p5_pca_areas = self.mw.findChild(QtWidgets.QRadioButton, 'p5rB3')
+		self.p5_pca_heights = self.mw.findChild(QtWidgets.QRadioButton, 'p5rB4')
+		self.p5_pca_fs = self.mw.findChild(QtWidgets.QCheckBox, 'p5cBox1')
+		self.p5_pca_cscan = self.mw.findChild(QtWidgets.QPushButton, 'p5pB1')
+		self.p5_pca_ncomps = self.mw.findChild(QtWidgets.QSpinBox, 'p5sB1')
+		self.p5_pca_do = self.mw.findChild(QtWidgets.QPushButton, 'p5pB2')
 	
 	def loadp6(self):
 		pass
@@ -294,7 +309,7 @@ class LIBSsaGUI(object):
 			elif pca == 4:
 				self.g_op = ['Principal Component <b>2</b>', 'a.u.', 'Principal Component <b>3</b>', 'a.u.']
 			elif pca == 5:
-				self.g_op = ['Attributes', 'nm', 'PCA Loadings', 'a.u.']
+				self.g_op = ['Attributes', 'a.u', 'PCA Loadings', 'a.u.']
 		# PLS regression
 		elif ci == 7:
 			self.g_current = 'PLS'
@@ -344,7 +359,6 @@ class LIBSsaGUI(object):
 		[6] = Convergence (boolean)
 		"""
 		self.g.clear()
-		self.g.addLegend()
 		# important variables
 		rmsd = std(data[:, 1])
 		x =  linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
@@ -358,19 +372,6 @@ class LIBSsaGUI(object):
 		# The remaining plots are for each peak
 		for i in range(len(area)):
 			self.g.plot(x, total[:, i], pen=mkPen(randint(50, 220, (1, 3))[0], width=1), name='Peak %i' % (i + 1))
-			# try:
-			# 	height.append('%.1E' % fitresults[4][i][0])
-			# 	width.append('%.1E' % fitresults[4][i][1])
-			# 	area.append('%.1E' % fitresults[4][i][2])
-			# except TypeError:
-			# 	height.append('%s' % ['%.1E' %x for x in fitresults[4][i][0]])
-			# 	width.append('%s' % ['%.1E' %x for x in fitresults[4][i][1]])
-			# 	area.append('%s' % ['%.1E' %x for x in fitresults[4][i][2]])
-			# except IndexError:
-			# 	height = '%.1E' % fitresults[4][0]
-			# 	width = '%.1E' % fitresults[4][1]
-			# 	area = '%.1E' % fitresults[4][2]
-			# 	break
 		# Last one is for total (sum of peaks)
 		self.g.plot(x, total[:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
 		# Organizes string for fit box
@@ -417,6 +418,32 @@ class LIBSsaGUI(object):
 		# Finally, performs auto-range (twice)
 		self.g.autoRange()
 		self.g.autoRange()
+	
+	def pcaplot(self, idx: int, mode: str, param: tuple):
+		self.g.clear()
+		if idx == 0:
+			# Plot is for cumulative variance
+			expvar = 100*param[0]
+			ncomps = arange(1, expvar.size + 1)
+			self.g.plot(ncomps, expvar, symbol='o', symbolBrush=pretty_colors(1), pen=mkPen(pretty_colors(1), style=Qt.DashLine))
+		elif idx in (1, 2, 3):
+			pass
+		else:
+			ld = param[0]
+			if mode == 'Raw':
+				x = param[1]['Raw']
+			elif mode == 'Isolated':
+				x =  param[1]['Isolated'][0]
+				for i in param[1]['Isolated'][1:]:
+					x = hstack((x, i))
+			else:
+				x = arange(1, ld.shape[0]+1)
+			sort = x.argsort()
+			self.g.plot(x[sort], ld[sort][:, 0], pen=mkPen(pretty_colors(1), width=2), name='Loadings PC1')
+			self.g.plot(x[sort], ld[sort][:, 1], pen=mkPen(pretty_colors(1), width=1.5), name='Loadings PC2')
+			self.g.plot(x[sort], ld[sort][:, 2], pen=mkPen(pretty_colors(1), width=1), name='Loadings PC3')
+		self.g.autoRange()
+			
 	
 	#
 	# GUI/helper functions
@@ -720,7 +747,10 @@ def pretty_colors(colors):
 		hue += golden_ratio_conjugate * (tmp / (5 * random()))
 		hue %= 1
 		output[tmp, :] = [int(x * 256) for x in hsv_to_rgb(hue, 0.95, 0.75)]
-	return output
+	if colors == 1:
+		return tuple(output[0])
+	else:
+		return output
 
 def hsl_colors(colors):
 	output = ones((colors, 3))*255

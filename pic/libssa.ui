@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.1 beta 2 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.1 beta 3 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -78,9 +78,9 @@
                 </widget>
                </item>
                <item>
-                <widget class="QRadioButton" name="p1rB1">
+                <widget class="QRadioButton" name="p1rB2">
                  <property name="text">
-                  <string>Multiple</string>
+                  <string>Single</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -88,9 +88,12 @@
                 </widget>
                </item>
                <item>
-                <widget class="QRadioButton" name="p1rB2">
+                <widget class="QRadioButton" name="p1rB1">
                  <property name="text">
-                  <string>Single</string>
+                  <string>Multiple</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
                  </property>
                 </widget>
                </item>
@@ -348,8 +351,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>374</width>
+              <height>315</height>
              </rect>
             </property>
             <attribute name="label">
@@ -661,8 +664,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>310</width>
+              <height>260</height>
              </rect>
             </property>
             <attribute name="label">
@@ -885,8 +888,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>311</width>
+              <height>302</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1194,14 +1197,153 @@
             <attribute name="label">
              <string>PCA and PLS Regression</string>
             </attribute>
+            <widget class="QWidget" name="layoutWidget">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>20</y>
+               <width>361</width>
+               <height>171</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
+              <item>
+               <widget class="QLabel" name="p5lB1">
+                <property name="font">
+                 <font>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                  <underline>false</underline>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Principal Components Analysis</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="p5vS1">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Fixed</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>5</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLabel" name="p5lB2">
+                <property name="text">
+                 <string>Base parameter</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QGridLayout" name="gridLayout_3">
+                <item row="0" column="0">
+                 <widget class="QRadioButton" name="p5rB1">
+                  <property name="text">
+                   <string>Raw</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QRadioButton" name="p5rB2">
+                  <property name="text">
+                   <string>Isolated</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QRadioButton" name="p5rB3">
+                  <property name="text">
+                   <string>Areas</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QRadioButton" name="p5rB4">
+                  <property name="text">
+                   <string>Heights</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QGridLayout" name="gridLayout_4">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="p5cBox1">
+                  <property name="text">
+                   <string>Feature Scaling</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPushButton" name="p5pB1">
+                  <property name="text">
+                   <string>Component Scan</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <layout class="QHBoxLayout" name="horizontalLayout_9">
+                  <item>
+                   <widget class="QLabel" name="p5lB3">
+                    <property name="text">
+                     <string>Components:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="p5sB1">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="minimum">
+                     <number>3</number>
+                    </property>
+                    <property name="maximum">
+                     <number>100</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QPushButton" name="p5pB2">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>Perform PCA</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
            </widget>
            <widget class="QWidget" name="p6">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>384</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
             <attribute name="label">

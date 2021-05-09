@@ -105,7 +105,9 @@ class Spectra(object):
 					   'R2': self.base, 'RMSE': self.base,
 					   'Slope': self.base, 'Intercept': self.base,
 					   'LoD': self.base, 'LoQ': self.base}
-		self.models = {'PCA': self.base, 'PLS': self.base}
+		self.pca = {'Mode': None, 'OptComp': 0, 'ExpVar': self.base,
+		            'Attributes': self.base, 'Transformed': self.base, 'Loadings': self.base}
+		self.models = {'PLS': self.base}
 		# Plasma properties
 		self.plasma = {'Temperature': self.base, 'Ne': self.base}
 	

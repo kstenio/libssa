@@ -20,6 +20,7 @@
 #
 
 # Imports
+import openpyxl
 from os import listdir
 from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import Path
@@ -159,7 +160,7 @@ def refcorrel(file: Path) -> DataFrame:
 	:param file: path of file of reference (xls, xlsx)
 	:return: dataframe after the loading
 	"""
-	return read_excel(file, index_col=0)
+	return read_excel(file, index_col=0, engine='openpyxl')
 
 def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:
 	"""

@@ -24,9 +24,11 @@ from env.equations import *
 from pandas import Series
 from PySide2.QtCore import Signal
 from scipy.optimize import least_squares, OptimizeResult
-from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros
+from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 
 # Peak isolation functions
@@ -361,8 +363,8 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 			# Calculates Limit of detection (LoD) and Limit of quantification (LoQ)
 			sigma_n = noise[idx_s][reference == min(reference)].min()
 			s = polyfit(reference, parameter, 1)[0][0]
-			lod.append((3.3 * (sigma+sigma_n)*0.5)/s)
-			loq.append((10 * (sigma+sigma_n)*0.5)/s)
+			lod.append((3.3 * (sigma/sigma_n))/s)
+			loq.append((10 * (sigma/sigma_n))/s)
 		else:
 			# Gets list for all but base
 			n_elements = list(elements)
@@ -375,7 +377,7 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 				idx_e = where(elements == e)[0][0]
 				val_e = values[idx_e]
 				sigma_n = noise[idx_e][reference == min(reference)].min()
-				sigma_e = (sigma + sigma_n) / 2
+				sigma_e = sigma/sigma_n
 				for c in range(val_e.shape[1]):
 					if mode == 'All Norm':
 						parameter = (val_b / val_e[:, c]).reshape(-1, 1)
@@ -398,3 +400,24 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 	ref = array((reference.name, reference.to_numpy(), param), dtype=object)
 	predict = array((list(zip(pred_name, pred_val))), dtype=object)
 	return ref, predict, array(r2), array(rmse), array(slope), array(intercept), array(lod), array(loq)
+
+def pca_scan(attributes, norm=False):
+	# organize attributes matrix
+	f_attributes = StandardScaler().fit_transform(attributes) if norm else attributes
+	# perform full PCA
+	pca = PCA().fit(f_attributes)
+	# checks and corrects explained variance
+	explained_variance = cumsum(pca.explained_variance_ratio_)
+	difference = f_attributes.shape[0] - explained_variance.shape[0]
+	if difference != 0:
+		explained_variance = hstack((explained_variance, ones(difference)))
+	# defines minimum components for +95% variance
+	optimum_ncomp = len(explained_variance[explained_variance < 0.96])
+	return f_attributes, explained_variance, optimum_ncomp
+
+
+def pca_do(normalized_attributes, n_comp):
+	pca = PCA(n_comp).fit(normalized_attributes)
+	loadings = pca.components_.T
+	transformed = pca.transform(normalized_attributes)
+	return transformed, loadings

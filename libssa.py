@@ -29,7 +29,7 @@ try:
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks, fitpeaks, linear_model
+	from env.functions import isopeaks, fitpeaks, linear_model, zeros, pca_do, pca_scan, column_stack
 	from PySide2.QtGui import QKeyEvent
 	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
 	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -93,6 +93,9 @@ class LIBSSA2(QObject):
 		self.gui.p3_fitapply.clicked.connect(self.peakfit)
 		# Page 4
 		self.gui.p4_apply.clicked.connect(self.docalibrationcurve)
+		# Page 5
+		self.gui.p5_pca_cscan.clicked.connect(self.pca_perform_scan)
+		self.gui.p5_pca_do.clicked.connect(self.pca_do)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -148,8 +151,9 @@ class LIBSSA2(QObject):
 		self.doplot()
 	
 	def doplot(self):
-		# Gets current index
+		# Gets current index and clear legend
 		idx = self.gui.g_current_sb.value() - 1
+		self.gui.g_legend.setPen(None)
 		# Perform plot based on actual settings
 		if self.gui.g_current == 'Raw':
 			self.gui.g.setTitle(f"Raw LIBS spectra from sample <b>{self.spec.samples['Name'][idx]}</b>")
@@ -172,7 +176,6 @@ class LIBSSA2(QObject):
 			self.gui.mplot(self.spec.wavelength['Isolated'][i], self.spec.intensities['Isolated'][i][j])
 		elif self.gui.g_current == 'Fit':
 			self.gui.g.clear()
-			self.gui.g.addLegend()
 			i = idx // self.spec.samples['Count']
 			j = idx - (i * self.spec.samples['Count'])
 			k = self.spec.fit
@@ -187,18 +190,24 @@ class LIBSSA2(QObject):
 			self.gui.g.setTitle(f"Linear model of {self.spec.linear['Predict'][idx, 0]}")
 			self.gui.linplot(self.spec.linear, idx)
 		elif self.gui.g_current == 'PCA':
+			self.gui.setgoptions()
 			if idx == 0:
 				self.gui.g.setTitle('Cumulative explained variance as function of number of components')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
-			if idx == 1:
-				self.gui.g.setTitle('Principal component <b>2</b> as function of component <b>1</b>')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
-			if idx == 2:
-				self.gui.g.setTitle('Principal component <b>3</b> as function of component <b>1</b>')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
-			if idx == 3:
-				self.gui.g.setTitle('Principal component <b>3</b> as function of component <b>2</b>')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+				self.gui.pcaplot(idx, self.spec.pca['Mode'], tuple([self.spec.pca['ExpVar']]))
+			else:
+				self.gui.g_legend.setPen('#52527a')
+				if idx == 1:
+					self.gui.g.setTitle('Principal component <b>2</b> as function of component <b>1</b>')
+					self.gui.splot(self.spec.pca['Transformed'][:, 0], self.spec.pca['Transformed'][:, 1], symbol='o', name='PC2(PC1)')
+				if idx == 2:
+					self.gui.g.setTitle('Principal component <b>3</b> as function of component <b>1</b>')
+					self.gui.splot(self.spec.pca['Transformed'][:, 0], self.spec.pca['Transformed'][:, 2], symbol='o', name='PC3(PC1)')
+				if idx == 3:
+					self.gui.g.setTitle('Principal component <b>3</b> as function of component <b>2</b>')
+					self.gui.splot(self.spec.pca['Transformed'][:, 1], self.spec.pca['Transformed'][:, 2], symbol='o', name='PC2(PC3)')
+				if idx == 4:
+					self.gui.g.setTitle('Plot of <b>Loadings</b> (P1/P2/P3) as function of <b>attributes</b>')
+					self.gui.pcaplot(idx, self.spec.pca['Mode'], tuple([self.spec.pca['Loadings'], self.spec.wavelength]))
 		elif self.gui.g_current == 'PLS':
 			if idx == 0:
 				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' % 'Element')
@@ -539,13 +548,109 @@ class LIBSSA2(QObject):
 			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(5)
 			self.setgrange()
-			
+		
+	#
+	# Methods for page 5 == PCA/PLS
+	#
+	def pca_perform_scan(self):
+		# Checks current operation mode
+		ok, mode, attribute_matrix = True, '', zeros(0)
+		for rb in [self.gui.p5_pca_raw, self.gui.p5_pca_iso, self.gui.p5_pca_areas, self.gui.p5_pca_heights]:
+			if rb.isChecked():
+				mode = rb.text()
+				break
+		# Gets correct value for attributes, depending on mode
+		if mode == 'Raw':
+			# Checks if samples are imported
+			if not self.spec.samples['Count']:
+				self.gui.guimsg('Error', 'You have to import samples <b style="color: red">before</b> performing components scan!', 'w')
+				ok = False
+			else:
+				# Raw mode: the attribute matrix is the full spectra
+				counts = self.spec.intensities['Outliers'] if self.spec.intensities['Outliers'].size > 1 else self.spec.intensities['Raw']
+				# Now, we need the mean matrix
+				meanmatrix = zeros((self.spec.wavelength['Raw'].size, self.spec.samples['Count']))
+				for i, c in enumerate(counts):
+					meanmatrix[:, i] = c.mean(1)
+				# Finally, the attribute matrix is transposed
+				attribute_matrix = meanmatrix.T
+		elif mode == 'Isolated':
+			# Checks if isolation were made
+			if not self.spec.isolated['Count']:
+				self.gui.guimsg('Error', 'Please perform peak isolation <b style="color: red">before</b> using this feature.', 'w')
+				ok = False
+			else:
+				# Isolated mode: the attribute matrix is the concatenation of all isolated peaks
+				isolations = [iw.size for iw in self.spec.wavelength['Isolated']]
+				# In isolated mode (different as in raw), the attribute matrix is created in the needed format,
+				# with rows = samples, and columns =  attributes (counts for each isolated and averaged peak)
+				iso_mean, iso_start = zeros((self.spec.samples['Count'], sum(isolations))), 0
+				# With iso_mean created, we need now to add values to it
+				for iso in self.spec.intensities['Isolated']:
+					for j, sample in enumerate(iso):
+						sample_mean = sample.mean(1)
+						iso_mean[j, iso_start:iso_start + sample_mean.size] = sample_mean
+					iso_start = sample_mean.shape[0]
+				# Defines matrix as input for next part
+				attribute_matrix = iso_mean
+		elif mode == 'Areas':
+			# Checks if peak fitting was made
+			if self.spec.fit['Shape'] == self.spec.base:
+				self.gui.guimsg('Error', 'Please perform peak fitting <b style="color: red">before</b> using this feature.', 'w')
+				ok = False
+			else:
+				# Area mode: the attribute matrix is the column concatenation of all areas
+				area_matrix = zeros((self.spec.samples['Count'], 1))
+				for a in self.spec.fit['Area']:
+					# self.spec.fit['Height']
+					area_matrix = column_stack((area_matrix, a))
+				# Finally, the attribute matrix is the area_matrix except for column 0
+				attribute_matrix = area_matrix[:, 1:]
+		else:
+			# Checks if peak fitting was made (same for areas)
+			if self.spec.fit['Shape'] == self.spec.base:
+				self.gui.guimsg('Error', 'Please perform peak fitting <b style="color: red">before</b> using this feature.', 'w')
+				ok = False
+			else:
+				# Height mode: the attribute matrix is the column concatenation of all heights
+				height_matrix = zeros((self.spec.samples['Count'], 1))
+				for h in self.spec.fit['Height']:
+					height_matrix = column_stack((height_matrix, h))
+				# Finally, the attribute matrix is the height_matrix except for column 0
+				attribute_matrix = height_matrix[:, 1:]
+		# With the attribute matrix ready, we are ready for the components scan
+		if ok:
+			f_attributes, explained_variance, optimum_ncomp = pca_scan(attribute_matrix, self.gui.p5_pca_fs.isChecked())
+			self.spec.pca['Attributes'] = f_attributes
+			self.spec.pca['ExpVar'] = explained_variance
+			self.spec.pca['OptComp'] = optimum_ncomp
+			self.spec.pca['Mode'] = mode
+			# With the results, updates elements in the gui and do the plot
+			self.gui.p5_pca_ncomps.setMaximum(len(explained_variance) - 1)
+			self.gui.p5_pca_ncomps.setValue(optimum_ncomp)
+			self.gui.p5_pca_ncomps.setEnabled(True)
+			self.gui.p5_pca_do.setEnabled(True)
+			self.gui.g_selector.setCurrentIndex(6)
+			self.gui.g_current_sb.setValue(1)
+			self.setgrange()
+	
+	def pca_do(self):
+		if self.spec.pca['Mode'] is None:
+			self.gui.guimsg('Error', 'Please perform PCA scan <b style="color: red">before</b> using this feature.', 'w')
+		else:
+			transformed, loadings = pca_do(self.spec.pca['Attributes'], self.gui.p5_pca_ncomps.value())
+			self.spec.pca['Transformed'] = transformed
+			self.spec.pca['Loadings'] = loadings
+			self.gui.g_selector.setCurrentIndex(6)
+			self.gui.g_current_sb.setValue(2)
+			self.setgrange()
 				
 				
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
-	uif = Path.cwd().joinpath('pic').joinpath('libssa.ui')
-	lof = Path.cwd().joinpath('pic').joinpath('libssa.svg')
+	root  = Path.cwd()
+	uif = root.joinpath('pic').joinpath('libssa.ui')
+	lof = root.joinpath('pic').joinpath('libssa.svg')
 	QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 	app = QApplication(sys.argv)
 	if uif.is_file() and lof.is_file():
