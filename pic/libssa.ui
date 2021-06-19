@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.1 beta 3 </string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.1 beta 4 </string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -351,8 +351,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>374</width>
-              <height>315</height>
+              <width>382</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -664,8 +664,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>310</width>
-              <height>260</height>
+              <width>382</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -888,8 +888,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>311</width>
-              <height>302</height>
+              <width>382</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1197,153 +1197,451 @@
             <attribute name="label">
              <string>PCA and PLS Regression</string>
             </attribute>
-            <widget class="QWidget" name="layoutWidget">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>20</y>
-               <width>361</width>
-               <height>171</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_10">
-              <item>
-               <widget class="QLabel" name="p5lB1">
-                <property name="font">
-                 <font>
-                  <weight>75</weight>
-                  <bold>true</bold>
-                  <underline>false</underline>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Principal Components Analysis</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="p5vS1">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Fixed</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>5</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="p5lB2">
-                <property name="text">
-                 <string>Base parameter</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <layout class="QGridLayout" name="gridLayout_3">
-                <item row="0" column="0">
-                 <widget class="QRadioButton" name="p5rB1">
-                  <property name="text">
-                   <string>Raw</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QRadioButton" name="p5rB2">
-                  <property name="text">
-                   <string>Isolated</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QRadioButton" name="p5rB3">
-                  <property name="text">
-                   <string>Areas</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <widget class="QRadioButton" name="p5rB4">
-                  <property name="text">
-                   <string>Heights</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <layout class="QGridLayout" name="gridLayout_4">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="p5cBox1">
-                  <property name="text">
-                   <string>Feature Scaling</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QPushButton" name="p5pB1">
-                  <property name="text">
-                   <string>Component Scan</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <layout class="QHBoxLayout" name="horizontalLayout_9">
-                  <item>
-                   <widget class="QLabel" name="p5lB3">
-                    <property name="text">
-                     <string>Components:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QSpinBox" name="p5sB1">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="minimum">
-                     <number>3</number>
-                    </property>
-                    <property name="maximum">
-                     <number>100</number>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QPushButton" name="p5pB2">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="text">
-                   <string>Perform PCA</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </widget>
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QLabel" name="p5lB1">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                   <underline>false</underline>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Principal Components Analysis</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="p5vS1">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>5</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="p5lB2">
+                 <property name="text">
+                  <string>Base parameter</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="gridLayout_3">
+                 <item row="0" column="0">
+                  <widget class="QRadioButton" name="p5rB1">
+                   <property name="text">
+                    <string>Raw</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QRadioButton" name="p5rB2">
+                   <property name="text">
+                    <string>Isolated</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QRadioButton" name="p5rB3">
+                   <property name="text">
+                    <string>Areas</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QRadioButton" name="p5rB4">
+                   <property name="text">
+                    <string>Heights</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="gridLayout_4">
+                 <item row="0" column="0">
+                  <widget class="QCheckBox" name="p5cBox1">
+                   <property name="text">
+                    <string>Feature Scaling</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QPushButton" name="p5pB1">
+                   <property name="text">
+                    <string>Component Scan</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                   <item>
+                    <widget class="QLabel" name="p5lB3">
+                     <property name="text">
+                      <string>Components:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="p5sB1">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>3</number>
+                     </property>
+                     <property name="maximum">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QPushButton" name="p5pB2">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Perform PCA</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <spacer name="verticalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Preferred</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="Line" name="line_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_13">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Preferred</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_13">
+               <item>
+                <widget class="QLabel" name="label">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>27</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Partial Least Squares Regression</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_11">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>5</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_10">
+                 <property name="spacing">
+                  <number>10</number>
+                 </property>
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_12">
+                   <item>
+                    <widget class="QLabel" name="label_2">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>24</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <underline>true</underline>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Calibration</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QGridLayout" name="gridLayout_6">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_4">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Attributes:</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLabel" name="label_5">
+                       <property name="minimumSize">
+                        <size>
+                         <width>99</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color:red</string>
+                       </property>
+                       <property name="text">
+                        <string>Run PCA fisrt</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_6">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Reverence:</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QComboBox" name="comboBox">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton">
+                     <property name="text">
+                      <string>Start calibration</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_11">
+                   <item>
+                    <widget class="QLabel" name="label_3">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>24</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <underline>true</underline>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Prediction</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QGridLayout" name="gridLayout_5">
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_7">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Model:</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLabel" name="label_8">
+                       <property name="minimumSize">
+                        <size>
+                         <width>99</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color:red</string>
+                       </property>
+                       <property name="text">
+                        <string>No model in use</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_9">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="text">
+                        <string>Attributes:</string>
+                       </property>
+                       <property name="alignment">
+                        <set>Qt::AlignCenter</set>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QLabel" name="label_10">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>24</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">color:red</string>
+                       </property>
+                       <property name="text">
+                        <string>Run PCA fisrt</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_2">
+                     <property name="font">
+                      <font>
+                       <italic>true</italic>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Start prediction</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_14">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>6</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </widget>
            <widget class="QWidget" name="p6">
             <property name="geometry">
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>382</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1610,6 +1908,7 @@
      </property>
      <addaction name="actionE08"/>
      <addaction name="actionE09"/>
+     <addaction name="actionE10"/>
     </widget>
     <addaction name="menuSpectra_ASCII"/>
     <addaction name="menuPeaks"/>
@@ -1759,6 +2058,15 @@
     <string>TEST</string>
    </property>
   </action>
+  <action name="actionE10">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Correlation spectra</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1770,7 +2078,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="p4bG2"/>
   <buttongroup name="p4bG1"/>
+  <buttongroup name="p4bG2"/>
  </buttongroups>
 </ui>

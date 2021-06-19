@@ -24,7 +24,8 @@ import sys
 try:
 	from time import time
 	from os import listdir
-	from pandas import DataFrame
+	from datetime import datetime
+	from pandas import DataFrame, Index
 	from pathlib import Path, PosixPath
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
@@ -80,6 +81,7 @@ class LIBSSA2(QObject):
 		self.gui.g_current_sb.valueChanged.connect(self.doplot)
 		# Menu
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
+		self.gui.menu_export_correl.triggered.connect(self.exportcorrel)
 		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
@@ -101,6 +103,32 @@ class LIBSSA2(QObject):
 		self.threadpool = QThreadPool()
 		self.cores = self.threadpool.maxThreadCount()
 		self.threadpool.setMaxThreadCount(self.cores - 1)
+	
+	#
+	# Methods menu export data
+	#
+	def exportcorrel(self):
+		# Checks if Correlation was performed
+		if self.spec.pearson['Data'] is self.spec.base:
+			self.gui.guimsg('Error', 'Perform <u>Correlation Spectrum</u> routine <b style="color:red">before</b> using this feature!', 'w')
+		else:
+			# If all is fine, asks for filename
+			exname = f'LIBSsa_Correl_Spectra_{datetime.now().strftime("%d-%m-%Y_%Hh%Mm%Ss")}.xlsx'
+			folder = Path(self.gui.guifd(self.parent.joinpath(exname), 'gsf', 'Choose filename for exporting Correlation Spectra', 'Spreadsheet (*.xlsx)')[0])
+			if folder.name == '':
+				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+			else:
+				# Creates dataframe based on reference and values
+				exfile = folder.with_suffix('.xlsx')
+				exdf = DataFrame(index=Index(self.spec.wavelength['Raw'], name='Wavelength'),
+				                 columns=[f'{chr(961)}_{x}' for x in self.spec.ref.columns],
+				                 data=self.spec.pearson['Data'])
+				# Exports df and warns user
+				exdf.to_excel(exfile)
+				self.gui.guimsg('Done', f'Correlation Spectra report saved to <b><a href={exfile.as_uri()}>file</a></b>.', 'i')
+			
+		
+		
 	
 	#
 	# Methods for Graphics

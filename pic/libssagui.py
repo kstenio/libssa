@@ -64,6 +64,7 @@ class LIBSsaGUI(object):
 			self.mbox_pbar = QtWidgets.QProgressBar()
 			# Menubar
 			self.menu_import_ref = QtWidgets.QAction()
+			self.menu_export_correl = QtWidgets.QAction()
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
@@ -166,6 +167,7 @@ class LIBSsaGUI(object):
 		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
 		# menu
 		self.menu_import_ref = self.mw.findChild(QtWidgets.QAction, 'actionI01')
+		self.menu_export_correl = self.mw.findChild(QtWidgets.QAction, 'actionE10')
 		
 	def loadp1(self):
 		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
@@ -466,9 +468,11 @@ class LIBSsaGUI(object):
 	
 	def guifd(self, parent: Path, tp: str, st1: str, st2: str = ''):
 		if tp in ('ged', 'getExistingDirectory'):
-			return QtWidgets.QFileDialog.getExistingDirectory(parent=self.mw, caption=st1, dir=parent.as_posix())
+			return QtWidgets.QFileDialog.getExistingDirectory(parent=self.mw, caption=st1, dir=str(parent))
 		elif tp in ('gof', 'getOpenFileName'):
-			return QtWidgets.QFileDialog.getOpenFileName(parent=self.mw, caption=st1, filter=st2, dir=parent.as_posix())
+			return QtWidgets.QFileDialog.getOpenFileName(parent=self.mw, caption=st1, filter=st2, dir=str(parent))
+		elif tp in ('gsf', 'getSaveFileName'):
+			return QtWidgets.QFileDialog.getSaveFileName(parent=self.mw, caption=st1, filter=st2, dir=str(parent))
 		else:
 			QtWidgets.QMessageBox.critical(self.mw, 'Erro', 'Wrong FD ID!')
 			raise ValueError('Wrong FD ID!')
