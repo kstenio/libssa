@@ -24,7 +24,7 @@ import openpyxl
 from os import listdir
 from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import Path
-from PySide2.QtCore import Signal
+from PySide6.QtCore import Signal
 from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract
 from scipy.linalg import norm
 from scipy.stats import pearsonr

@@ -31,13 +31,15 @@ try:
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from env.functions import isopeaks, fitpeaks, linear_model, zeros, pca_do, pca_scan, column_stack
-	from PySide2.QtGui import QKeyEvent
-	from PySide2.QtWidgets import QApplication, QMessageBox, QMainWindow
-	from PySide2.QtCore import QThreadPool, QObject, QCoreApplication, Qt
+	from PySide6.QtGui import QKeyEvent
+	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow
+	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
 except (ImportError, ImportWarning) as err:
-	print('\nYou have missing libraries to install.\n\n'
-	      '\tError message: {error}\n\n'
-	      'Check the README.md for extra info.'.format(error=str(err)))
+	print(f'\nYou have missing libraries to install.\n\n'
+	      f'\tError message: {str(err)}\n\n'
+	      f'Check the README.md for extra info.\n')
+	if 'opengl' in str(err).lower():
+		print('If you are under Linux Mint 20+ (or Ubuntu 20.04+), try running: apt install libopengl0')
 	sys.exit(1)
 
 
@@ -672,8 +674,8 @@ class LIBSSA2(QObject):
 			self.gui.g_selector.setCurrentIndex(6)
 			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
-				
-				
+			
+			
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
 	root  = Path.cwd()
@@ -683,7 +685,7 @@ if __name__ == '__main__':
 	app = QApplication(sys.argv)
 	if uif.is_file() and lof.is_file():
 		form = LIBSSA2(str(uif), str(lof))
-		sys.exit(app.exec_())
+		sys.exit(app.exec())
 	else:
 		form = LIBSSA2('','')
-		sys.exit(app.exec_())
+		sys.exit(app.exec())

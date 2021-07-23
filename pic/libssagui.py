@@ -24,9 +24,9 @@ from numpy import zeros, int16, ones, ndarray, std, linspace, arange, hstack
 from pandas import DataFrame
 from numpy.random import randint, uniform, random, rand
 from colorsys import hsv_to_rgb, hls_to_rgb
-from PySide2.QtCore import QFile, Qt
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtUiTools import QUiLoader
+from PySide6.QtCore import QFile, Qt
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtUiTools import QUiLoader
 from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem
 from pathlib import Path
 from string import punctuation
@@ -63,8 +63,8 @@ class LIBSsaGUI(object):
 			self.mbox = QtWidgets.QMessageBox()
 			self.mbox_pbar = QtWidgets.QProgressBar()
 			# Menubar
-			self.menu_import_ref = QtWidgets.QAction()
-			self.menu_export_correl = QtWidgets.QAction()
+			self.menu_import_ref = QtGui.QAction()
+			self.menu_export_correl = QtGui.QAction()
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
@@ -166,8 +166,8 @@ class LIBSsaGUI(object):
 		self.g_max = self.mw.findChild(QtWidgets.QLabel, 'graphLabel3')
 		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
 		# menu
-		self.menu_import_ref = self.mw.findChild(QtWidgets.QAction, 'actionI01')
-		self.menu_export_correl = self.mw.findChild(QtWidgets.QAction, 'actionE10')
+		self.menu_import_ref = self.mw.findChild(QtGui.QAction, 'actionI01')
+		self.menu_export_correl = self.mw.findChild(QtGui.QAction, 'actionE10')
 		
 	def loadp1(self):
 		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
@@ -252,8 +252,8 @@ class LIBSsaGUI(object):
 		self.g_minus.clicked.connect(lambda: self.graphchangeval(-1))
 		self.p2_dot_c.setKeyboardTracking(False)
 		self.p2_mad_c.setKeyboardTracking(False)
-		self.p3_isotb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
-		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.Stretch)
+		self.p3_isotb.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+		self.p3_fittb.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 	
 	def modechanger(self):
 		is_multi = True if self.p1_smm.isChecked() else False

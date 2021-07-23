@@ -23,7 +23,7 @@
 from numpy import array
 from pandas import DataFrame
 from pathlib import Path
-from PySide2.QtCore import QObject, QRunnable, Signal, Slot
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 from traceback import print_exc
 
 

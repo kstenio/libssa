@@ -22,7 +22,7 @@
 # Imports
 from env.equations import *
 from pandas import Series
-from PySide2.QtCore import Signal
+from PySide6.QtCore import Signal
 from scipy.optimize import least_squares, OptimizeResult
 from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones
 from sklearn.linear_model import LinearRegression
