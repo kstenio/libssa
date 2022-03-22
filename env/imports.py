@@ -29,7 +29,7 @@ from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, m
 from scipy.linalg import norm
 from scipy.stats import pearsonr
 
-def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, progress: Signal) -> tuple:
+def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, fsn: list, progress: Signal) -> tuple:
 	"""
 	This method loads spectra and returns global variables wavelength and counts.
 
@@ -40,6 +40,7 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 	:param wcol: which column is wavelength
 	:param ccol: which column is counts
 	:param dec: decimals values for round
+	:param fsn: values for Full Spectrum Normalization
 	:param progress: PySide Signal object (for multithreading)
 	:return: wavelength and counts arrays
 	"""
@@ -64,6 +65,18 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 				counts[i] = read_csv(file, delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)[:, 1:]
 				if sort:
 					counts[i] = counts[i][wavelength.argsort()]
+			# Checks if FSN is needed
+			if fsn[0] is None:
+				pass
+			else:
+				if fsn[0] == 'Area':
+					pass
+				elif fsn[0] == 'Norm':
+					pass
+				elif fsn[0] == 'Max. Value':
+					pass
+				elif fsn[0] == 'IS':
+					pass
 			# Emits signal for GUI
 			progress.emit(i+1)
 		# By the end - if needed - sorts wavelength

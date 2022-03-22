@@ -318,15 +318,32 @@ class LIBSSA2(QObject):
 			self.gui.guimsg('Error!', runerror_message, 'c')
 			
 		# the method itself
+		error = False
+		fsn = [None, None, None]
+		# check if folder was selected
 		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error', 'Please select <b>spectra folder</b> in order to load spectra.', 'w')
-		else:
+			error = True
+		# check if fsn is enabled
+		if self.gui.p1_fsn_check.isChecked():
+			fsn_mode = 'IS' if self.gui.p1_fsn_type.currentText() == 'Internal Standard' else self.gui.p1_fsn_type.currentText()
+			if fsn_mode == 'IS':
+				lm = self.gui.p1_fsn_lminus.value()
+				lp = self.gui.p1_fsn_lplus.value()
+				if lp <= lm:
+					self.gui.guimsg('Error', 'Use appropriate values for FSN Internal Standard mode.', 'w')
+					error = True
+				else:
+					fsn[0] = fsn_mode
+					fsn[1] = lm
+					fsn[2] = lp
+		if not error:
 			# disable load button
 			self.gui.p1_ldspectra.setEnabled(False)
 			# configures worker
 			changestatus(self.gui.sb, 'Please Wait. Loading spectra...', 'p', 1)
 			self.gui.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.samples['Count'])
-			worker = Worker(load, self.spec.samples['Path'], self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value())
+			worker = Worker(load, self.spec.samples['Path'], self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value(), fsn)
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Spectra loaded into LIBSsa'))
 			worker.signals.result.connect(result)

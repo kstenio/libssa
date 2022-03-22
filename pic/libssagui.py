@@ -78,9 +78,13 @@ class LIBSsaGUI(object):
 			self.p1_smm = self.p1_sms = QtWidgets.QRadioButton()
 			self.p1_fdtext = QtWidgets.QLineEdit()
 			self.p1_fdbtn = QtWidgets.QToolButton()
-			self.p1_delim = QtWidgets.QComboBox()
+			self.p1_delim = self.p1_fsn_type = QtWidgets.QComboBox()
 			self.p1_header = self.p1_wcol = self.p1_ccol = self.p1_dec = QtWidgets.QSpinBox()
 			self.p1_ldspectra = QtWidgets.QPushButton()
+			self.p1_fsn_check = QtWidgets.QCheckBox()
+			self.p1_fsn_labelminus = self.p1_fsn_labelplus = QtWidgets.QLabel()
+			self.p1_fsn_lminus = self.p1_fsn_lplus = QtWidgets.QDoubleSpinBox()
+			
 			# Page 2 == Operations
 			self.p2_dot = self.p2_mad = QtWidgets.QRadioButton()
 			self.p2_dot_c = self.p2_mad_c = QtWidgets.QDoubleSpinBox()
@@ -180,6 +184,12 @@ class LIBSsaGUI(object):
 		self.p1_ccol = self.mw.findChild(QtWidgets.QSpinBox, 'p1sB3')
 		self.p1_dec = self.mw.findChild(QtWidgets.QSpinBox, 'p1sB4')
 		self.p1_ldspectra = self.mw.findChild(QtWidgets.QPushButton, 'p1pB1')
+		self.p1_fsn_check = self.mw.findChild(QtWidgets.QCheckBox, 'p1cBox1')
+		self.p1_fsn_type = self.mw.findChild(QtWidgets.QComboBox, 'p1cB2')
+		self.p1_fsn_labelminus = self.mw.findChild(QtWidgets.QLabel, 'p1lB8')
+		self.p1_fsn_labelplus = self.mw.findChild(QtWidgets.QLabel, 'p1lB9')
+		self.p1_fsn_lminus = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p1dsB1')
+		self.p1_fsn_lplus = self.mw.findChild(QtWidgets.QDoubleSpinBox, 'p1dsB2')
 		
 	def loadp2(self):
 		self.p2_dot = self.mw.findChild(QtWidgets.QRadioButton, 'p2rB1')
@@ -234,6 +244,10 @@ class LIBSsaGUI(object):
 		self.g_selector.currentIndexChanged.connect(self.setgoptions)
 		# p1
 		self.p1_sms.toggled.connect(self.modechanger)
+		self.p1_fsn_check.stateChanged.connect(lambda: self.config_fsn(0))
+		self.p1_fsn_type.currentIndexChanged.connect(lambda: self.config_fsn(1))
+		self.p1_fsn_lminus.valueChanged.connect(lambda: self.config_fsn(2))
+		self.p1_fsn_lplus.valueChanged.connect(lambda: self.config_fsn(3))
 		# p2
 		self.p2_dot.toggled.connect(self.setoutliers)
 		# p3
@@ -497,6 +511,28 @@ class LIBSsaGUI(object):
 			self.mbox.close()
 			self.mbox = None
 			changestatus(self.sb, msg, 'g', False)
+	
+	def config_fsn(self, mode: int):
+		if mode == 0:
+			self.p1_fsn_type.setEnabled(self.p1_fsn_check.isChecked())
+		elif mode == 1:
+			en_dis = True if self.p1_fsn_type.currentText() == 'Internal Standard' else False
+			self.p1_fsn_lminus.setEnabled(en_dis)
+			self.p1_fsn_lplus.setEnabled(en_dis)
+			self.p1_fsn_labelminus.setEnabled(en_dis)
+			self.p1_fsn_labelplus.setEnabled(en_dis)
+		elif mode == 2:
+			self.p1_fsn_lminus.blockSignals(True)
+			if self.p1_fsn_lminus.value() >= self.p1_fsn_lplus.value():
+				self.guimsg('Invalid value', 'Lower wavelenght must be <b style="color: red">lower</b> than upper!', 'w')
+				self.p1_fsn_lminus.setValue(0.0)
+			self.p1_fsn_lminus.blockSignals(False)
+		elif mode == 3:
+			self.p1_fsn_lplus.blockSignals(True)
+			if self.p1_fsn_lplus.value() <= self.p1_fsn_lminus.value():
+				self.guimsg('Invalid value', 'Upper wavelenght must be <b style="color: red">bigger</b> than lower!', 'w')
+				self.p1_fsn_lplus.setValue(1000.0)
+			self.p1_fsn_lplus.setKeyboardTracking(False)
 	
 	def graphchangeval(self, val: int):
 		self.g_current_sb.setValue(self.g_current_sb.value()+val)

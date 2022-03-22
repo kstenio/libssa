@@ -1,7 +1,7 @@
-PySide6~=6.1.0
-numpy~=1.19.2
-scipy~=1.5.3
-pandas~=0.25.3
-pyqtgraph~=0.12.0
+PySide6>=6.1.0
+numpy>=1.19.2
+scipy>=1.5.3
+pandas>=0.25.3
+pyqtgraph>=0.12.0
 openpyxl~=3.0.5
 scikit-learn~=0.23.2
