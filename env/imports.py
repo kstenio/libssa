@@ -25,8 +25,8 @@ from os import listdir
 from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import Path
 from PySide6.QtCore import Signal
-from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract
-from scipy.linalg import norm
+from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract, trapz
+from numpy.linalg import norm
 from scipy.stats import pearsonr
 
 def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, fsn: list, progress: Signal) -> tuple:
@@ -70,13 +70,16 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 				pass
 			else:
 				if fsn[0] == 'Area':
-					pass
+					counts[i] /= trapz(counts[i], axis=0)
 				elif fsn[0] == 'Norm':
-					pass
+					counts[i] /= norm(counts[i], axis=0)
 				elif fsn[0] == 'Max. Value':
-					pass
+					counts[i] /= counts[i].max(axis=0)
 				elif fsn[0] == 'IS':
-					pass
+					w = wavelength[wavelength.argsort()]
+					is_idx = (w >= fsn[1]) & (w <= fsn[2])
+					is_cut = counts[i][is_idx, :]
+					counts[i] /= is_cut.max(axis=0)
 			# Emits signal for GUI
 			progress.emit(i+1)
 		# By the end - if needed - sorts wavelength
@@ -105,6 +108,21 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 			counts[j] = count
 			if sort:
 				counts[j] = counts[j][wavelength.argsort()]
+			# Checks if FSN is needed
+			if fsn[0] is None:
+				pass
+			else:
+				if fsn[0] == 'Area':
+					counts[j] /= trapz(counts[j], axis=0)
+				elif fsn[0] == 'Norm':
+					counts[j] /= norm(counts[j], axis=0)
+				elif fsn[0] == 'Max. Value':
+					counts[j] /= counts[j].max(axis=0)
+				elif fsn[0] == 'IS':
+					w = wavelength[wavelength.argsort()]
+					is_idx = (w >= fsn[1]) & (w <= fsn[2])
+					is_cut = counts[j][is_idx, :]
+					counts[j] /= is_cut.max(axis=0)
 			# Emits signal for GUI
 			progress.emit(j + 1)
 		# By the end - if needed - sorts wavelength
@@ -139,7 +157,10 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tupl
 					out_counts[i] = column_stack((out_counts[i], counts['Raw'][i][:, j]))
 				else:
 					removed[0] += 1
-			out_counts[i] = out_counts[i][:, 1:]
+			try:
+				out_counts[i] = out_counts[i][:, 1:]
+			except IndexError:
+				raise AttributeError('Too little shoots for outliers removal')
 			removed_report.append(removed)
 			progress.emit(i)
 	elif mode == 'MAD':
@@ -160,7 +181,10 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tupl
 				else:
 					removed[0] += 1
 			# Saves corrected values
-			out_counts[i] = zero_counts[:, 1:]
+			try:
+				out_counts[i] = zero_counts[:, 1:]
+			except IndexError:
+				raise AttributeError('Too little shoots for outliers removal')
 			removed_report.append(removed)
 			progress.emit(i)
 	# Return result

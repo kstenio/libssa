@@ -300,7 +300,7 @@ class LIBSSA2(QObject):
 			self.setgrange()
 		
 		# inner function to receive errors from worker
-		def error(runerror):
+		def ld_error(runerror):
 			# closes progress bar and updates statusbar
 			self.gui.mbox.close()
 			changestatus(self.gui.sb, 'Could not import Spectra. Check parameters and try again.', 'r', 0)
@@ -327,6 +327,7 @@ class LIBSSA2(QObject):
 		# check if fsn is enabled
 		if self.gui.p1_fsn_check.isChecked():
 			fsn_mode = 'IS' if self.gui.p1_fsn_type.currentText() == 'Internal Standard' else self.gui.p1_fsn_type.currentText()
+			fsn[0] = fsn_mode
 			if fsn_mode == 'IS':
 				lm = self.gui.p1_fsn_lminus.value()
 				lp = self.gui.p1_fsn_lplus.value()
@@ -334,7 +335,6 @@ class LIBSSA2(QObject):
 					self.gui.guimsg('Error', 'Use appropriate values for FSN Internal Standard mode.', 'w')
 					error = True
 				else:
-					fsn[0] = fsn_mode
 					fsn[1] = lm
 					fsn[2] = lp
 		if not error:
@@ -347,7 +347,7 @@ class LIBSSA2(QObject):
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Spectra loaded into LIBSsa'))
 			worker.signals.result.connect(result)
-			worker.signals.error.connect(error)
+			worker.signals.error.connect(ld_error)
 			self.configthread()
 			self.timer = time()
 			self.threadpool.start(worker)
@@ -367,7 +367,23 @@ class LIBSSA2(QObject):
 			# updates gui elements
 			self.gui.g_selector.setCurrentIndex(1)
 			self.setgrange()
-		
+		# inner function to handle errors
+		def errors(runerror):
+			# closes progress bar and updates statusbar
+			self.gui.mbox.close()
+			changestatus(self.gui.sb, 'Could not perform outliers removal. Check spectra and try again.', 'r', 0)
+			# enable gui elements
+			self.gui.p2_apply_out.setEnabled(True)
+			# outputs timer (error)
+			print('Timestamp:', time(),
+			      'ERROR: Could not remove outliers. Timer: %.2f seconds. ' % (time() - self.timer))
+			# ousputs error message
+			runerror_message = 'Could not remove outliers properly! ' \
+			                   'Try recheck spectra and try again.' \
+			                   '<p>Error type: <b><i><u>%s</u></i></b></p>' \
+			                   '<p>Error message:<br><b>%s</b></p>' % (
+			                   runerror[0], runerror[1])
+			self.gui.guimsg('Error!', runerror_message, 'c')
 		# main method itself
 		if not self.spec.intensities['Count']:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
@@ -383,6 +399,7 @@ class LIBSSA2(QObject):
 			worker.signals.progress.connect(self.gui.updatedynamicbox)
 			worker.signals.finished.connect(lambda: self.gui.updatedynamicbox(val=0, update=False, msg='Outliers removed from set'))
 			worker.signals.result.connect(result)
+			worker.signals.error.connect(errors)
 			self.configthread()
 			self.timer = time()
 			self.threadpool.start(worker)
