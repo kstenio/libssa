@@ -103,8 +103,10 @@ class LIBSsaGUI(object):
 			# Page 5 == PCA and PLSR
 			self.p5_pca_raw = self.p5_pca_iso = self.p5_pca_areas = self.p5_pca_heights = QtWidgets.QRadioButton()
 			self.p5_pca_fs = QtWidgets.QCheckBox()
-			self.p5_pca_cscan = self.p5_pca_do = QtWidgets.QPushButton()
 			self.p5_pca_ncomps = QtWidgets.QSpinBox()
+			self.p5_pca_cscan = self.p5_pca_do = self.p5_pls_cal_start = self.p5_pls_pred_start = QtWidgets.QPushButton()
+			self.p5_pls_cal_att = self.p5_pls_pred_model = self.p5_pls_pred_att = QtWidgets.QLabel()
+			self.p5_pls_cal_ref = QtWidgets.QComboBox()
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -212,15 +214,15 @@ class LIBSsaGUI(object):
 		self.p3_mean1st = self.mw.findChild(QtWidgets.QRadioButton, 'p3rB1')
 		
 	def loadp4(self):
-		self.p4_peak  = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox1')
+		self.p4_peak = self.mw.findChild(QtWidgets.QComboBox, 'p4cB1')
 		self.p4_npeak = self.mw.findChild(QtWidgets.QSpinBox, 'p4sB1')
 		self.p4_npeak_norm = self.mw.findChild(QtWidgets.QSpinBox, 'p4sB2')
-		self.p4_ref = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox2')
+		self.p4_ref = self.mw.findChild(QtWidgets.QComboBox, 'p4cB2')
 		self.p4_areas = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB1')
 		self.p4_heights = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB2')
 		self.p4_wnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB3')
 		self.p4_pnorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB4')
-		self.p4_pnorm_combo = self.mw.findChild(QtWidgets.QComboBox, 'p4cBox3')
+		self.p4_pnorm_combo = self.mw.findChild(QtWidgets.QComboBox, 'p4cB3')
 		self.p4_anorm = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB5')
 		self.p4_epeak = self.mw.findChild(QtWidgets.QRadioButton, 'p4rB6')
 		self.p4_apply = self.mw.findChild(QtWidgets.QPushButton, 'p4pB1')
@@ -234,7 +236,13 @@ class LIBSsaGUI(object):
 		self.p5_pca_cscan = self.mw.findChild(QtWidgets.QPushButton, 'p5pB1')
 		self.p5_pca_ncomps = self.mw.findChild(QtWidgets.QSpinBox, 'p5sB1')
 		self.p5_pca_do = self.mw.findChild(QtWidgets.QPushButton, 'p5pB2')
-	
+		self.p5_pls_cal_att = self.mw.findChild(QtWidgets.QLabel, 'p5lB7')
+		self.p5_pls_cal_ref = self.mw.findChild(QtWidgets.QComboBox, 'p5cB1')
+		self.p5_pls_cal_start = self.mw.findChild(QtWidgets.QPushButton, 'p5pB3')
+		self.p5_pls_pred_model = self.mw.findChild(QtWidgets.QLabel, 'p5lB11')
+		self.p5_pls_pred_att = self.mw.findChild(QtWidgets.QLabel, 'p5lB13')
+		self.p5_pls_pred_start = self.mw.findChild(QtWidgets.QPushButton, 'p5pB4')
+		
 	def loadp6(self):
 		pass
 	

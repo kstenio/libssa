@@ -435,8 +435,9 @@ class LIBSSA2(QObject):
 					self.spec.ref = ref_spreadsheet
 					self.gui.p2_correl_lb.setText('Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name )
 					self.gui.p2_apply_correl.setEnabled(True)
-					# puts values inside reference for calibration curve combo box
+					# puts values inside reference for calibration curve and PLS combo boxes
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
+					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
 					
 	def docorrel(self):
 		# inner function to receive result from worker
@@ -705,6 +706,9 @@ class LIBSSA2(QObject):
 			transformed, loadings = pca_do(self.spec.pca['Attributes'], self.gui.p5_pca_ncomps.value())
 			self.spec.pca['Transformed'] = transformed
 			self.spec.pca['Loadings'] = loadings
+			self.gui.p5_pls_cal_att.setText(f'{self.spec.pca["Mode"][0]}-{self.gui.p5_pca_ncomps.value()}PC{"-FS" if self.gui.p5_pca_fs.isChecked() else ""}')
+			self.gui.p5_pls_cal_att.setStyleSheet('color:#000080; font-weight: bold;')
+			self.gui.p5_pls_cal_start.setEnabled(True)
 			self.gui.g_selector.setCurrentIndex(6)
 			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
