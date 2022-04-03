@@ -30,7 +30,7 @@ try:
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks, fitpeaks, linear_model, zeros, pca_do, pca_scan, column_stack
+	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do
 	from PySide6.QtGui import QKeyEvent
 	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow
 	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -107,8 +107,50 @@ class LIBSSA2(QObject):
 		self.threadpool.setMaxThreadCount(self.cores - 1)
 	
 	#
-	# Methods menu export data
+	# Menu input/output methods
 	#
+	def loadref(self):
+		if not self.spec.samples['Count']:
+			self.gui.guimsg('Error',
+			                'Please import data <b>before</b> using this feature.',
+			                'w')
+		else:
+			# shows warning
+			msg_str = 'Reference spreadsheet file (<i>XLS</i> or <i>XLSX</i>) <b style="color: red">must</b> be structured in the following manner:' \
+			          '<ol>' \
+			          '<li>First column containing the identifier of the sample;</li>' \
+			          '<li>Samples has to be in the same order as the spectra files/folders;</li>' \
+			          '<li>Remaining columns containing the values for each reference.</li>' \
+			          '</ol>' \
+			          'Check the example bellow:'
+			self.gui.guimsg('Instructions', msg_str, 'r')
+			# gets file from dialog
+			ref_file = Path(self.gui.guifd(self.parent, 'gof',
+			                               'Select reference spreadsheet file',
+			                               'Excel Spreadsheet Files (*.xls *.xlsx)')[
+				                0])
+			if str(ref_file) == '.':
+				self.gui.guimsg('Error', 'Cancelled by the user.', 'i')
+			else:
+				ref_spreadsheet = refcorrel(ref_file)
+				if ref_spreadsheet.index.size != self.spec.samples['Count']:
+					self.gui.guimsg('Error',
+					                'Total of rows in spreadsheet: <b>{rows}</b><br>'
+					                'Total of samples in sample set: <b>{samples}</b><br><br>'
+					                'Number of rows <b>must</b> be the same as total of samples!'.format(
+						                rows=ref_spreadsheet.index.__len__(),
+						                samples=self.spec.samples['Count']),
+					                'c')
+				else:
+					# enables gui element and saves val
+					self.spec.ref = ref_spreadsheet
+					self.gui.p2_correl_lb.setText(
+						'Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name)
+					self.gui.p2_apply_correl.setEnabled(True)
+					# puts values inside reference for calibration curve and PLS combo boxes
+					self.gui.p4_ref.addItems(self.spec.ref.columns)
+					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
+	
 	def exportcorrel(self):
 		# Checks if Correlation was performed
 		if self.spec.pearson['Data'] is self.spec.base:
@@ -404,41 +446,6 @@ class LIBSSA2(QObject):
 			self.timer = time()
 			self.threadpool.start(worker)
 	
-	def loadref(self):
-		if not self.spec.samples['Count']:
-			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
-		else:
-			# shows warning
-			msg_str = 'Reference spreadsheet file (<i>XLS</i> or <i>XLSX</i>) <b style="color: red">must</b> be structured in the following manner:' \
-			          '<ol>' \
-			          '<li>First column containing the identifier of the sample;</li>' \
-			          '<li>Samples has to be in the same order as the spectra files/folders;</li>' \
-			          '<li>Remaining columns containing the values for each reference.</li>' \
-			          '</ol>' \
-			          'Check the example bellow:'
-			self.gui.guimsg('Instructions', msg_str, 'r')
-			# gets file from dialog
-			ref_file = Path(self.gui.guifd(self.parent, 'gof', 'Select reference spreadsheet file', 'Excel Spreadsheet Files (*.xls *.xlsx)')[0])
-			if str(ref_file) == '.':
-				self.gui.guimsg('Error', 'Cancelled by the user.', 'i')
-			else:
-				ref_spreadsheet = refcorrel(ref_file)
-				if ref_spreadsheet.index.size != self.spec.samples['Count']:
-					self.gui.guimsg('Error',
-					                'Total of rows in spreadsheet: <b>{rows}</b><br>'
-					                'Total of samples in sample set: <b>{samples}</b><br><br>'
-					                'Number of rows <b>must</b> be the same as total of samples!'.format(
-						                rows=ref_spreadsheet.index.__len__(),
-						                samples=self.spec.samples['Count']), 'c')
-				else:
-					# enables gui element and saves val
-					self.spec.ref = ref_spreadsheet
-					self.gui.p2_correl_lb.setText('Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name )
-					self.gui.p2_apply_correl.setEnabled(True)
-					# puts values inside reference for calibration curve and PLS combo boxes
-					self.gui.p4_ref.addItems(self.spec.ref.columns)
-					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
-					
 	def docorrel(self):
 		# inner function to receive result from worker
 		def result(returned):
@@ -576,7 +583,6 @@ class LIBSSA2(QObject):
 			self.timer = time()
 			self.threadpool.start(worker)
 
-
 	#
 	# Methods for page 4 == Calibration curve
 	#
@@ -706,17 +712,33 @@ class LIBSSA2(QObject):
 			transformed, loadings = pca_do(self.spec.pca['Attributes'], self.gui.p5_pca_ncomps.value())
 			self.spec.pca['Transformed'] = transformed
 			self.spec.pca['Loadings'] = loadings
-			self.gui.p5_pls_cal_att.setText(f'{self.spec.pca["Mode"][0]}-{self.gui.p5_pca_ncomps.value()}PC{"-FS" if self.gui.p5_pca_fs.isChecked() else ""}')
+			# Updates PLS values
+			self.spec.pls['NComps'] = self.gui.p5_pca_ncomps.value()
+			self.spec.pls['Parameters'] = f'{self.spec.pca["Mode"][0]}-{self.spec.pls["NComps"]}PC{"-FS" if self.gui.p5_pca_fs.isChecked() else ""}'
+			self.gui.p5_pls_cal_att.setText(self.spec.pls['Parameters'])
 			self.gui.p5_pls_cal_att.setStyleSheet('color:#000080; font-weight: bold;')
 			self.gui.p5_pls_cal_start.setEnabled(True)
 			self.gui.g_selector.setCurrentIndex(6)
 			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
+	
+	def pls_do(self):
+		if self.spec.pca['Transformed'] == self.spec.base or self.spec.ref.columns[0] == 'Empty':
+			self.gui.guimsg('Warning',
+			                'You must <i>load references</i> <b>and</b> <i>create attributes from PCA</i> <b style="color:red">before</b> using this feature.',
+			                'w')
+		else:
+			# This means all attributes are fine.
+			# Now, we must send to PLSR algorithm the reference,
+			# number of components and and attribute matrix (created in PCA part)
+			predicted = pls_do(self.spec.pca['Transformed'], self.spec.ref[self.gui.p5_pls_cal_ref.currentText()], self.spec.pls['NComps'])
+			# TODO: get proper value from return and do plot
+			
 			
 			
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
-	root  = Path.cwd()
+	root = Path.cwd()
 	uif = root.joinpath('pic').joinpath('libssa.ui')
 	lof = root.joinpath('pic').joinpath('libssa.svg')
 	QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)

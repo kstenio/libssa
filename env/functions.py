@@ -26,6 +26,7 @@ from PySide6.QtCore import Signal
 from scipy.optimize import least_squares, OptimizeResult
 from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones
 from sklearn.linear_model import LinearRegression
+from sklearn.cross_decomposition import PLSRegression as PLS
 from sklearn.metrics import mean_squared_error
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -421,3 +422,13 @@ def pca_do(normalized_attributes, n_comp):
 	loadings = pca.components_.T
 	transformed = pca.transform(normalized_attributes)
 	return transformed, loadings
+
+def pls_do(attributes, reference, n_comp):
+	pls = PLS(n_comp)
+	predicted = pls.fit(attributes, reference)
+	# TODO: fully implement and do proper return
+	# self.pls = {'Reference': self.base, 'Predict': self.base,
+	#             'Model': self.base,
+	#             'Parameters': '', 'NComps': 0, 'R2': self.base,
+	#             'RMSE': self.base}
+	

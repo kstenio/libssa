@@ -82,9 +82,10 @@ class Spectra(object):
 	 models = values that store models properties and predictions
 	 plasma information = for temperature and plasma density
 	"""
+	# Base element
+	base = array([None], dtype=object)
+	
 	def __init__(self):
-		# Base element
-		self.base = array([None], dtype=object)
 		# Sample set and properties
 		self.samples = {'Count': 0, 'Name': tuple([None]), 'Path': tuple([Path()])}
 		# Base spectra elements: Wavelengths and Counts
@@ -107,7 +108,8 @@ class Spectra(object):
 					   'LoD': self.base, 'LoQ': self.base}
 		self.pca = {'Mode': None, 'OptComp': 0, 'ExpVar': self.base,
 		            'Attributes': self.base, 'Transformed': self.base, 'Loadings': self.base}
-		self.models = {'PLS': self.base}
+		self.pls = {'Reference': self.base, 'Predict': self.base, 'Model': self.base,
+		            'Parameters': '', 'NComps': 0, 'R2': self.base, 'RMSE': self.base}
 		# Plasma properties
 		self.plasma = {'Temperature': self.base, 'Ne': self.base}
 	
