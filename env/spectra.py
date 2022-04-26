@@ -108,8 +108,10 @@ class Spectra(object):
 					   'LoD': self.base, 'LoQ': self.base}
 		self.pca = {'Mode': None, 'OptComp': 0, 'ExpVar': self.base,
 		            'Attributes': self.base, 'Transformed': self.base, 'Loadings': self.base}
-		self.pls = {'Reference': self.base, 'Predict': self.base, 'Model': self.base,
-		            'Parameters': '', 'NComps': 0, 'R2': self.base, 'RMSE': self.base}
+		self.pls = {'Element': self.base, 'Model': self.base, 'Reference': self.base, 'Predict': self.base,
+		            'Residual': self.base, 'PredictR2': self.base, 'PredictRMSE': self.base,
+		            'CrossValPredict': self.base, 'CrossValR2': self.base, 'CrossValRMSE': self.base,
+		            'NComps': 0}
 		# Plasma properties
 		self.plasma = {'Temperature': self.base, 'Ne': self.base}
 	

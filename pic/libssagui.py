@@ -467,7 +467,28 @@ class LIBSsaGUI(object):
 			self.g.plot(x[sort], ld[sort][:, 1], pen=mkPen(pretty_colors(1), width=1.5), name='Loadings PC2')
 			self.g.plot(x[sort], ld[sort][:, 2], pen=mkPen(pretty_colors(1), width=1), name='Loadings PC3')
 		self.g.autoRange()
-			
+	
+	def plsplot(self, param: dict, mode: str = 'CV'):
+		# self.spec.pls['Element'] = self.gui.p5_pls_cal_ref.currentText()
+		# self.spec.pls['Model'] = returned[0]
+		# self.spec.pls['Reference'] = returned[1]
+		# self.spec.pls['Predict'] = returned[2]
+		# self.spec.pls['Residual'] = returned[3]
+		# self.spec.pls['PredictR2'] = returned[4]
+		# self.spec.pls['PredictRMSE'] = returned[5]
+		# self.spec.pls['CrossValPredict'] = returned[6]
+		# self.spec.pls['CrossValR2'] = returned[7]
+		# self.spec.pls['CrossValRMSE'] = returned[8]
+		if mode == 'CV':
+			self.splot(param['Reference'], param['Reference'], clear=True, symbol=None, name='Ideal', width=2)
+			self.splot(param['Reference'], param['Predict'], clear=False, symbol='o', name='Predict')
+			self.splot(param['Reference'], param['Residual'], clear=False, symbol='+', name='Residuals')
+			self.splot(param['Reference'], param['CrossValPredict'], clear=False, symbol='t', name='CV Predict')
+			# TODO: add box with additional information (R2, RMSE)
+		elif mode == 'Blind':
+			pass
+		else:
+			pass
 	
 	#
 	# GUI/helper functions

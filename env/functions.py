@@ -20,12 +20,15 @@
 #
 
 # Imports
+import numpy
+
 from env.equations import *
 from pandas import Series
 from PySide6.QtCore import Signal
 from scipy.optimize import least_squares, OptimizeResult
 from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.cross_decomposition import PLSRegression as PLS
 from sklearn.metrics import mean_squared_error
 from sklearn.decomposition import PCA
@@ -423,12 +426,23 @@ def pca_do(normalized_attributes, n_comp):
 	transformed = pca.transform(normalized_attributes)
 	return transformed, loadings
 
-def pls_do(attributes, reference, n_comp):
-	pls = PLS(n_comp)
+
+def pls_do(attributes, reference, n_comp, scale, cv=5):
+	pls = PLS(n_comp, scale=scale)
+	# For pure prediction
+	predicted = pls.predict(attributes)
+	residual = reference - predicted
+	predict_r2 = pls.score(attributes, reference)
+	predict_rmse = numpy.std(residual)
+	# For cross validation
+	cv_pred = cross_val_predict(pls, attributes, reference, cv=cv)
+	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv)
+	cv_rmse = numpy.std(reference - cv_pred)
 	predicted = pls.fit(attributes, reference)
 	# TODO: fully implement and do proper return
 	# self.pls = {'Reference': self.base, 'Predict': self.base,
 	#             'Model': self.base,
 	#             'Parameters': '', 'NComps': 0, 'R2': self.base,
 	#             'RMSE': self.base}
+	return pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
 	

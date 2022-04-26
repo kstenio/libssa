@@ -282,11 +282,11 @@ class LIBSSA2(QObject):
 					self.gui.pcaplot(idx, self.spec.pca['Mode'], tuple([self.spec.pca['Loadings'], self.spec.wavelength]))
 		elif self.gui.g_current == 'PLS':
 			if idx == 0:
-				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' % 'Element')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' % self.spec.pls['Element'])
+				self.gui.plsplot(self.spec.pls, mode='CV')
 			if idx == 1:
-				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % 'Element')
-				self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % self.spec.pls['Element'])
+				self.gui.plsplot(self.spec.pls, mode='Blind')
 		elif self.gui.g_current == 'Temperature':
 			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
 			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
@@ -731,8 +731,22 @@ class LIBSSA2(QObject):
 			# This means all attributes are fine.
 			# Now, we must send to PLSR algorithm the reference,
 			# number of components and and attribute matrix (created in PCA part)
-			predicted = pls_do(self.spec.pca['Transformed'], self.spec.ref[self.gui.p5_pls_cal_ref.currentText()], self.spec.pls['NComps'])
-			# TODO: get proper value from return and do plot
+			returned = pls_do(self.spec.pca['Transformed'], self.spec.ref[self.gui.p5_pls_cal_ref.currentText()], self.spec.pls['NComps'], self.gui.p5_pca_fs.isChecked())
+			# pls, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
+			self.spec.pls['Element'] = self.gui.p5_pls_cal_ref.currentText()
+			self.spec.pls['Model'] = returned[0]
+			self.spec.pls['Reference'] = returned[1]
+			self.spec.pls['Predict'] = returned[2]
+			self.spec.pls['Residual'] = returned[3]
+			self.spec.pls['PredictR2'] = returned[4]
+			self.spec.pls['PredictRMSE'] = returned[5]
+			self.spec.pls['CrossValPredict'] = returned[6]
+			self.spec.pls['CrossValR2'] = returned[7]
+			self.spec.pls['CrossValRMSE'] = returned[8]
+			# Update graph elements
+			self.gui.g_selector.setCurrentIndex(7)
+			self.gui.g_current_sb.setValue(1)
+			self.setgrange()
 			
 			
 			
