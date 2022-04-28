@@ -354,9 +354,9 @@ class LIBSsaGUI(object):
 	def splot(self, x, y, clear=True, symbol=None, name=None, width=1):
 		if clear: self.g.clear()
 		if symbol is None:
-			self.g.plot(x, y, pen=mkPen(randint(50, 200, (1, 3))[0], width=width), name=name)
+			self.g.plot(x.reshape(-1), y.reshape(-1), pen=mkPen(randint(50, 200, (1, 3))[0], width=width), name=name)
 		else:
-			self.g.plot(x, y, pen=None, symbol=symbol, symbolBrush=mkBrush(randint(50, 200, (1, 3))[0]), name=name)
+			self.g.plot(x.reshape(-1), y.reshape(-1), pen=None, symbol=symbol, symbolBrush=mkBrush(randint(50, 200, (1, 3))[0]), name=name)
 		self.g.autoRange()
 		
 	def mplot(self, x, matrix, hsl=True):
@@ -780,7 +780,7 @@ class LIBSsaGUI(object):
 			self.p3_fittb.setCellWidget(r, 1, shapes)
 			# Locks editing name
 			self.p3_fittb.item(r, 0).setFlags(Qt.ItemIsEditable)
-		self.p3_fittb.horizontalHeader().setResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+		self.p3_fittb.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 	
 	def setpeaknorm(self):
 		# Constructs list for normalization combo box

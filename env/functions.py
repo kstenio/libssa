@@ -428,21 +428,19 @@ def pca_do(normalized_attributes, n_comp):
 
 
 def pls_do(attributes, reference, n_comp, scale, cv=5):
+	# Organizes variables before applying model
 	pls = PLS(n_comp, scale=scale)
-	# For pure prediction
-	predicted = pls.predict(attributes)
-	residual = reference - predicted
-	predict_r2 = pls.score(attributes, reference)
-	predict_rmse = numpy.std(residual)
-	# For cross validation
+	reference = numpy.array(reference).reshape(-1, 1)
+	# Now, we get cross validation data
 	cv_pred = cross_val_predict(pls, attributes, reference, cv=cv)
 	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv)
+	# For pure prediction
+	pls.fit(attributes, reference)
+	predicted = pls.predict(attributes)
+	predict_r2 = pls.score(attributes, reference)
+	# Residuals and others parameters
+	residual = reference - predicted
+	predict_rmse = numpy.std(residual)
 	cv_rmse = numpy.std(reference - cv_pred)
-	predicted = pls.fit(attributes, reference)
-	# TODO: fully implement and do proper return
-	# self.pls = {'Reference': self.base, 'Predict': self.base,
-	#             'Model': self.base,
-	#             'Parameters': '', 'NComps': 0, 'R2': self.base,
-	#             'RMSE': self.base}
 	return pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
 	

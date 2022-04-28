@@ -100,6 +100,7 @@ class LIBSSA2(QObject):
 		# Page 5
 		self.gui.p5_pca_cscan.clicked.connect(self.pca_perform_scan)
 		self.gui.p5_pca_do.clicked.connect(self.pca_do)
+		self.gui.p5_pls_cal_start.clicked.connect(self.pls_do)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -587,7 +588,7 @@ class LIBSSA2(QObject):
 	# Methods for page 4 == Calibration curve
 	#
 	def docalibrationcurve(self):
-		if (not self.spec.isolated['Count'] and (self.spec.fit['Area'] == self.spec.base)) or (self.spec.ref.columns[0] == 'Empty'):
+		if (not self.spec.isolated['Count'] and (self.spec.fit['Area'] is self.spec.base)) or (self.spec.ref.columns[0] == 'Empty'):
 			self.gui.guimsg('Warning', 'You must <i>load references</i> <b>and</b> <i>perform peak fitting</i> <b style="color:red">before</b> using this feature.', 'w')
 		else:
 			# Sets parameter to be used: areas or intensities
@@ -666,7 +667,7 @@ class LIBSSA2(QObject):
 				attribute_matrix = iso_mean
 		elif mode == 'Areas':
 			# Checks if peak fitting was made
-			if self.spec.fit['Shape'] == self.spec.base:
+			if self.spec.fit['Shape'] is self.spec.base:
 				self.gui.guimsg('Error', 'Please perform peak fitting <b style="color: red">before</b> using this feature.', 'w')
 				ok = False
 			else:
@@ -679,7 +680,7 @@ class LIBSSA2(QObject):
 				attribute_matrix = area_matrix[:, 1:]
 		else:
 			# Checks if peak fitting was made (same for areas)
-			if self.spec.fit['Shape'] == self.spec.base:
+			if self.spec.fit['Shape'] is self.spec.base:
 				self.gui.guimsg('Error', 'Please perform peak fitting <b style="color: red">before</b> using this feature.', 'w')
 				ok = False
 			else:
@@ -723,7 +724,7 @@ class LIBSSA2(QObject):
 			self.setgrange()
 	
 	def pls_do(self):
-		if self.spec.pca['Transformed'] == self.spec.base or self.spec.ref.columns[0] == 'Empty':
+		if self.spec.pca['Transformed'] is self.spec.base or self.spec.ref.columns[0] == 'Empty':
 			self.gui.guimsg('Warning',
 			                'You must <i>load references</i> <b>and</b> <i>create attributes from PCA</i> <b style="color:red">before</b> using this feature.',
 			                'w')
@@ -732,7 +733,7 @@ class LIBSSA2(QObject):
 			# Now, we must send to PLSR algorithm the reference,
 			# number of components and and attribute matrix (created in PCA part)
 			returned = pls_do(self.spec.pca['Transformed'], self.spec.ref[self.gui.p5_pls_cal_ref.currentText()], self.spec.pls['NComps'], self.gui.p5_pca_fs.isChecked())
-			# pls, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
+			# pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
 			self.spec.pls['Element'] = self.gui.p5_pls_cal_ref.currentText()
 			self.spec.pls['Model'] = returned[0]
 			self.spec.pls['Reference'] = returned[1]
