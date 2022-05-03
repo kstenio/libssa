@@ -480,11 +480,29 @@ class LIBSsaGUI(object):
 		# self.spec.pls['CrossValR2'] = returned[7]
 		# self.spec.pls['CrossValRMSE'] = returned[8]
 		if mode == 'CV':
-			self.splot(param['Reference'], param['Reference'], clear=True, symbol=None, name='Ideal', width=2)
-			self.splot(param['Reference'], param['Predict'], clear=False, symbol='o', name='Predict')
-			self.splot(param['Reference'], param['Residual'], clear=False, symbol='+', name='Residuals')
-			self.splot(param['Reference'], param['CrossValPredict'], clear=False, symbol='t', name='CV Predict')
-			# TODO: add box with additional information (R2, RMSE)
+			x = param['Reference']
+			y1 = param['Predict']
+			y2 = param['CrossValPredict']
+			self.splot(x, x, clear=True, symbol=None, name='Ideal', width=2)
+			self.splot(x, y1, clear=False, symbol='o', name='Predict')
+			self.splot(x, y2, clear=False, symbol='t', name='CV Predict')
+			# Adds message box (with report)
+			plsbox_str = f"R2: <b>{param['PredictR2']:.3f}</b><br>" \
+			             f"R2_CV: <b>{param['CrossValR2']:.3f}</b><br>" \
+			             f"RMSEC: <b>{param['PredictRMSE']:.3f}</b><br>" \
+			             f"RMSEC_CV: <b>{param['CrossValRMSE']:.3f}</b><br>" \
+			             f"Correlation: <b>{param['PredictR2'] ** 0.5:.0%}</b>"
+			plsbox = TextItem(html=plsbox_str, anchor=(0, 1), angle=0,
+			                  border='#004de6', fill='#ccddff')
+			self.g.addItem(plsbox)
+			may = y2 if max(y2) > max(x) else x
+			miy = y2 if min(y2) < min(x) else x
+			xpos = x[-1] + (x[-1] - x[0]) / 20
+			ypos = max(may) + (max(may) - min(miy)) / 20
+			plsbox.setPos(xpos, ypos)
+			# Finally, performs auto-range (twice)
+			self.g.autoRange()
+			self.g.autoRange()
 		elif mode == 'Blind':
 			pass
 		else:

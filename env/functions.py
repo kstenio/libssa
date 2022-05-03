@@ -433,7 +433,7 @@ def pls_do(attributes, reference, n_comp, scale, cv=5):
 	reference = numpy.array(reference).reshape(-1, 1)
 	# Now, we get cross validation data
 	cv_pred = cross_val_predict(pls, attributes, reference, cv=cv)
-	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv)
+	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv).max()
 	# For pure prediction
 	pls.fit(attributes, reference)
 	predicted = pls.predict(attributes)
