@@ -22,9 +22,11 @@
 # Imports
 import sys
 try:
+	import env.export as export
 	from time import time
 	from os import listdir
 	from datetime import datetime
+	from traceback import print_exc
 	from pandas import DataFrame, Index
 	from pathlib import Path, PosixPath
 	from env.spectra import Spectra, Worker
@@ -83,7 +85,18 @@ class LIBSSA2(QObject):
 		self.gui.g_current_sb.valueChanged.connect(self.doplot)
 		# Menu
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
-		self.gui.menu_export_correl.triggered.connect(self.exportcorrel)
+		self.gui.menu_export_other_correl.triggered.connect(self.exportcorrel)
+		self.gui.menu_export_fullspectra_raw.triggered.connect(lambda: self.export_mecanism(1))
+		self.gui.menu_export_fullspectra_out.triggered.connect(lambda: self.export_mecanism(2))
+		self.gui.menu_export_peaks_table.triggered.connect(lambda: self.export_mecanism(3))
+		self.gui.menu_export_peaks_isolated.triggered.connect(lambda: self.export_mecanism(4))
+		self.gui.menu_export_peaks_areas.triggered.connect(lambda: self.export_mecanism(5))
+		self.gui.menu_export_predictions_linear.triggered.connect(lambda: self.export_mecanism(6))
+		self.gui.menu_export_predictions_pls.triggered.connect(lambda: self.export_mecanism(7))
+		self.gui.menu_export_other_pca.triggered.connect(lambda: self.export_mecanism(8))
+		self.gui.menu_export_other_tne.triggered.connect(lambda: self.export_mecanism(9))
+		self.gui.menu_export_other_correl.triggered.connect(lambda: self.export_mecanism(10))
+		# self.gui.menu
 		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
@@ -101,6 +114,7 @@ class LIBSSA2(QObject):
 		self.gui.p5_pca_cscan.clicked.connect(self.pca_perform_scan)
 		self.gui.p5_pca_do.clicked.connect(self.pca_do)
 		self.gui.p5_pls_cal_start.clicked.connect(self.pls_do)
+		self.gui.p5_pls_pred_start.clicked.connect(self.pls_predict)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -171,9 +185,75 @@ class LIBSSA2(QObject):
 				# Exports df and warns user
 				exdf.to_excel(exfile)
 				self.gui.guimsg('Done', f'Correlation Spectra report saved to <b><a href={exfile.as_uri()}>file</a></b>.', 'i')
-			
-		
-		
+	
+	def export_mecanism(self, mode: int):
+		# Proper defines modes inside a dict
+		modes_dict = {1: 'RAW Spectra', 2: 'Outliers Removed Spectra',
+		              3: 'Peaks Table', 4: 'Isolated Peaks', 5: 'Peaks Report',
+		              6: 'Predicions (Linear Regression)', 7: 'Predictions (PLS Regression)',
+		              8: 'PCA Data', 9: 'Temperature and Ne Report', 10: 'Correlation Spectrum'}
+		# Creates variables to be used in the method
+		func, func_param, fd_params, msg_params, index = None, None, tuple(), tuple(), False
+		dt = datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
+		# Gets values based on mode
+		if mode == 1:
+			func = export.export_raw
+			func_param = self.spec
+			fd_params = (Path.home(),
+			             'getExistingDirectory',
+			             f'Choose folder for exporting {modes_dict[mode]} data', '')
+			index = False
+		elif mode == 2:
+			pass
+		elif mode == 3:
+			pass
+		elif mode == 4:
+			pass
+		elif mode == 5:
+			pass
+		elif mode == 6:
+			pass
+		elif mode == 7:
+			func = export.export_pls
+			func_param = self.spec
+			fd_params = (Path.home().joinpath(f'PLS_Model_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} report',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
+		elif mode == 8:
+			pass
+		elif mode == 9:
+			pass
+		elif mode == 10:
+			pass
+		else:
+			raise AssertionError('Illegal mode for export data!')
+		# Call file dialog
+		try:
+			path = self.gui.guifd(*fd_params)[0] if index else self.gui.guifd(*fd_params)
+		except TypeError:
+			self.gui.guimsg('Error', f'Can not export data for <b>{modes_dict[mode]}</b>.'
+			                         f'<br>Not implemented yet.', 'c')
+		else:
+			path = Path(path)
+			if path.name in ('', '.'):
+				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+			else:
+				# Run func with parameters
+				try:
+					func(path, func_param)
+				except Exception as ex:
+					print_exc()
+					self.gui.guimsg('Could not export data!',
+					                f'Failed to save <u><b>{modes_dict[mode]}</b></u>.'
+					                f'<p>Error message: <b style="color: red">{str(ex)}</b></p>', 'c')
+					
+				else:
+					self.gui.guimsg('Done!',
+					                f'<b>{modes_dict[mode]}</b> data properly saved.'
+					                f'<p>Save location: <a href={path.as_uri()}>{path.name}</a></p>',
+					                'i')
 	
 	#
 	# Methods for Graphics
@@ -227,6 +307,7 @@ class LIBSSA2(QObject):
 		# Gets current index and clear legend
 		idx = self.gui.g_current_sb.value() - 1
 		self.gui.g_legend.setPen(None)
+		self.gui.g.clear()
 		# Perform plot based on actual settings
 		if self.gui.g_current == 'Raw':
 			self.gui.g.setTitle(f"Raw LIBS spectra from sample <b>{self.spec.samples['Name'][idx]}</b>")
@@ -235,7 +316,6 @@ class LIBSSA2(QObject):
 			self.gui.g.setTitle(f"Outliers removed LIBS spectra from sample <b>{self.spec.samples['Name'][idx]}</b>")
 			self.gui.mplot(self.spec.wavelength['Raw'], self.spec.intensities['Outliers'][idx])
 		elif self.gui.g_current == 'Correlation':
-			self.gui.g.clear()
 			self.gui.g.setTitle(f"Correlation spectrum for <b>{self.spec.ref.columns[idx]}</b>")
 			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Data'][:, idx], False)
 			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Full-Mean'], False)
@@ -248,7 +328,6 @@ class LIBSSA2(QObject):
 			self.gui.g.setTitle(f"Isolated peak of <b>{self.spec.isolated['Element'][i]}</b> for sample <b>{self.spec.samples['Name'][j]}</b>")
 			self.gui.mplot(self.spec.wavelength['Isolated'][i], self.spec.intensities['Isolated'][i][j])
 		elif self.gui.g_current == 'Fit':
-			self.gui.g.clear()
 			i = idx // self.spec.samples['Count']
 			j = idx - (i * self.spec.samples['Count'])
 			k = self.spec.fit
@@ -282,11 +361,14 @@ class LIBSSA2(QObject):
 					self.gui.g.setTitle('Plot of <b>Loadings</b> (P1/P2/P3) as function of <b>attributes</b>')
 					self.gui.pcaplot(idx, self.spec.pca['Mode'], tuple([self.spec.pca['Loadings'], self.spec.wavelength]))
 		elif self.gui.g_current == 'PLS':
+			self.gui.setgoptions()
 			if idx == 0:
-				self.gui.g.setTitle('PLSR prediction model for <b>%s</b>' % self.spec.pls['Element'])
+				self.gui.g.setTitle(f'PLSR prediction model for <b>{self.spec.pls["Element"]}</b>'
+				                    f' (<i style="color: #1a75ff">{self.spec.pls["Att"]}</i>)')
 				self.gui.plsplot(self.spec.pls, mode='CV')
 			if idx == 1:
-				self.gui.g.setTitle('PLSR blind predictions for <b>%s</b>' % self.spec.pls['Element'])
+				self.gui.g.setTitle(f'PLSR blind predictions for <b>{self.spec.pls["Element"]}</b>'
+				                    f' (<i style="color: #1a75ff">{self.spec.pls["Att"]}</i>)')
 				self.gui.plsplot(self.spec.pls, mode='Blind')
 		elif self.gui.g_current == 'Temperature':
 			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
@@ -715,8 +797,8 @@ class LIBSSA2(QObject):
 			self.spec.pca['Loadings'] = loadings
 			# Updates PLS values
 			self.spec.pls['NComps'] = self.gui.p5_pca_ncomps.value()
-			self.spec.pls['Parameters'] = f'{self.spec.pca["Mode"][0]}-{self.spec.pls["NComps"]}PC{"-FS" if self.gui.p5_pca_fs.isChecked() else ""}'
-			self.gui.p5_pls_cal_att.setText(self.spec.pls['Parameters'])
+			self.spec.pls['Att'] = f'{self.spec.pca["Mode"][0]}-{self.spec.pls["NComps"]}PC{"-FS" if self.gui.p5_pca_fs.isChecked() else ""}'
+			self.gui.p5_pls_cal_att.setText(self.spec.pls['Att'])
 			self.gui.p5_pls_cal_att.setStyleSheet('color:#000080; font-weight: bold;')
 			self.gui.p5_pls_cal_start.setEnabled(True)
 			self.gui.g_selector.setCurrentIndex(6)
@@ -731,10 +813,11 @@ class LIBSSA2(QObject):
 		else:
 			# This means all attributes are fine.
 			# Now, we must send to PLSR algorithm the reference,
-			# number of components and and attribute matrix (created in PCA part)
+			# number of components and attribute matrix (created in PCA part)
 			returned = pls_do(self.spec.pca['Transformed'], self.spec.ref[self.gui.p5_pls_cal_ref.currentText()], self.spec.pls['NComps'], self.gui.p5_pca_fs.isChecked())
 			# pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
 			self.spec.pls['Element'] = self.gui.p5_pls_cal_ref.currentText()
+			self.spec.pls['Samples'] = self.spec.samples['Name']
 			self.spec.pls['Model'] = returned[0]
 			self.spec.pls['Reference'] = returned[1]
 			self.spec.pls['Predict'] = returned[2]
@@ -745,8 +828,27 @@ class LIBSSA2(QObject):
 			self.spec.pls['CrossValR2'] = returned[7]
 			self.spec.pls['CrossValRMSE'] = returned[8]
 			# Update graph elements
+			self.gui.p5_pls_pred_model.setText(self.gui.p5_pls_cal_ref.currentText())
+			self.gui.p5_pls_pred_model.setStyleSheet('color:#000080; font-weight: bold;')
+			self.gui.p5_pls_pred_att.setText(self.spec.pls['Att'])
+			self.gui.p5_pls_pred_att.setStyleSheet('color:#000080; font-weight: bold;')
+			self.gui.p5_pls_pred_start.setEnabled(True)
 			self.gui.g_selector.setCurrentIndex(7)
 			self.gui.g_current_sb.setValue(1)
+			self.setgrange()
+	
+	def pls_predict(self):
+		if self.spec.pca['Transformed'] is self.spec.base:
+			self.gui.guimsg('Warning',
+			                'You must <i>create attributes from PCA</i> <b style="color:red">before</b> using this feature.', 'w')
+		else:
+			# This means all attributes are fine.
+			# Now, we just need to predict values usind attributes
+			blind_predict = self.spec.pls['Model'].predict(self.spec.pca['Transformed'])
+			self.spec.pls['BlindPredict'] = blind_predict
+			# Update graph elements
+			self.gui.g_selector.setCurrentIndex(7)
+			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
 			
 			

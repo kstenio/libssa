@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.3 beta 2</string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.3 beta 3</string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -474,8 +474,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>352</width>
-              <height>309</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -785,8 +785,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>302</width>
-              <height>250</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1009,8 +1009,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>306</width>
-              <height>290</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1767,8 +1767,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>28</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -2024,7 +2024,7 @@
       <string>Predictions</string>
      </property>
      <addaction name="actionE06"/>
-     <addaction name="actione07"/>
+     <addaction name="actionE07"/>
     </widget>
     <widget class="QMenu" name="menuOther_data">
      <property name="title">
@@ -2150,7 +2150,7 @@
     <string>Linear model</string>
    </property>
   </action>
-  <action name="actione07">
+  <action name="actionE07">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -2202,7 +2202,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="p4bG2"/>
   <buttongroup name="p4bG1"/>
+  <buttongroup name="p4bG2"/>
  </buttongroups>
 </ui>

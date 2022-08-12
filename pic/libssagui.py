@@ -27,7 +27,7 @@ from colorsys import hsv_to_rgb, hls_to_rgb
 from PySide6.QtCore import QFile, Qt
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
-from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem
+from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem, BarGraphItem
 from pathlib import Path
 from string import punctuation
 
@@ -64,7 +64,10 @@ class LIBSsaGUI(object):
 			self.mbox_pbar = QtWidgets.QProgressBar()
 			# Menubar
 			self.menu_import_ref = QtGui.QAction()
-			self.menu_export_correl = QtGui.QAction()
+			self.menu_export_fullspectra_raw = self.menu_export_fullspectra_out = QtGui.QAction()
+			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_areas = QtGui.QAction()
+			self.menu_export_predictions_linear = self.menu_export_predictions_pls = QtGui.QAction()
+			self.menu_export_other_pca = self.menu_export_other_tne = self.menu_export_other_correl = QtGui.QAction()
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
@@ -173,7 +176,17 @@ class LIBSsaGUI(object):
 		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
 		# menu
 		self.menu_import_ref = self.mw.findChild(QtGui.QAction, 'actionI01')
-		self.menu_export_correl = self.mw.findChild(QtGui.QAction, 'actionE10')
+		self.menu_export_fullspectra_raw = self.mw.findChild(QtGui.QAction, 'actionE01')
+		self.menu_export_fullspectra_out = self.mw.findChild(QtGui.QAction, 'actionE02')
+		self.menu_export_peaks_table = self.mw.findChild(QtGui.QAction, 'actionE03')
+		self.menu_export_peaks_isolated = self.mw.findChild(QtGui.QAction, 'actionE04')
+		self.menu_export_peaks_areas = self.mw.findChild(QtGui.QAction, 'actionE05')
+		self.menu_export_predictions_linear = self.mw.findChild(QtGui.QAction, 'actionE06')
+		self.menu_export_predictions_pls = self.mw.findChild(QtGui.QAction, 'actionE07')
+		self.menu_export_other_pca = self.mw.findChild(QtGui.QAction, 'actionE08')
+		self.menu_export_other_tne = self.mw.findChild(QtGui.QAction, 'actionE09')
+		self.menu_export_other_correl = self.mw.findChild(QtGui.QAction, 'actionE10')
+		# self.menu_export_
 		
 	def loadp1(self):
 		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
@@ -319,7 +332,7 @@ class LIBSsaGUI(object):
 		# Linear model regression
 		elif ci == 5:
 			self.g_current = 'Linear'
-			self.g_op = ['True value', 'a.u.', 'Predicted value', 'a.u.']
+			self.g_op = ['True value', 'ref.u.', 'Predicted value', 'ref.u.']
 		# PCA plot
 		elif ci == 6:
 			self.g_current = 'PCA'
@@ -339,9 +352,9 @@ class LIBSsaGUI(object):
 			self.g_current = 'PLS'
 			pls = self.g_current_sb.value()
 			if pls == 1:
-				self.g_op = ['True value', 'ref', 'Predicted values', 'r.u.']
+				self.g_op = ['True value', 'ref.u.', 'Predicted values', 'ref.u.']
 			elif pls == 2:
-				self.g_op = ['Predicted values', 'r.u.', 'Amount', 'r.u.']
+				self.g_op = ['Sample', '#', 'Predicted values', 'ref.u.']
 		# Saha-Boltzmann energy plot
 		elif ci == 8:
 			self.g_current = 'Temperature'
@@ -360,7 +373,6 @@ class LIBSsaGUI(object):
 		self.g.autoRange()
 		
 	def mplot(self, x, matrix, hsl=True):
-		self.g.clear()
 		smp = matrix.shape[1]
 		colors = hsl_colors(smp) if hsl else randint(0, 255, (smp, 3))
 		for i in range(smp):
@@ -382,7 +394,6 @@ class LIBSsaGUI(object):
 		[5] = Number of functions evaluations for convergence
 		[6] = Convergence (boolean)
 		"""
-		self.g.clear()
 		# important variables
 		rmsd = std(data[:, 1])
 		x =  linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
@@ -439,12 +450,10 @@ class LIBSsaGUI(object):
 		xpos = x[-1] + (x[-1] - x[0]) / 20
 		ypos = max(may) + (max(may) - min(miy))/20
 		linbox.setPos(xpos, ypos)
-		# Finally, performs auto-range (twice)
-		self.g.autoRange()
+		# Finally, performs auto-range
 		self.g.autoRange()
 	
 	def pcaplot(self, idx: int, mode: str, param: tuple):
-		self.g.clear()
 		if idx == 0:
 			# Plot is for cumulative variance
 			expvar = 100*param[0]
@@ -500,13 +509,15 @@ class LIBSsaGUI(object):
 			xpos = x[-1] + (x[-1] - x[0]) / 20
 			ypos = max(may) + (max(may) - min(miy)) / 20
 			plsbox.setPos(xpos, ypos)
-			# Finally, performs auto-range (twice)
-			self.g.autoRange()
-			self.g.autoRange()
 		elif mode == 'Blind':
-			pass
+			prediction = param['BlindPredict']
+			x_pred = range(1, prediction.shape[0] + 1)
+			colors = randint(10, 220, size=(len(prediction), 3), dtype=int)
+			self.g.addItem(BarGraphItem(x=x_pred, height=prediction, width=0.9, brushes=colors))
 		else:
-			pass
+			raise AssertionError('Illegal operation mode for PLS plot!')
+		# Finally, performs auto-range
+		self.g.autoRange()
 	
 	#
 	# GUI/helper functions

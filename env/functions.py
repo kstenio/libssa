@@ -71,14 +71,14 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 					# If asked, also normalizes by the area
 					if anorm:
 						y[:, k] /= trapz(coefficients[1] + coefficients[0] * x, x)
-				else:
-					y_min = mini(y[:, k])
-					if y_min > 0:
-						y[:, k] -= y_min
-					elif y_min < 0:
-						y[:, k] += -1 * y_min
-					else:
-						pass
+				# else:
+				# 	y_min = mini(y[:, k])
+				# 	if y_min > 0:
+				# 		y[:, k] -= y_min
+				# 	elif y_min < 0:
+				# 		y[:, k] += -1 * y_min
+				# 	else:
+				# 		pass
 			# Saves new count
 			new_counts[i][j] = y
 			# Gets the noise (Standard deviation of beginning and end of the peak)
