@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.3 beta 3</string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.3 beta 4</string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -2018,21 +2018,22 @@
      <addaction name="actionE03"/>
      <addaction name="actionE04"/>
      <addaction name="actionE05"/>
+     <addaction name="actionE06"/>
     </widget>
     <widget class="QMenu" name="menuPredictions">
      <property name="title">
       <string>Predictions</string>
      </property>
-     <addaction name="actionE06"/>
      <addaction name="actionE07"/>
+     <addaction name="actionE08"/>
     </widget>
     <widget class="QMenu" name="menuOther_data">
      <property name="title">
       <string>Other data</string>
      </property>
-     <addaction name="actionE08"/>
      <addaction name="actionE09"/>
      <addaction name="actionE10"/>
+     <addaction name="actionE11"/>
     </widget>
     <addaction name="menuSpectra_ASCII"/>
     <addaction name="menuPeaks"/>
@@ -2114,6 +2115,15 @@
     <string>Without outliers</string>
    </property>
   </action>
+  <action name="actionE03">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/table-solid.svg</normaloff>pic/icons/table-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Regions table</string>
+   </property>
+  </action>
   <action name="actionE04">
    <property name="icon">
     <iconset>
@@ -2129,16 +2139,7 @@
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
    </property>
    <property name="text">
-    <string>Areas and intensities</string>
-   </property>
-  </action>
-  <action name="actionE03">
-   <property name="icon">
-    <iconset>
-     <normaloff>pic/icons/table-solid.svg</normaloff>pic/icons/table-solid.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Regions table</string>
+    <string>Peak fitting curves</string>
    </property>
   </action>
   <action name="actionE06">
@@ -2147,7 +2148,7 @@
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
    </property>
    <property name="text">
-    <string>Linear model</string>
+    <string>Areas and intensities</string>
    </property>
   </action>
   <action name="actionE07">
@@ -2156,7 +2157,7 @@
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
    </property>
    <property name="text">
-    <string>PLS Regression</string>
+    <string>Linear model</string>
    </property>
   </action>
   <action name="actionE08">
@@ -2165,10 +2166,19 @@
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
    </property>
    <property name="text">
-    <string>PCA data</string>
+    <string>PLS Regression</string>
    </property>
   </action>
   <action name="actionE09">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>PCA data</string>
+   </property>
+  </action>
+  <action name="actionE10">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -2182,7 +2192,7 @@
     <string>TEST</string>
    </property>
   </action>
-  <action name="actionE10">
+  <action name="actionE11">
    <property name="icon">
     <iconset>
      <normaloff>pic/icons/file-excel-regular.svg</normaloff>pic/icons/file-excel-regular.svg</iconset>
@@ -2202,7 +2212,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="p4bG1"/>
   <buttongroup name="p4bG2"/>
+  <buttongroup name="p4bG1"/>
  </buttongroups>
 </ui>

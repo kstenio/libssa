@@ -22,6 +22,7 @@
 # Imports
 import sys
 try:
+	import pickle
 	import env.export as export
 	from time import time
 	from os import listdir
@@ -86,16 +87,17 @@ class LIBSSA2(QObject):
 		# Menu
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
 		self.gui.menu_export_other_correl.triggered.connect(self.exportcorrel)
-		self.gui.menu_export_fullspectra_raw.triggered.connect(lambda: self.export_mecanism(1))
-		self.gui.menu_export_fullspectra_out.triggered.connect(lambda: self.export_mecanism(2))
-		self.gui.menu_export_peaks_table.triggered.connect(lambda: self.export_mecanism(3))
-		self.gui.menu_export_peaks_isolated.triggered.connect(lambda: self.export_mecanism(4))
-		self.gui.menu_export_peaks_areas.triggered.connect(lambda: self.export_mecanism(5))
-		self.gui.menu_export_predictions_linear.triggered.connect(lambda: self.export_mecanism(6))
-		self.gui.menu_export_predictions_pls.triggered.connect(lambda: self.export_mecanism(7))
-		self.gui.menu_export_other_pca.triggered.connect(lambda: self.export_mecanism(8))
-		self.gui.menu_export_other_tne.triggered.connect(lambda: self.export_mecanism(9))
-		self.gui.menu_export_other_correl.triggered.connect(lambda: self.export_mecanism(10))
+		self.gui.menu_export_fullspectra_raw.triggered.connect(lambda: self.export_mechanism(1))
+		self.gui.menu_export_fullspectra_out.triggered.connect(lambda: self.export_mechanism(2))
+		self.gui.menu_export_peaks_table.triggered.connect(lambda: self.export_mechanism(3))
+		self.gui.menu_export_peaks_isolated.triggered.connect(lambda: self.export_mechanism(4))
+		self.gui.menu_export_peaks_fitted.triggered.connect(lambda: self.export_mechanism(5))
+		self.gui.menu_export_peaks_areas.triggered.connect(lambda: self.export_mechanism(6))
+		self.gui.menu_export_predictions_linear.triggered.connect(lambda: self.export_mechanism(7))
+		self.gui.menu_export_predictions_pls.triggered.connect(lambda: self.export_mechanism(8))
+		self.gui.menu_export_other_pca.triggered.connect(lambda: self.export_mechanism(9))
+		self.gui.menu_export_other_tne.triggered.connect(lambda: self.export_mechanism(10))
+		self.gui.menu_export_other_correl.triggered.connect(lambda: self.export_mechanism(11))
 		# self.gui.menu
 		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
@@ -186,46 +188,90 @@ class LIBSSA2(QObject):
 				exdf.to_excel(exfile)
 				self.gui.guimsg('Done', f'Correlation Spectra report saved to <b><a href={exfile.as_uri()}>file</a></b>.', 'i')
 	
-	def export_mecanism(self, mode: int):
+	def export_mechanism(self, mode: int):
 		# Proper defines modes inside a dict
 		modes_dict = {1: 'RAW Spectra', 2: 'Outliers Removed Spectra',
-		              3: 'Peaks Table', 4: 'Isolated Peaks', 5: 'Peaks Report',
-		              6: 'Predicions (Linear Regression)', 7: 'Predictions (PLS Regression)',
-		              8: 'PCA Data', 9: 'Temperature and Ne Report', 10: 'Correlation Spectrum'}
+		              3: 'Peaks Table', 4: 'Isolated Peaks', 5: 'Peak Fitting',
+		              6: 'Peaks Report', 7: 'Predicions (Linear Regression)', 8: 'Predictions (PLS Regression)',
+		              9: 'PCA Data', 10: 'Temperature and Ne Report', 11: 'Correlation Spectrum'}
 		# Creates variables to be used in the method
 		func, func_param, fd_params, msg_params, index = None, None, tuple(), tuple(), False
 		dt = datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
 		# Gets values based on mode
 		if mode == 1:
 			func = export.export_raw
-			func_param = self.spec
+			func_param = (self.spec, 'Raw')
 			fd_params = (Path.home(),
 			             'getExistingDirectory',
 			             f'Choose folder for exporting {modes_dict[mode]} data', '')
 			index = False
 		elif mode == 2:
-			pass
+			func = export.export_raw
+			func_param = (self.spec, 'Outliers')
+			fd_params = (Path.home(),
+			             'getExistingDirectory',
+			             f'Choose folder for exporting {modes_dict[mode]} data',
+			             '')
+			index = False
 		elif mode == 3:
-			pass
+			func = export.export_iso_table
+			func_param = [self.gui.p3_isotb]
+			fd_params = (Path.home().joinpath(f'Iso_Tables_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} data',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 4:
-			pass
+			func = export.export_iso_peaks
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'Iso_Peaks_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} data',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 5:
-			pass
+			func = export.export_fit_peaks
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'Fit_Peaks_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} data',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 6:
-			pass
+			func = export.export_fit_areas
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'Fit_Areas_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} data',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 7:
-			func = export.export_pls
-			func_param = self.spec
-			fd_params = (Path.home().joinpath(f'PLS_Model_Report_{dt}.xlsx'),
+			func = export.export_linear
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'Linear_Model_Report_{dt}.xlsx'),
 			             'getSaveFileName',
 			             f'Choose filename to export {modes_dict[mode]} report',
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 8:
-			pass
+			func = export.export_pls
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'PLS_Model_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} report',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 9:
-			pass
+			func = export.export_pca
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'PCA_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} report',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 10:
+			pass
+		elif mode == 11:
 			pass
 		else:
 			raise AssertionError('Illegal mode for export data!')
@@ -242,7 +288,7 @@ class LIBSSA2(QObject):
 			else:
 				# Run func with parameters
 				try:
-					func(path, func_param)
+					func(path, *func_param)
 				except Exception as ex:
 					print_exc()
 					self.gui.guimsg('Could not export data!',
@@ -644,6 +690,8 @@ class LIBSSA2(QObject):
 			self.gui.p4_peak.clear()
 			self.gui.p4_peak.addItems(self.spec.isolated['Element'])
 			self.gui.p4_npeak.setEnabled(True)
+			with open('fit.bin', 'wb') as fb:
+				pickle.dump(self.spec.fit, fb)
 			# self.setpeaknorm()
 		
 		if not self.spec.isolated['Count']:
@@ -699,6 +747,7 @@ class LIBSSA2(QObject):
 			self.spec.linear['Intercept'] = linear[5]
 			self.spec.linear['LoD'] = linear[6]
 			self.spec.linear['LoQ'] = linear[7]
+			self.spec.linear['Element'] = linear[0][0]
 			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(5)
 			self.setgrange()
@@ -804,7 +853,11 @@ class LIBSSA2(QObject):
 			self.gui.g_selector.setCurrentIndex(6)
 			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
-	
+			with open('pca.bin', 'wb') as fb:
+				pickle.dump(self.spec.pca, fb)
+			with open('w.bin', 'wb') as fb:
+				pickle.dump(self.spec.wavelength, fb)
+				
 	def pls_do(self):
 		if self.spec.pca['Transformed'] is self.spec.base or self.spec.ref.columns[0] == 'Empty':
 			self.gui.guimsg('Warning',

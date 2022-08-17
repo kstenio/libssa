@@ -65,7 +65,7 @@ class LIBSsaGUI(object):
 			# Menubar
 			self.menu_import_ref = QtGui.QAction()
 			self.menu_export_fullspectra_raw = self.menu_export_fullspectra_out = QtGui.QAction()
-			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_areas = QtGui.QAction()
+			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_fitted = self.menu_export_peaks_areas = QtGui.QAction()
 			self.menu_export_predictions_linear = self.menu_export_predictions_pls = QtGui.QAction()
 			self.menu_export_other_pca = self.menu_export_other_tne = self.menu_export_other_correl = QtGui.QAction()
 			# Graph elements
@@ -180,12 +180,13 @@ class LIBSsaGUI(object):
 		self.menu_export_fullspectra_out = self.mw.findChild(QtGui.QAction, 'actionE02')
 		self.menu_export_peaks_table = self.mw.findChild(QtGui.QAction, 'actionE03')
 		self.menu_export_peaks_isolated = self.mw.findChild(QtGui.QAction, 'actionE04')
-		self.menu_export_peaks_areas = self.mw.findChild(QtGui.QAction, 'actionE05')
-		self.menu_export_predictions_linear = self.mw.findChild(QtGui.QAction, 'actionE06')
-		self.menu_export_predictions_pls = self.mw.findChild(QtGui.QAction, 'actionE07')
-		self.menu_export_other_pca = self.mw.findChild(QtGui.QAction, 'actionE08')
-		self.menu_export_other_tne = self.mw.findChild(QtGui.QAction, 'actionE09')
-		self.menu_export_other_correl = self.mw.findChild(QtGui.QAction, 'actionE10')
+		self.menu_export_peaks_fitted = self.mw.findChild(QtGui.QAction, 'actionE05')
+		self.menu_export_peaks_areas = self.mw.findChild(QtGui.QAction, 'actionE06')
+		self.menu_export_predictions_linear = self.mw.findChild(QtGui.QAction, 'actionE07')
+		self.menu_export_predictions_pls = self.mw.findChild(QtGui.QAction, 'actionE08')
+		self.menu_export_other_pca = self.mw.findChild(QtGui.QAction, 'actionE09')
+		self.menu_export_other_tne = self.mw.findChild(QtGui.QAction, 'actionE10')
+		self.menu_export_other_correl = self.mw.findChild(QtGui.QAction, 'actionE11')
 		# self.menu_export_
 		
 	def loadp1(self):
@@ -396,7 +397,7 @@ class LIBSsaGUI(object):
 		"""
 		# important variables
 		rmsd = std(data[:, 1])
-		x =  linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
+		x = linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
 		height_str = ', '.join([f'{h:.0E}' for h in height])
 		width_str = ', '.join([f'{w:.0E}' for w in width])
 		area_str = ', '.join([f'{a:.0E}' for a in area])
@@ -466,7 +467,7 @@ class LIBSsaGUI(object):
 			if mode == 'Raw':
 				x = param[1]['Raw']
 			elif mode == 'Isolated':
-				x =  param[1]['Isolated'][0]
+				x = param[1]['Isolated'][0]
 				for i in param[1]['Isolated'][1:]:
 					x = hstack((x, i))
 			else:

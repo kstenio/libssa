@@ -105,7 +105,7 @@ class Spectra(object):
 		self.linear = {'Reference': self.base, 'Predict': self.base,
 					   'R2': self.base, 'RMSE': self.base,
 					   'Slope': self.base, 'Intercept': self.base,
-					   'LoD': self.base, 'LoQ': self.base}
+					   'LoD': self.base, 'LoQ': self.base, 'Element': ''}
 		self.pca = {'Mode': None, 'OptComp': 0, 'ExpVar': self.base,
 		            'Attributes': self.base, 'Transformed': self.base, 'Loadings': self.base}
 		self.pls = {'Element': self.base, 'Model': self.base, 'NComps': 0, 'Samples': self.base,
