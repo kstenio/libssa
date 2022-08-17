@@ -21,7 +21,7 @@
 
 # Imports
 from pathlib import Path
-from numpy import linspace, array, hstack
+from numpy import linspace, array, hstack, zeros
 from env.spectra import Spectra
 from PySide6.QtWidgets import QTableWidget
 from pandas import DataFrame, Index, ExcelWriter
@@ -81,18 +81,29 @@ def export_fit_peaks(file_path: Path, spectra: Spectra):
 		writer = ExcelWriter(file_path, engine='openpyxl')
 		for i, e in enumerate(spectra.isolated['Element']):
 			w = spectra.wavelength['Isolated'][i]
-			df1 = DataFrame(index=Index(w, name='Wavelength'))
-			df2 = DataFrame(index=Index(linspace(w[0], w[-1], 1000), name='Wavelength'))
-			for j, s in enumerate(spectra.samples['Name']):
-				# For 1st worksheet/df (mean data and residuals)
-				df1[f'{s}_Data'] = spectra.fit['Data'][i][j][:, 0]
-				df1[f'{s}_Residuals'] = spectra.fit['Data'][i][j][:, 1]
-				# For 2nd worksheet/df
-				for k in range(spectra.fit['Total'][i][j].shape[1]-1):
-					df2[f'{s}_Fit_Peak_{k+1}'] = spectra.fit['Total'][i][j][:, k]
-				df2[f'{s}_Fit_Peak_SUM'] = spectra.fit['Total'][i][j][:, -1]
+			# Creating DFs, each to save a specific variable
+			# df1 -> Original (averaged) signal
+			# df2 -> Residuals for each fit
+			# df3 -> Each peak (and sum) after curve fitting
+			columns1 = [f'{s}_Data' for s in spectra.samples['Name']]
+			df1 = DataFrame(data=spectra.fit['Data'][i][:, :, 0].T, index=Index(w, name='Wavelength'), columns=columns1)
+			columns2 = [f'{s}_Residuals' for s in spectra.samples['Name']]
+			df2 = DataFrame(data=spectra.fit['Data'][i][:, :, 1].T, index=Index(w, name='Wavelength'), columns=columns2)
+			# To save peak fitting data, another loop is needed
+			parameters = spectra.fit['Total'][i].shape
+			zero_peaks_matrix = zeros((parameters[1], parameters[0]*parameters[2]))
+			columns3 = [''] * parameters[0]*parameters[2]
+			for j, t in enumerate(spectra.fit['Total'][i].T):
+				columns3[j::parameters[2]] = [f'Sample_{s}_Fit_{j+1}' for s in spectra.samples['Name']]
+				zero_peaks_matrix[:, j::parameters[2]] = t
+			try:
+				df3 = DataFrame(data=zero_peaks_matrix, index=Index(linspace(w[0], w[-1], 1000), name='Wavelength'), columns=columns3)
+			except ValueError:
+				df3 = DataFrame(data=zero_peaks_matrix, index=Index(w, name='Wavelength'), columns=columns3)
+			# Saves DFs to writer
 			df1.to_excel(writer, sheet_name=f'{e}_Observed')
-			df2.to_excel(writer, sheet_name=f'{e}_Peak-Fitting')
+			df2.to_excel(writer, sheet_name=f'{e}_Residuals')
+			df3.to_excel(writer, sheet_name=f'{e}_Peak-Fitting')
 			writer.save()
 		resize_writer_columns(writer)
 
@@ -111,16 +122,15 @@ def export_fit_areas(file_path: Path, spectra: Spectra):
 			df[f'Convergence'] = spectra.fit['Convergence'][i].astype(int)
 			# Run into a loop based on number of peaks
 			for j in range(spectra.fit['Area'][i].shape[1]):
-				df[f'Center_Peak_{j+1}'] = [spectra.isolated['Center'][i][j]]*len(df.index)
+				df[f'Center_Peak_{j + 1}'] = [spectra.isolated['Center'][i][j]] * len(df.index)
 				df[f'Width_Peak_{j + 1}'] = spectra.fit['Width'][i][:, j]
 				df[f'Height_Peak_{j + 1}'] = spectra.fit['Height'][i][:, j]
-				df[f'Area_Peak_{j+1}'] = spectra.fit['Area'][i][:, j]
+				df[f'Area_Peak_{j + 1}'] = spectra.fit['Area'][i][:, j]
 				df[f'AreaSTD_Peak_{j + 1}'] = spectra.fit['AreaSTD'][i][:, j]
 			# Now, saves the DF
 			shape = spectra.fit['Shape'][i].replace('[', '').replace(']', '')
 			df.to_excel(writer, sheet_name=f'{e}_{shape.replace("/", "+")}')
 			writer.save()
-		# TODO: improve performance with pre allocated columns
 		resize_writer_columns(writer)
 
 
@@ -191,9 +201,6 @@ def export_pca(file_path: Path, spectra: Spectra):
 	if spectra.pca['ExpVar'] is spectra.base:
 		raise AttributeError('Perform PCA algorythm before trying to export dada!')
 	else:
-		# self.pca = {'Mode': None, 'OptComp': 0, 'ExpVar': self.base,
-		#             'Attributes': self.base, 'Transformed': self.base,
-		#             'Loadings': self.base}
 		# Saves useful variables
 		mode = spectra.pca['Mode']
 		t_samples = spectra.samples['Count']
@@ -222,10 +229,32 @@ def export_pca(file_path: Path, spectra: Spectra):
 		df3.to_excel(writer, sheet_name='Loadings')
 		writer.save()
 		resize_writer_columns(writer)
-	
-	
+
+
+def export_tne(file_path: Path, spectra: Spectra):
+	if spectra.pearson['Data'] is spectra.base:
+		raise AttributeError('Perform Correlation Spectrum routine before trying to export dada!')
+	else:
+		writer = ExcelWriter(file_path, engine='openpyxl')
+		exdf = DataFrame(index=Index(spectra.wavelength['Raw'], name='Wavelength'),
+		                 columns=[f'{chr(961)}_{x}' for x in spectra.ref.columns],
+		                 data=spectra.pearson['Data'])
+		exdf.to_excel(writer, sheet_name='Correlation')
+		writer.save()
+		resize_writer_columns(writer)
+
+
 def export_correl(file_path: Path, spectra: Spectra):
-	pass
+	if spectra.pearson['Data'] is spectra.base:
+		raise AttributeError('Perform Correlation Spectrum routine before trying to export dada!')
+	else:
+		writer = ExcelWriter(file_path, engine='openpyxl')
+		exdf = DataFrame(index=Index(spectra.wavelength['Raw'], name='Wavelength'),
+		                 columns=[f'{chr(961)}_{x}' for x in spectra.ref.columns],
+		                 data=spectra.pearson['Data'])
+		exdf.to_excel(writer, sheet_name='Correlation')
+		writer.save()
+		resize_writer_columns(writer)
 
 
 def resize_writer_columns(writer: ExcelWriter, close: bool = True):

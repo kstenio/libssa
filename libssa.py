@@ -86,7 +86,6 @@ class LIBSSA2(QObject):
 		self.gui.g_current_sb.valueChanged.connect(self.doplot)
 		# Menu
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
-		self.gui.menu_export_other_correl.triggered.connect(self.exportcorrel)
 		self.gui.menu_export_fullspectra_raw.triggered.connect(lambda: self.export_mechanism(1))
 		self.gui.menu_export_fullspectra_out.triggered.connect(lambda: self.export_mechanism(2))
 		self.gui.menu_export_peaks_table.triggered.connect(lambda: self.export_mechanism(3))
@@ -167,27 +166,7 @@ class LIBSSA2(QObject):
 					# puts values inside reference for calibration curve and PLS combo boxes
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
 					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
-	
-	def exportcorrel(self):
-		# Checks if Correlation was performed
-		if self.spec.pearson['Data'] is self.spec.base:
-			self.gui.guimsg('Error', 'Perform <u>Correlation Spectrum</u> routine <b style="color:red">before</b> using this feature!', 'w')
-		else:
-			# If all is fine, asks for filename
-			exname = f'LIBSsa_Correl_Spectra_{datetime.now().strftime("%d-%m-%Y_%Hh%Mm%Ss")}.xlsx'
-			folder = Path(self.gui.guifd(self.parent.joinpath(exname), 'gsf', 'Choose filename for exporting Correlation Spectra', 'Spreadsheet (*.xlsx)')[0])
-			if folder.name == '':
-				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
-			else:
-				# Creates dataframe based on reference and values
-				exfile = folder.with_suffix('.xlsx')
-				exdf = DataFrame(index=Index(self.spec.wavelength['Raw'], name='Wavelength'),
-				                 columns=[f'{chr(961)}_{x}' for x in self.spec.ref.columns],
-				                 data=self.spec.pearson['Data'])
-				# Exports df and warns user
-				exdf.to_excel(exfile)
-				self.gui.guimsg('Done', f'Correlation Spectra report saved to <b><a href={exfile.as_uri()}>file</a></b>.', 'i')
-	
+					
 	def export_mechanism(self, mode: int):
 		# Proper defines modes inside a dict
 		modes_dict = {1: 'RAW Spectra', 2: 'Outliers Removed Spectra',
@@ -272,7 +251,13 @@ class LIBSSA2(QObject):
 		elif mode == 10:
 			pass
 		elif mode == 11:
-			pass
+			func = export.export_correl
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'Correl_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} report',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		else:
 			raise AssertionError('Illegal mode for export data!')
 		# Call file dialog
@@ -690,9 +675,6 @@ class LIBSSA2(QObject):
 			self.gui.p4_peak.clear()
 			self.gui.p4_peak.addItems(self.spec.isolated['Element'])
 			self.gui.p4_npeak.setEnabled(True)
-			with open('fit.bin', 'wb') as fb:
-				pickle.dump(self.spec.fit, fb)
-			# self.setpeaknorm()
 		
 		if not self.spec.isolated['Count']:
 			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
@@ -853,11 +835,7 @@ class LIBSSA2(QObject):
 			self.gui.g_selector.setCurrentIndex(6)
 			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
-			with open('pca.bin', 'wb') as fb:
-				pickle.dump(self.spec.pca, fb)
-			with open('w.bin', 'wb') as fb:
-				pickle.dump(self.spec.wavelength, fb)
-				
+			
 	def pls_do(self):
 		if self.spec.pca['Transformed'] is self.spec.base or self.spec.ref.columns[0] == 'Empty':
 			self.gui.guimsg('Warning',

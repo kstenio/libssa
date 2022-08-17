@@ -476,6 +476,7 @@ class LIBSsaGUI(object):
 			self.g.plot(x[sort], ld[sort][:, 0], pen=mkPen(pretty_colors(1), width=2), name='Loadings PC1')
 			self.g.plot(x[sort], ld[sort][:, 1], pen=mkPen(pretty_colors(1), width=1.5), name='Loadings PC2')
 			self.g.plot(x[sort], ld[sort][:, 2], pen=mkPen(pretty_colors(1), width=1), name='Loadings PC3')
+			self.g.plot(x[sort], zeros(x.size), pen=mkPen('#aaaaaa', width=0.8, style=Qt.DashLine))
 		self.g.autoRange()
 	
 	def plsplot(self, param: dict, mode: str = 'CV'):
