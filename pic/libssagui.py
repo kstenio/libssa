@@ -63,6 +63,7 @@ class LIBSsaGUI(object):
 			self.mbox = QtWidgets.QMessageBox()
 			self.mbox_pbar = QtWidgets.QProgressBar()
 			# Menubar
+			self.menu_file_load = self.menu_file_save = self.menu_file_quit = QtGui.QAction()
 			self.menu_import_ref = QtGui.QAction()
 			self.menu_export_fullspectra_raw = self.menu_export_fullspectra_out = QtGui.QAction()
 			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_fitted = self.menu_export_peaks_areas = QtGui.QAction()
@@ -87,7 +88,6 @@ class LIBSsaGUI(object):
 			self.p1_fsn_check = QtWidgets.QCheckBox()
 			self.p1_fsn_labelminus = self.p1_fsn_labelplus = QtWidgets.QLabel()
 			self.p1_fsn_lminus = self.p1_fsn_lplus = QtWidgets.QDoubleSpinBox()
-			
 			# Page 2 == Operations
 			self.p2_dot = self.p2_mad = QtWidgets.QRadioButton()
 			self.p2_dot_c = self.p2_mad_c = QtWidgets.QDoubleSpinBox()
@@ -175,6 +175,9 @@ class LIBSsaGUI(object):
 		self.g_max = self.mw.findChild(QtWidgets.QLabel, 'graphLabel3')
 		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
 		# menu
+		self.menu_file_load = self.mw.findChild(QtGui.QAction, 'actionF01')
+		self.menu_file_save = self.mw.findChild(QtGui.QAction, 'actionF02')
+		self.menu_file_quit = self.mw.findChild(QtGui.QAction, 'actionF03')
 		self.menu_import_ref = self.mw.findChild(QtGui.QAction, 'actionI01')
 		self.menu_export_fullspectra_raw = self.mw.findChild(QtGui.QAction, 'actionE01')
 		self.menu_export_fullspectra_out = self.mw.findChild(QtGui.QAction, 'actionE02')

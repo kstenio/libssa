@@ -22,10 +22,12 @@
 # Imports
 import sys
 try:
+	import lzma
 	import pickle
 	import env.export as export
 	from time import time
 	from os import listdir
+	from psutil import virtual_memory
 	from datetime import datetime
 	from traceback import print_exc
 	from pandas import DataFrame, Index
@@ -35,7 +37,7 @@ try:
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do
 	from PySide6.QtGui import QKeyEvent
-	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow
+	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow, QTableWidgetItem
 	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
 except (ImportError, ImportWarning) as err:
 	print(f'\nYou have missing libraries to install.\n\n'
@@ -71,6 +73,8 @@ class LIBSSA2(QObject):
 			self.mbox = QMessageBox()
 			self.mode, self.delimiter = '', ''
 			self.cores, self.timer = 0, 0
+			self.bytes_to_gb = 1073741824
+			self.memory = virtual_memory()
 			# connects
 			self.connects()
 			# extra variables
@@ -85,6 +89,9 @@ class LIBSSA2(QObject):
 		self.gui.g_selector.activated.connect(self.setgrange)
 		self.gui.g_current_sb.valueChanged.connect(self.doplot)
 		# Menu
+		self.gui.menu_file_load.triggered.connect(lambda: self.environment('load'))
+		self.gui.menu_file_save.triggered.connect(lambda: self.environment('save'))
+		self.gui.menu_file_quit.triggered.connect(self.gui.mw.close)
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
 		self.gui.menu_export_fullspectra_raw.triggered.connect(lambda: self.export_mechanism(1))
 		self.gui.menu_export_fullspectra_out.triggered.connect(lambda: self.export_mechanism(2))
@@ -125,6 +132,86 @@ class LIBSSA2(QObject):
 	#
 	# Menu input/output methods
 	#
+	def environment(self, mode: str = 'save'):
+		dt = datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
+		if mode == 'save':
+			# Fist, we bust check available RAM and warn user
+			self.memory = virtual_memory()
+			minimum_ram = 8
+			recommended_ram = 16
+			system_ram = self.memory.total
+			percent_ram = (self.memory.percent, 'blue') if self.memory.percent <= 50 else (self.memory.percent, 'red')
+			if system_ram > recommended_ram * self.bytes_to_gb:
+				color = 'darkgreen'
+			elif system_ram > minimum_ram * self.bytes_to_gb:
+				color = 'blue'
+			else:
+				color = 'red'
+			question = self.gui.guimsg('Warning',
+			                           f'Saving environment may take a <b>lot of time</b>, and is very demmading on CPU and RAM memmory, '
+			                           f'depending on how much data was loaded and processed in the program.<br><p>'
+			                           f'Minimum RAM: <b>{minimum_ram} Gb</b><br>'
+			                           f'Recommended RAM: <b>{recommended_ram} Gb</b><br>'
+			                           f'System RAM: <b style="color: {color}">{system_ram / self.bytes_to_gb:.2f} Gb</b><br>'
+			                           f'Percent used RAM: <b style="color: {percent_ram[1]}">{percent_ram[0]} %</b></p>'
+			                           f'Do you want to proceed?', 'q')
+			if question == QMessageBox.Yes:
+				# Now that user decided to export, continue...
+				save_file = Path(self.gui.guifd(Path.home().joinpath(f'LIBSsa_Environment_{dt}.lb2e'), 'gsf',
+				                                f'Choose filename to save environment', 'LIBSsa 2.0 Environment (*.lb2e)')[0])
+				if save_file.name in ('', '.'):
+					self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+				else:
+					# Actually starts
+					changestatus(self.gui.sb, 'Please wait, saving environment...', 'b', 1)
+					save_file = save_file.with_suffix('*.lb2e')
+					with lzma.open(save_file, 'wb', preset=3) as loc:
+						pickle.dump(self.spec, loc)
+					if save_file.is_file():
+						self.gui.guimsg('Done!',
+						                f'<b>Environment</b> data properly saved.'
+						                f'<p>Save location: <a href={save_file.as_uri()}>{save_file.name}</a></p>',
+						                'i')
+						changestatus(self.gui.sb, 'Environment saved', 'g', 0)
+					else:
+						self.gui.guimsg('Error!',
+						                f'Could not save <b>environment</b> data properly. Try free more RAM.', 'c')
+						changestatus(self.gui.sb, 'Error when saving environment', 'r', 0)
+		elif mode == 'load':
+			load_file = Path(self.gui.guifd(self.parent, 'gof',
+			                                f'Choose filename to load environment',
+			                                'LIBSsa 2.0 Environment (*.lb2e)')[0])
+			if load_file.name in ('', '.'):
+				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+			else:
+				with lzma.open(load_file, 'rb') as loc:
+					self.spec = pickle.load(loc)
+				# Show message and updates gui elements
+				self.gui.guimsg('Done', f'Environment properly loaded into LIBSsa!', 'i')
+				changestatus(self.gui.sb, 'Environment loaded', 'g', 0)
+				self.gui.graphenable(True)
+				self.gui.p2_apply_out.setEnabled(True)
+				self.gui.g_selector.setCurrentIndex(0)
+				self.setgrange()
+				# If there is reference loaded
+				if self.spec.ref.index.size > 1:
+					self.gui.p2_correl_lb.setText(f'Reference data imported with <b><u>{load_file.stem}</u></b> environment.')
+					self.gui.p2_apply_correl.setEnabled(True)
+					self.gui.p4_ref.addItems(self.spec.ref.columns)
+					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
+				# If iso table was created before
+				if self.spec.isolated['Table'].index.size > 0:
+					iso_df = self.spec.isolated['Table']
+					rows, cols = iso_df.index.size, iso_df.columns.size
+					self.gui.p3_isotb.setRowCount(rows)
+					self.gui.p3_isotb.setColumnCount(cols)
+					for r in range(rows):
+						for c in range(cols):
+							self.gui.p3_isotb.setItem(r, c, QTableWidgetItem(iso_df.loc[r, c]))
+		else:
+			raise AssertionError(f'Illegal operation mode: {mode}')
+		
+	
 	def loadref(self):
 		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error',
@@ -609,15 +696,21 @@ class LIBSSA2(QObject):
 			self.spec.isolated['Noise'] = returned[6]
 			self.spec.isolated['Count'] = returned[2].size
 			self.spec.isolated['NSamples'] = self.spec.samples['Count']
-			# enable apply button
+			# Enable apply button
 			self.gui.p3_isoapply.setEnabled(True)
-			# outputs timer
+			# Outputs timer
 			print('Timestamp:', time(), 'MSG: Peak isolation count timer: %.2f seconds. ' % (time() - self.timer))
-			# updates gui elements
+			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(3)
 			self.setgrange()
 			self.gui.create_fit_table()
-
+			# Saves iso Table (for environment)
+			rows, cols = self.gui.p3_isotb.rowCount(), self.gui.p3_isotb.columnCount()
+			self.spec.isolated['Table'] = DataFrame(index=range(rows), columns=range(cols), dtype=str)
+			for r in range(rows):
+				for c in range(cols):
+					self.spec.isolated['Table'].loc[r, c] = self.gui.p3_isotb.item(r, c).text()
+			
 		# Checks if iso table is complete
 		if self.gui.p3_isotb.rowCount() > 0:
 			# Checks if values are OK

@@ -97,7 +97,7 @@ class Spectra(object):
 		# Results from isolation and peak fitting
 		self.isolated = {'Count': 0, 'NSamples': 0, 'Element': self.base,
 		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base,
-						 'Noise': self.base}
+						 'Noise': self.base, 'Table': DataFrame()}
 		self.fit = {'Area': self.base, 'AreaSTD': self.base, 'Width': self.base, 'Height': self.base,
 		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,
 		            'Data': self.base, 'Total': self.base}
