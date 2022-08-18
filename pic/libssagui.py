@@ -386,8 +386,11 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 				self.g_op = ['Sample', '#', 'Predicted values', 'ref.u.']
 		# Saha-Boltzmann energy plot
 		elif ci == 8:
+			lby1 = 'ln[I<sup>S-I</sup> g<sub>k</sub>A<sub>k</sub><sup>S-II</sup>]'
+			lby2 = 'ln[I<sup>S-II</sup> g<sub>k</sub>A<sub>k</sub><sup>S-I</sup>]'
+			lbx1 = 'E<sub>k</sub><sup>S-I</sup> - E<sub>k</sub><sup>S-II</sup> - E<sub>ionization</sub>'
 			self.g_current = 'Temperature'
-			self.g_op = ['Energy', 'eV', 'Ln', 'a.u.']
+			self.g_op = [lbx1, 'eV', f'{lby1} - {lby2}', 'a.u.']
 		# Change Graph labels
 		self.g.setLabel('bottom', self.g_op[0], units=self.g_op[1])
 		self.g.setLabel('left', self.g_op[2], units=self.g_op[3])
@@ -548,6 +551,26 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			raise AssertionError('Illegal operation mode for PLS plot!')
 		# Finally, performs auto-range
 		self.g.autoRange()
+	
+	def saha_b_plot(self, plasma_params: dict, idx: int):
+		color = pretty_colors(1)
+		x = plasma_params['En'][idx]
+		y = plasma_params['Ln'][idx]
+		fit = plasma_params['Fit'][idx]
+		t, st, ne, sne, r2, r = plasma_params['Report'].loc[plasma_params['Report'].index[idx]]
+		pbox_str = f'T: <b>{t:.0f} K</b><br>' \
+		           f'ΔT: <b>{st:.0f} K</b><br>' \
+		           f'N<sub>e</sub>: <b>{ne:.1e} cm<sup>-3</sup></b><br>' \
+		           f'ΔN<sub>e</sub>: <b>{sne:.1e} cm<sup>-3</sup></b><br>' \
+		           f'R2: <b>{r2:.3f}</b><br>' \
+		           f'Correlation: <b>{r:.0%}</b>'
+		pbox = TextItem(html=pbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff')
+		self.g.addItem(pbox)
+		pbox.setPos(x.max(), y.max())
+		self.g.plot(x, y, pen=None, symbol='o', symbolBrush=color)
+		self.g.plot(x, fit, pen=mkPen(color, width=2))
+		for _ in range(10):
+			self.g.autoRange()
 	
 	#
 	# GUI/helper functions

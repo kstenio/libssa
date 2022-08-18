@@ -23,8 +23,9 @@
 from env.equations import *
 from pandas import Series, DataFrame
 from PySide6.QtCore import Signal
+from scipy.stats import linregress
 from scipy.optimize import least_squares, OptimizeResult
-from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones, std
+from numpy import exp, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones, std, log
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.cross_decomposition import PLSRegression as PLS
@@ -443,7 +444,51 @@ def pls_do(attributes, reference, n_comp, scale, cv=5):
 	return pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
 
 
-def tne_do(param_array: ndarray, tne_df: DataFrame):
-	print(param_array)
-	print(tne_df)
-	
+def tne_do(samples: tuple, param_array: ndarray, tne_df: DataFrame, ei_str: str):
+	# Organizes useful variables
+	ei = float(ei_str.split()[0])
+	kb = 0.000086173303
+	ke = 2.07e+16
+	# Gets index for atomic and ionic species
+	atm_idx = tne_df['Ionization'] == '1'
+	ion_idx = tne_df['Ionization'] == '2'
+	atm_tot = atm_idx.to_numpy().sum()
+	ion_tot = ion_idx.to_numpy().sum()
+	# Separates data into atomic
+	ln_param_atomic = log(param_array[:, atm_idx])
+	ln_gak_atomic = log(tne_df['gAk'][atm_idx].astype(float)).to_numpy()
+	ek_atomic = tne_df['Ek'][atm_idx].astype(float).to_numpy()
+	# And into ionic
+	ln_param_ionic = log(param_array[:, ion_idx])
+	ln_gak_ionic = log(tne_df['gAk'][ion_idx].astype(float)).to_numpy()
+	ek_ionic = tne_df['Ek'][ion_idx].astype(float).to_numpy()
+	# Now, we must walk into 3 levels: samples, atomic and ionic
+	x_ = zeros((len(samples), atm_tot * ion_tot))
+	y_ = zeros_like(x_)
+	fit_ = zeros_like(x_)
+	result_df = DataFrame(index=samples, columns=['T', 'ΔT', 'Ne', 'ΔNe', 'R2', 'R'], data=0.0)
+	for i in range(len(samples)):
+		x, y = [], []
+		for at in range(atm_tot):
+			for io in range(ion_tot):
+				x.append(ek_atomic[at] - ek_ionic[io] - ei)
+				y.append(ln_param_atomic[i, at] + ln_gak_ionic[io] - ln_param_ionic[i, io] - ln_gak_atomic[at])
+		# Created main lists, we transform them into arrays
+		x, y = array(x), array(y)
+		# And then, we perform linear regression to obtain curve fitting
+		reg = linregress(x, y)
+		# Based on regression values, we can start calculating the parameters
+		slope, intercept, r, r2, sslope, sintercept = reg.slope, reg.intercept, reg.rvalue, reg.rvalue ** 2, reg.stderr, reg.intercept_stderr
+		fit = slope * x + intercept
+		temp = -1 / (kb * slope)
+		Ne = exp(intercept) * (temp ** 1.5) * ke
+		# Get deviations
+		stemp = -1 * temp * (sslope / slope)
+		sNe = -1 * Ne * (sintercept / intercept)
+		# Saves plot data
+		x_[i] = x
+		y_[i] = y
+		fit_[i] = fit
+		# And finally, saves report data
+		result_df.loc[samples[i]] = (temp, stemp, Ne, sNe, r2, r)
+	return x_, y_, fit_, result_df

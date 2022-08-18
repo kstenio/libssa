@@ -35,7 +35,7 @@ try:
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do, tne_do
+	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do, tne_do, array
 	from PySide6.QtGui import QKeyEvent
 	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow, QTableWidgetItem
 	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -192,7 +192,10 @@ class LIBSSA2(QObject):
 				with lzma.open(load_file, 'rb') as loc:
 					self.spec = pickle.load(loc)
 				# Show message and updates gui elements
-				self.gui.guimsg('Done', f'Environment properly loaded into LIBSsa!', 'i')
+				self.gui.guimsg('Done!',
+				                f'<b>Environment</b> data properly loaded into LIBSsa!'
+				                f'<p>File loaded: <a href={load_file.as_uri()}>{load_file.name}</a></p>',
+				                'i')
 				changestatus(self.gui.sb, 'Environment loaded', 'g', 0)
 				self.gui.graphenable(True)
 				self.gui.p2_apply_out.setEnabled(True)
@@ -366,7 +369,14 @@ class LIBSSA2(QObject):
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 10:
-			pass
+			suffix = '.xlsx'
+			func = export.export_tne
+			func_param = [self.spec]
+			fd_params = (Path.home().joinpath(f'T-Ne_Report_{dt}.xlsx'),
+			             'getSaveFileName',
+			             f'Choose filename to export {modes_dict[mode]} report',
+			             'Excel 2007+ Spreadsheet (*.xlsx)')
+			index = True
 		elif mode == 11:
 			suffix = '.xlsx'
 			func = export.export_correl
@@ -524,8 +534,9 @@ class LIBSSA2(QObject):
 				                    f' (<i style="color: #1a75ff">{self.spec.pls["Att"]}</i>)')
 				self.gui.plsplot(self.spec.pls, mode='Blind')
 		elif self.gui.g_current == 'Temperature':
-			self.gui.g.setTitle('Saha-Boltzmann plot for sample <b>%s</b>' % self.spec.samples_path[idx].stem)
-			self.gui.mplot(self.spec.wavelength, self.spec.counts[idx])
+			self.gui.g.setTitle(f'Saha-Boltzmann plot for sample <b>{self.spec.samples["Name"][idx]}</b>'
+			                    f' (<i style="color: #1a75ff">{self.spec.plasma["Parameter"]}s</i>)')
+			self.gui.saha_b_plot(self.spec.plasma, idx)
 	
 	#
 	# Methods for page 1 == Load spectra
@@ -1019,14 +1030,16 @@ class LIBSSA2(QObject):
 		try:
 			# Saves table data into Spectra object (for load/save)
 			element = self.gui.p6_element.currentText()
+			parameter = self.gui.p6_parameter.currentText()
 			df_element = self.gui.p6_table_dfs[element]
 			self.spec.plasma['Element'] = element
+			self.spec.plasma['Parameter'] = parameter
 			self.spec.plasma['Tables'] = self.gui.p6_table_dfs
 			self.spec.plasma['Tables'][element] = df_element
 			# Checks if TNe table has a minimum size
 			min_rows = self.gui.p6_table.rowCount()
 			if min_rows <= 2:
-				raise AttributeError(f'Entered rows ({min_rows}) are not enough to run Boltzmann/Saha-Boltzmann plot')
+				raise AttributeError(f'Entered rows ({min_rows}) are not enough to run Saha-Boltzmann plot')
 			# Checks if Fit and TNe tables have same size
 			fit_rows = self.gui.p3_fittb.rowCount()
 			if min_rows != fit_rows:
@@ -1037,11 +1050,20 @@ class LIBSSA2(QObject):
 				if (df_element[col] == '0').any():
 					raise AttributeError(f'Illegal value (zero) found in {col} column')
 			# If all passed, now we can actually perform the calculations
-			result = tne_do(self.spec.fit[self.gui.p6_parameter.currentText()], df_element)
+			result = tne_do(self.spec.samples['Name'], array(self.spec.fit[parameter]).T.squeeze(), df_element, self.gui.p6_ion.text())
 		except Exception as ex:
 			self.gui.guimsg('Error', f'Could not calculate T/Ne.<p>'
 			                         f'Error message: <b style="color: red">{str(ex)}</b>.</p>', 'c')
-		
+			print_exc()
+		else:
+			# Saves result
+			self.spec.plasma['En'] = result[0]
+			self.spec.plasma['Ln'] = result[1]
+			self.spec.plasma['Fit'] = result[2]
+			self.spec.plasma['Report'] = result[3]
+			# Update elements and call plot
+			self.gui.g_selector.setCurrentIndex(8)
+			self.setgrange()
 			
 			
 if __name__ == '__main__':

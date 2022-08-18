@@ -232,16 +232,34 @@ def export_pca(file_path: Path, spectra: Spectra):
 
 
 def export_tne(file_path: Path, spectra: Spectra):
-	if spectra.pearson['Data'] is spectra.base:
-		raise AttributeError('Perform Correlation Spectrum routine before trying to export dada!')
+	if spectra.plasma['Report'] is spectra.base:
+		raise AttributeError('Run Saha-Boltzmann plot before trying to export dada!')
 	else:
 		writer = ExcelWriter(file_path, engine='openpyxl')
-		exdf = DataFrame(index=Index(spectra.wavelength['Raw'], name='Wavelength'),
-		                 columns=[f'{chr(961)}_{x}' for x in spectra.ref.columns],
-		                 data=spectra.pearson['Data'])
-		exdf.to_excel(writer, sheet_name='Correlation')
+		# We will save 2 worksheets: one for report, and another for the curves
+		df1 = spectra.plasma['Report']
+		# Although the 1st one was easy, the second is a bit more tricky (similar to fit one above)
+		samples = df1.index.tolist()
+		x = spectra.plasma['En'].T
+		y = spectra.plasma['Ln'].T
+		fit = spectra.plasma['Fit'].T
+		zero_t_matrix = zeros((x.shape[0], 3 * x.shape[1]))
+		column_names, j = [''] * 3 * x.shape[1], 0
+		for i in range(0, 3 * x.shape[1], 3):
+			zero_t_matrix[:, i+0] = x[:, j]
+			zero_t_matrix[:, i+1] = y[:, j]
+			zero_t_matrix[:, i+2] = fit[:, j]
+			column_names[i] = f'Sample_{samples[j]}_En'
+			column_names[i+1] = f'Sample_{samples[j]}_Ln'
+			column_names[i+2] = f'Sample_{samples[j]}_Fit'
+			j += 1
+		df2 = DataFrame(data=zero_t_matrix, columns=column_names)
+		# Saves DFs
+		df1.to_excel(writer, sheet_name='Report')
+		df2.to_excel(writer, index=False, sheet_name='Saha-Boltzmann Plot')
 		writer.save()
 		resize_writer_columns(writer)
+		# TODO: improve performance by using slice indexing
 
 
 def export_correl(file_path: Path, spectra: Spectra):
