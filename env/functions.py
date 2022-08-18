@@ -20,13 +20,11 @@
 #
 
 # Imports
-import numpy
-
 from env.equations import *
-from pandas import Series
+from pandas import Series, DataFrame
 from PySide6.QtCore import Signal
 from scipy.optimize import least_squares, OptimizeResult
-from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones
+from numpy import array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones, std
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.cross_decomposition import PLSRegression as PLS
@@ -430,7 +428,7 @@ def pca_do(normalized_attributes, n_comp):
 def pls_do(attributes, reference, n_comp, scale, cv=5):
 	# Organizes variables before applying model
 	pls = PLS(n_comp, scale=scale)
-	reference = numpy.array(reference).reshape(-1, 1)
+	reference = array(reference).reshape(-1, 1)
 	# Now, we get cross validation data
 	cv_pred = cross_val_predict(pls, attributes, reference, cv=cv)
 	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv).max()
@@ -440,7 +438,12 @@ def pls_do(attributes, reference, n_comp, scale, cv=5):
 	predict_r2 = pls.score(attributes, reference)
 	# Residuals and others parameters
 	residual = reference - predicted
-	predict_rmse = numpy.std(residual)
-	cv_rmse = numpy.std(reference - cv_pred)
+	predict_rmse = std(residual)
+	cv_rmse = std(reference - cv_pred)
 	return pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
+
+
+def tne_do(param_array: ndarray, tne_df: DataFrame):
+	print(param_array)
+	print(tne_df)
 	

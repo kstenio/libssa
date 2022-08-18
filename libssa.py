@@ -35,7 +35,7 @@ try:
 	from env.spectra import Spectra, Worker
 	from pic.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
-	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do
+	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do, tne_do
 	from PySide6.QtGui import QKeyEvent
 	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow, QTableWidgetItem
 	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
@@ -55,14 +55,15 @@ class LIBSSA2(QObject):
 
 	In it, we have all needed functions, actions and connects for the app to work properly.
 	"""
-	def __init__(self, ui_file: str, logo_file: str, parent=None):
+	def __init__(self, ui_file: str, logo_file: str):
 		# checks if ui file exists and warn users if not
 		try:
-			super(LIBSSA2, self).__init__(parent)
+			super(LIBSSA2, self).__init__()
 			self.gui = LIBSsaGUI(ui_file, logo_file)
-			self.gui.mw.show()
-		except ValueError:
-			QMessageBox.critical(QMainWindow(None), 'Critical error!', 'Could not find <b>libssa.ui (or libssa.svg)</b> files in pic folder!')
+		except Exception as ex:
+			QMessageBox.critical(QMainWindow(None), 'Critical error!',
+			                     f'Can not initialize LIBSsa!'
+			                     f'<p>Error message: <b style="color: red">{str(ex)}</b></p>')
 			sys.exit(1)
 		else:
 			# if all is fine with ui, then starts to read other modules
@@ -93,6 +94,8 @@ class LIBSSA2(QObject):
 		self.gui.menu_file_save.triggered.connect(lambda: self.environment('save'))
 		self.gui.menu_file_quit.triggered.connect(self.gui.mw.close)
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
+		self.gui.menu_import_peaks.triggered.connect(lambda: self.spreadsheet_to_table('Peaks'))
+		self.gui.menu_import_tne.triggered.connect(lambda: self.spreadsheet_to_table('TNe'))
 		self.gui.menu_export_fullspectra_raw.triggered.connect(lambda: self.export_mechanism(1))
 		self.gui.menu_export_fullspectra_out.triggered.connect(lambda: self.export_mechanism(2))
 		self.gui.menu_export_peaks_table.triggered.connect(lambda: self.export_mechanism(3))
@@ -123,6 +126,8 @@ class LIBSSA2(QObject):
 		self.gui.p5_pca_do.clicked.connect(self.pca_do)
 		self.gui.p5_pls_cal_start.clicked.connect(self.pls_do)
 		self.gui.p5_pls_pred_start.clicked.connect(self.pls_predict)
+		# Page 6
+		self.gui.p6_start.clicked.connect(self.calc_t_ne)
 		
 	def configthread(self):
 		self.threadpool = QThreadPool()
@@ -208,10 +213,16 @@ class LIBSSA2(QObject):
 					for r in range(rows):
 						for c in range(cols):
 							self.gui.p3_isotb.setItem(r, c, QTableWidgetItem(iso_df.loc[r, c]))
+					self.peakiso()
+				# If TNe data was created before
+				if self.spec.plasma['Element']:
+					element = self.spec.plasma['Element']
+					self.gui.p6_table_dfs = self.spec.plasma['Tables']
+					self.gui.p6_element.setCurrentIndex(0)
+					self.gui.p6_element.setCurrentText(element)
 		else:
 			raise AssertionError(f'Illegal operation mode: {mode}')
 		
-	
 	def loadref(self):
 		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error',
@@ -253,7 +264,17 @@ class LIBSSA2(QObject):
 					# puts values inside reference for calibration curve and PLS combo boxes
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
 					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
-					
+	
+	def spreadsheet_to_table(self, mode: str):
+		if mode == 'TNe':
+			self.gui.guimsg('Warning!', 'Make sure <b>peaks matrix</b> is created and <b>element for T/Ne</b> '
+			                            'is set <b style="color: red">BEFORE</b> importing spreadsheet!', 'w')
+		filepath = Path(self.gui.guifd(self.parent, 'gof', f'Select spreadsheet to update {mode} table', 'Excel 2007+ Spreadsheet (*.xlsx)')[0])
+		if filepath.name in ('', '.'):
+			self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+		else:
+			self.gui.update_table_from_spreadsheet(mode, filepath.with_suffix('.xlsx'))
+	
 	def export_mechanism(self, mode: int):
 		# Proper defines modes inside a dict
 		modes_dict = {1: 'RAW Spectra', 2: 'Outliers Removed Spectra',
@@ -990,7 +1011,37 @@ class LIBSSA2(QObject):
 			self.gui.g_selector.setCurrentIndex(7)
 			self.gui.g_current_sb.setValue(2)
 			self.setgrange()
-			
+	
+	#
+	# Methods for page 6 == Temperature/Electron Density
+	#
+	def calc_t_ne(self):
+		try:
+			# Saves table data into Spectra object (for load/save)
+			element = self.gui.p6_element.currentText()
+			df_element = self.gui.p6_table_dfs[element]
+			self.spec.plasma['Element'] = element
+			self.spec.plasma['Tables'] = self.gui.p6_table_dfs
+			self.spec.plasma['Tables'][element] = df_element
+			# Checks if TNe table has a minimum size
+			min_rows = self.gui.p6_table.rowCount()
+			if min_rows <= 2:
+				raise AttributeError(f'Entered rows ({min_rows}) are not enough to run Boltzmann/Saha-Boltzmann plot')
+			# Checks if Fit and TNe tables have same size
+			fit_rows = self.gui.p3_fittb.rowCount()
+			if min_rows != fit_rows:
+				raise AttributeError(f'T/Ne column does not have the same size ({min_rows}) as Fit/Areas table ({fit_rows}). '
+				                     f'Please perform peak fitting before using this feature')
+			# Checks if there are any 0 in gAk and Ek columns
+			for col in ('gAk', 'Ek'):
+				if (df_element[col] == '0').any():
+					raise AttributeError(f'Illegal value (zero) found in {col} column')
+			# If all passed, now we can actually perform the calculations
+			result = tne_do(self.spec.fit[self.gui.p6_parameter.currentText()], df_element)
+		except Exception as ex:
+			self.gui.guimsg('Error', f'Could not calculate T/Ne.<p>'
+			                         f'Error message: <b style="color: red">{str(ex)}</b>.</p>', 'c')
+		
 			
 			
 if __name__ == '__main__':
@@ -1004,5 +1055,5 @@ if __name__ == '__main__':
 		form = LIBSSA2(str(uif), str(lof))
 		sys.exit(app.exec())
 	else:
-		form = LIBSSA2('','')
+		form = LIBSSA2('', '')
 		sys.exit(app.exec())

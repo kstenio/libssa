@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.6 RC 1</string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.6 RC 2</string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -474,8 +474,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>393</height>
+              <width>366</width>
+              <height>309</height>
              </rect>
             </property>
             <attribute name="label">
@@ -785,8 +785,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>393</height>
+              <width>302</width>
+              <height>250</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1009,8 +1009,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>393</height>
+              <width>306</width>
+              <height>290</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1776,28 +1776,53 @@
             </attribute>
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_11">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="0" column="0">
                 <widget class="QLabel" name="p6lB1">
                  <property name="text">
                   <string>Element to perform the calculations:</string>
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QComboBox" name="p6cB1"/>
+               <item row="0" column="1">
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                 <item>
+                  <widget class="QComboBox" name="p6cB1"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="p6lB2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>0 eV</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
-               <item>
-                <widget class="QLabel" name="p6lB2">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
+               <item row="1" column="0">
+                <widget class="QLabel" name="p6lB3">
                  <property name="text">
-                  <string>0 eV</string>
+                  <string>Parameter to perform the calculations:</string>
                  </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="p6cB2">
+                 <item>
+                  <property name="text">
+                   <string>Area</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Height</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
               </layout>
@@ -2089,6 +2114,8 @@
      <string>&amp;Import</string>
     </property>
     <addaction name="actionI01"/>
+    <addaction name="actionI02"/>
+    <addaction name="actionI03"/>
    </widget>
    <widget class="QMenu" name="menuExport">
     <property name="title">
@@ -2175,7 +2202,25 @@
      <normaloff>pic/icons/file-excel-solid.svg</normaloff>pic/icons/file-excel-solid.svg</iconset>
    </property>
    <property name="text">
-    <string>Load reference spreadsheet</string>
+    <string>&amp;Reference spreadsheet</string>
+   </property>
+  </action>
+  <action name="actionI02">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-solid.svg</normaloff>pic/icons/file-excel-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Peaks spreadsheet</string>
+   </property>
+  </action>
+  <action name="actionI03">
+   <property name="icon">
+    <iconset>
+     <normaloff>pic/icons/file-excel-solid.svg</normaloff>pic/icons/file-excel-solid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Temperature and Ne spreadsheet</string>
    </property>
   </action>
   <action name="actionH01">
@@ -2302,7 +2347,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="p4bG2"/>
   <buttongroup name="p4bG1"/>
+  <buttongroup name="p4bG2"/>
  </buttongroups>
 </ui>

@@ -22,10 +22,10 @@
 # Imports
 from env.config.ion import ionization_energies_ev
 from numpy import zeros, int16, ones, ndarray, std, linspace, arange, hstack
-from pandas import DataFrame
+from pandas import DataFrame, read_excel
 from numpy.random import randint, uniform, random, rand
 from colorsys import hsv_to_rgb, hls_to_rgb
-from PySide6.QtCore import QFile, Qt
+from PySide6.QtCore import QFile, Qt, QEvent
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
 from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem, BarGraphItem
@@ -36,8 +36,9 @@ from string import punctuation
 setConfigOption('background', 'w')
 setConfigOption('foreground', '#26004d')
 
+
 # GUI class
-class LIBSsaGUI(object):
+class LIBSsaGUI(QtWidgets.QMainWindow):
 	"""
 	LIBSsa: GUI
 
@@ -47,6 +48,7 @@ class LIBSsaGUI(object):
 	With an object of this class, the main is able to control the entire gui.
 	"""
 	def __init__(self, uifile: str, logofile: str):
+		super(LIBSsaGUI, self).__init__(parent=None)
 		# Loads main window
 		try:
 			self.mw = QtWidgets.QMainWindow()
@@ -65,7 +67,7 @@ class LIBSsaGUI(object):
 			self.mbox_pbar = QtWidgets.QProgressBar()
 			# Menubar
 			self.menu_file_load = self.menu_file_save = self.menu_file_quit = QtGui.QAction()
-			self.menu_import_ref = QtGui.QAction()
+			self.menu_import_ref = self.menu_import_peaks = self.menu_import_tne = QtGui.QAction()
 			self.menu_export_fullspectra_raw = self.menu_export_fullspectra_out = QtGui.QAction()
 			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_fitted = self.menu_export_peaks_areas = QtGui.QAction()
 			self.menu_export_predictions_linear = self.menu_export_predictions_pls = QtGui.QAction()
@@ -112,7 +114,7 @@ class LIBSsaGUI(object):
 			self.p5_pls_cal_att = self.p5_pls_pred_model = self.p5_pls_pred_att = QtWidgets.QLabel()
 			self.p5_pls_cal_ref = QtWidgets.QComboBox()
 			# Page 6 == Boltzmann and Saha-Boltzmann (for Plasma Temperature and Electron Density)
-			self.p6_element = QtWidgets.QComboBox()
+			self.p6_element = self.p6_parameter =QtWidgets.QComboBox()
 			self.p6_ion = QtWidgets.QLabel()
 			self.p6_table = QtWidgets.QTableWidget()
 			self.p6_start = QtWidgets.QPushButton()
@@ -132,13 +134,19 @@ class LIBSsaGUI(object):
 	def loadui(self, uifile: str):
 		uifile = QFile(uifile)
 		if uifile.open(QFile.ReadOnly):
-			loader = QUiLoader()
-			# register PlotWidget (promoted in QtDesigner)
-			loader.registerCustomWidget(PlotWidget)
-			# loads QMainWindow
-			window = loader.load(uifile)
-			uifile.close()
-			self.mw = window
+			try:
+				loader = QUiLoader()
+				# register PlotWidget (promoted in QtDesigner)
+				loader.registerCustomWidget(PlotWidget)
+				# loads QMainWindow
+				window = loader.load(uifile)
+				uifile.close()
+				self.mw = window
+				self.mw.installEventFilter(self)
+			except Exception as ex:
+				raise ex
+			else:
+				self.mw.show()
 		else:
 			raise FileNotFoundError('Could not load UI file.')
 
@@ -187,6 +195,8 @@ class LIBSsaGUI(object):
 		self.menu_file_save = self.mw.findChild(QtGui.QAction, 'actionF02')
 		self.menu_file_quit = self.mw.findChild(QtGui.QAction, 'actionF03')
 		self.menu_import_ref = self.mw.findChild(QtGui.QAction, 'actionI01')
+		self.menu_import_peaks = self.mw.findChild(QtGui.QAction, 'actionI02')
+		self.menu_import_tne = self.mw.findChild(QtGui.QAction, 'actionI03')
 		self.menu_export_fullspectra_raw = self.mw.findChild(QtGui.QAction, 'actionE01')
 		self.menu_export_fullspectra_out = self.mw.findChild(QtGui.QAction, 'actionE02')
 		self.menu_export_peaks_table = self.mw.findChild(QtGui.QAction, 'actionE03')
@@ -270,6 +280,7 @@ class LIBSsaGUI(object):
 		
 	def loadp6(self):
 		self.p6_element = self.mw.findChild(QtWidgets.QComboBox, 'p6cB1')
+		self.p6_parameter = self.mw.findChild(QtWidgets.QComboBox, 'p6cB2')
 		self.p6_ion = self.mw.findChild(QtWidgets.QLabel, 'p6lB2')
 		self.p6_table = self.mw.findChild(QtWidgets.QTableWidget, 'p6tW1')
 		self.p6_start = self.mw.findChild(QtWidgets.QPushButton, 'p6pB1')
@@ -865,14 +876,16 @@ class LIBSsaGUI(object):
 		element = self.p6_element.currentText()
 		self.p6_ion.setText(f'{ionization_energies_ev[element]:.2f} eV')
 		# Now, must check if fit table was created (meaning, areas are ready to be used)
-		fit_rows = self.p3_fittb.rowCount()
-		for fr in range(fit_rows):
-			fit_element = self.p3_fittb.item(fr, 0).text()
-			if element in fit_element:
-				ionization = 2 if '2' in fit_element else 1
-				self.p6_table_dfs[element].loc[fit_element] = list(map(str, (fit_element, ionization, 0, 0)))
+		if self.p6_table_dfs[element].index.size <= 2:
+			fit_rows = self.p3_fittb.rowCount()
+			for fr in range(fit_rows):
+				fit_element = self.p3_fittb.item(fr, 0).text()
+				if element in fit_element:
+					ionization = 2 if '2' in fit_element else 1
+					self.p6_table_dfs[element].loc[fit_element] = list(map(str, (fit_element, ionization, 0, 0)))
 		# With our DF for element created, now we just have to add values inside table
 		df_element = self.p6_table_dfs[element]
+		self.p6_table.setRowCount(0)
 		self.p6_table.setRowCount(df_element.index.size)
 		rows, cols = self.p6_table.rowCount(), self.p6_table.columnCount()
 		self.p6_table.blockSignals(True)
@@ -921,11 +934,33 @@ class LIBSsaGUI(object):
 				# Updates value inside DF
 				df_element.iloc[row, col] = str(new_cell_val)
 		self.p6_table.blockSignals(False)
-		
-		
-		
-		
-		
+	
+	def update_table_from_spreadsheet(self, mode: str, filepath: Path):
+		tables = {'Peaks': (self.p3_isotb, ['Element', 'Lower WL', 'Center WL', 'Upper WL', '#Peaks']),
+		          'TNe': (self.p6_table, ['Element', 'Ionization', 'gAk', 'Ek'])}
+		df = read_excel(filepath, dtype=str)
+		if df.columns.tolist() != tables[mode][1]:
+			self.guimsg('Error', f'Wrong columns names for <b>{mode} table</b>!<p>'
+			                     f'<b style="color: blue">Allowed</b>: <u>{", ".join(tables[mode][1])}</u><br>'
+			                     f'<b style="color: red">Entered</b>: <u>{", ".join(df.columns.tolist())}</u></p>', 'c')
+		else:
+			# Starts adding values to table
+			if mode == 'TNe':
+				self.p6_table_dfs[self.p6_element.currentText()] = df
+			table = tables[mode][0]
+			table.setRowCount(0)
+			table.setRowCount(df.index.size)
+			block = True
+			for c in range(df.columns.size):
+				if c == 0 and mode == 'TNe':
+					table.blockSignals(True)
+				elif block:
+					block = False
+					table.blockSignals(False)
+				for r in range(df.index.size):
+					table.setItem(r, c, QtWidgets.QTableWidgetItem(df.iloc[r, c]))
+
+
 #
 # Extra functions
 #
