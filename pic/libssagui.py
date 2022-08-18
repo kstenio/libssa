@@ -20,6 +20,7 @@
 #
 
 # Imports
+from env.config.ion import ionization_energies_ev
 from numpy import zeros, int16, ones, ndarray, std, linspace, arange, hstack
 from pandas import DataFrame
 from numpy.random import randint, uniform, random, rand
@@ -110,6 +111,12 @@ class LIBSsaGUI(object):
 			self.p5_pca_cscan = self.p5_pca_do = self.p5_pls_cal_start = self.p5_pls_pred_start = QtWidgets.QPushButton()
 			self.p5_pls_cal_att = self.p5_pls_pred_model = self.p5_pls_pred_att = QtWidgets.QLabel()
 			self.p5_pls_cal_ref = QtWidgets.QComboBox()
+			# Page 6 == Boltzmann and Saha-Boltzmann (for Plasma Temperature and Electron Density)
+			self.p6_element = QtWidgets.QComboBox()
+			self.p6_ion = QtWidgets.QLabel()
+			self.p6_table = QtWidgets.QTableWidget()
+			self.p6_start = QtWidgets.QPushButton()
+			
 			# loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -160,6 +167,7 @@ class LIBSsaGUI(object):
 		self.loadstyle(self.logofile)
 		self.setgoptions()
 		self.modechanger()
+		self.update_tne_values(True)
 		
 	def loadmain(self):
 		# main tab element and logo
@@ -261,7 +269,10 @@ class LIBSsaGUI(object):
 		self.p5_pls_pred_start = self.mw.findChild(QtWidgets.QPushButton, 'p5pB4')
 		
 	def loadp6(self):
-		pass
+		self.p6_element = self.mw.findChild(QtWidgets.QComboBox, 'p6cB1')
+		self.p6_ion = self.mw.findChild(QtWidgets.QLabel, 'p6lB2')
+		self.p6_table = self.mw.findChild(QtWidgets.QTableWidget, 'p6tW1')
+		self.p6_start = self.mw.findChild(QtWidgets.QPushButton, 'p6pB1')
 	
 	# Connects helper
 	def connects(self):
@@ -284,6 +295,9 @@ class LIBSsaGUI(object):
 		self.p4_peak.currentIndexChanged.connect(self.setpeaknorm)
 		self.p4_pnorm_combo.currentIndexChanged.connect(self.setnpeaksnorm)
 		self.p4_pnorm.toggled.connect(self.curvechanger)
+		# p6
+		self.p6_element.currentIndexChanged.connect(lambda: self.update_tne_values(False))
+		self.p6_table.cellChanged.connect(self.check_tne_table)
 		# settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
@@ -836,6 +850,81 @@ class LIBSsaGUI(object):
 				self.p4_npeak_norm.setValue(1)
 				self.p4_npeak_norm.setRange(1, val)
 				break
+	
+	def update_tne_values(self, start: bool = False):
+		if start:
+			# Main Initialization
+			elements = list(ionization_energies_ev.keys())
+			self.p6_element.addItems(elements)
+			self.p6_element.setCurrentText('Ti')
+			self.p6_ion.setStyleSheet('font-weight: bold')
+			self.p6_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+			# Creates DF-Structure for each element
+			self.p6_table_dfs = {e: DataFrame(columns=['Element', 'Ionization', 'gAk', 'Ek'], dtype=str) for e in elements}
+		# Updates text in QLabel
+		element = self.p6_element.currentText()
+		self.p6_ion.setText(f'{ionization_energies_ev[element]:.2f} eV')
+		# Now, must check if fit table was created (meaning, areas are ready to be used)
+		fit_rows = self.p3_fittb.rowCount()
+		for fr in range(fit_rows):
+			fit_element = self.p3_fittb.item(fr, 0).text()
+			if element in fit_element:
+				ionization = 2 if '2' in fit_element else 1
+				self.p6_table_dfs[element].loc[fit_element] = list(map(str, (fit_element, ionization, 0, 0)))
+		# With our DF for element created, now we just have to add values inside table
+		df_element = self.p6_table_dfs[element]
+		self.p6_table.setRowCount(df_element.index.size)
+		rows, cols = self.p6_table.rowCount(), self.p6_table.columnCount()
+		self.p6_table.blockSignals(True)
+		for r in range(rows):
+			for c in range(cols):
+				self.p6_table.setItem(r, c, QtWidgets.QTableWidgetItem(df_element.iloc[r, c]))
+		self.p6_table.blockSignals(False)
+		# self.check_tne_table(0, 2)
+	
+	def check_tne_table(self, row: int, col: int):
+		# Organizes data
+		restore = False
+		element = self.p6_element.currentText()
+		df_element = self.p6_table_dfs[element]
+		col_name = self.p6_table.horizontalHeaderItem(col).text()
+		cell_val, new_cell_val = self.p6_table.item(row, col).text(), ''
+		allowed_types = {'Element': str, 'Ionization': int, 'gAk': float, 'Ek': float}
+		# Checks types
+		self.p6_table.blockSignals(True)
+		try:
+			new_cell_val = allowed_types[col_name](cell_val)
+		except ValueError:
+			self.guimsg('Invalid Value',
+			            f'<b style="color: red">{cell_val}</b> is not a valid value for column <b>{col_name}</b>!<p>'
+			            f'Restoring the last saved value.</p>', 'c')
+			restore = True
+		else:
+			if col_name == 'Element':
+				self.guimsg('Not allowed',
+				            f'You can not change the value of the <b style="color: red">Element</b> column here!<br>'
+				            f'To do so, you have to change <b>isolation table</b>.<p>'
+				            f'Restoring the last saved value.</p>', 'c')
+				restore = True
+			elif col_name == 'Ionization':
+				if str(new_cell_val) not in ('1', '2'):
+					self.guimsg('Invalid Value',
+					            f'<b style="color: red">{cell_val}</b> is not a valid value for column <b>{col_name}</b>!<br>'
+					            f'You must use <b style="color: blue">1</b> for atomic or <b style="color: blue">2</b> '
+					            f'for ionic species.<p>'
+					            f'Restoring the last saved value.</p>', 'c')
+					restore = True
+		finally:
+			if restore:
+				self.p6_table.item(row, col).setText(df_element.iloc[row, col])
+			else:
+				# Updates value inside DF
+				df_element.iloc[row, col] = str(new_cell_val)
+		self.p6_table.blockSignals(False)
+		
+		
+		
+		
 		
 #
 # Extra functions

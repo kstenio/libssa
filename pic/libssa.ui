@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.5 beta 1</string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.6 RC 1</string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -1774,6 +1774,96 @@
             <attribute name="label">
              <string>Plasma temperature and electron density</string>
             </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_11">
+               <item>
+                <widget class="QLabel" name="p6lB1">
+                 <property name="text">
+                  <string>Element to perform the calculations:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="p6cB1"/>
+               </item>
+               <item>
+                <widget class="QLabel" name="p6lB2">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>0 eV</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QTableWidget" name="p6tW1">
+               <column>
+                <property name="text">
+                 <string>Element</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Ionization</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>gAk</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Ek</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_12">
+               <item>
+                <spacer name="horizontalSpacer_6">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="p6pB1">
+                 <property name="text">
+                  <string>Obtain Boltzmann / Saha-Boltzmann Plots</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_5">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
            </widget>
           </widget>
          </item>
@@ -1987,7 +2077,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <addaction name="actionF01"/>
     <addaction name="actionF02"/>
@@ -1996,13 +2086,13 @@
    </widget>
    <widget class="QMenu" name="menuImport">
     <property name="title">
-     <string>Import</string>
+     <string>&amp;Import</string>
     </property>
     <addaction name="actionI01"/>
    </widget>
    <widget class="QMenu" name="menuExport">
     <property name="title">
-     <string>Export</string>
+     <string>&amp;Export</string>
     </property>
     <widget class="QMenu" name="menuSpectra_ASCII">
      <property name="title">
@@ -2042,7 +2132,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="actionH01"/>
    </widget>
@@ -2058,7 +2148,7 @@
      <normaloff>pic/icons/file-import-solid.svg</normaloff>pic/icons/file-import-solid.svg</iconset>
    </property>
    <property name="text">
-    <string>Load environment</string>
+    <string>&amp;Load environment</string>
    </property>
   </action>
   <action name="actionF02">
@@ -2067,7 +2157,7 @@
      <normaloff>pic/icons/file-export-solid.svg</normaloff>pic/icons/file-export-solid.svg</iconset>
    </property>
    <property name="text">
-    <string>Save environment</string>
+    <string>&amp;Save environment</string>
    </property>
   </action>
   <action name="actionF03">
@@ -2076,7 +2166,7 @@
      <normaloff>pic/icons/times-circle-regular.svg</normaloff>pic/icons/times-circle-regular.svg</iconset>
    </property>
    <property name="text">
-    <string>Quit LIBSsa</string>
+    <string>&amp;Quit LIBSsa</string>
    </property>
   </action>
   <action name="actionI01">

@@ -113,7 +113,7 @@ class Spectra(object):
 		            'PredictR2': self.base, 'PredictRMSE': self.base, 'CrossValPredict': self.base,
 		            'CrossValR2': self.base, 'CrossValRMSE': self.base, 'BlindPredict': self.base}
 		# Plasma properties
-		self.plasma = {'Temperature': self.base, 'Ne': self.base}
+		self.plasma = {'Temperature': self.base, 'Ne': self.base, 'Tables': self.base}
 	
 	def clear(self):
 		pls = self.pls.copy()

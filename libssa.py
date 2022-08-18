@@ -53,7 +53,7 @@ class LIBSSA2(QObject):
 	"""
 	This is LIBSsa main APP.
 
-	In it we have all needed functions, actions and connects for the app to work properly.
+	In it, we have all needed functions, actions and connects for the app to work properly.
 	"""
 	def __init__(self, ui_file: str, logo_file: str, parent=None):
 		# checks if ui file exists and warn users if not
@@ -164,7 +164,7 @@ class LIBSSA2(QObject):
 				else:
 					# Actually starts
 					changestatus(self.gui.sb, 'Please wait, saving environment...', 'b', 1)
-					save_file = save_file.with_suffix('*.lb2e')
+					save_file = save_file.with_suffix('.lb2e')
 					with lzma.open(save_file, 'wb', preset=3) as loc:
 						pickle.dump(self.spec, loc)
 					if save_file.is_file():
@@ -262,9 +262,10 @@ class LIBSSA2(QObject):
 		              9: 'PCA Data', 10: 'Temperature and Ne Report', 11: 'Correlation Spectrum'}
 		# Creates variables to be used in the method
 		func, func_param, fd_params, msg_params, index = None, None, tuple(), tuple(), False
-		dt = datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
+		dt, suffix = datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss'), ''
 		# Gets values based on mode
 		if mode == 1:
+			suffix = ''
 			func = export.export_raw
 			func_param = (self.spec, 'Raw')
 			fd_params = (Path.home(),
@@ -272,6 +273,7 @@ class LIBSSA2(QObject):
 			             f'Choose folder for exporting {modes_dict[mode]} data', '')
 			index = False
 		elif mode == 2:
+			suffix = ''
 			func = export.export_raw
 			func_param = (self.spec, 'Outliers')
 			fd_params = (Path.home(),
@@ -280,6 +282,7 @@ class LIBSSA2(QObject):
 			             '')
 			index = False
 		elif mode == 3:
+			suffix = '.xlsx'
 			func = export.export_iso_table
 			func_param = [self.gui.p3_isotb]
 			fd_params = (Path.home().joinpath(f'Iso_Tables_Report_{dt}.xlsx'),
@@ -288,6 +291,7 @@ class LIBSSA2(QObject):
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 4:
+			suffix = '.xlsx'
 			func = export.export_iso_peaks
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'Iso_Peaks_Report_{dt}.xlsx'),
@@ -296,6 +300,7 @@ class LIBSSA2(QObject):
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 5:
+			suffix = '.xlsx'
 			func = export.export_fit_peaks
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'Fit_Peaks_Report_{dt}.xlsx'),
@@ -305,6 +310,7 @@ class LIBSSA2(QObject):
 			index = True
 		elif mode == 6:
 			func = export.export_fit_areas
+			suffix = '.xlsx'
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'Fit_Areas_Report_{dt}.xlsx'),
 			             'getSaveFileName',
@@ -312,6 +318,7 @@ class LIBSSA2(QObject):
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 7:
+			suffix = '.xlsx'
 			func = export.export_linear
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'Linear_Model_Report_{dt}.xlsx'),
@@ -320,6 +327,7 @@ class LIBSSA2(QObject):
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 8:
+			suffix = '.xlsx'
 			func = export.export_pls
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'PLS_Model_Report_{dt}.xlsx'),
@@ -328,6 +336,7 @@ class LIBSSA2(QObject):
 			             'Excel 2007+ Spreadsheet (*.xlsx)')
 			index = True
 		elif mode == 9:
+			suffix = '.xlsx'
 			func = export.export_pca
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'PCA_Report_{dt}.xlsx'),
@@ -338,6 +347,7 @@ class LIBSSA2(QObject):
 		elif mode == 10:
 			pass
 		elif mode == 11:
+			suffix = '.xlsx'
 			func = export.export_correl
 			func_param = [self.spec]
 			fd_params = (Path.home().joinpath(f'Correl_Report_{dt}.xlsx'),
@@ -349,29 +359,33 @@ class LIBSSA2(QObject):
 			raise AssertionError('Illegal mode for export data!')
 		# Call file dialog
 		try:
+			changestatus(self.gui.sb, f'Please wait, exporting {modes_dict[mode]} data...', 'b', 1)
 			path = self.gui.guifd(*fd_params)[0] if index else self.gui.guifd(*fd_params)
 		except TypeError:
 			self.gui.guimsg('Error', f'Can not export data for <b>{modes_dict[mode]}</b>.'
 			                         f'<br>Not implemented yet.', 'c')
+			self.gui.sb.clearMessage()
 		else:
 			path = Path(path)
 			if path.name in ('', '.'):
 				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+				self.gui.sb.clearMessage()
 			else:
 				# Run func with parameters
 				try:
-					func(path, *func_param)
+					func(path.with_suffix(suffix) if suffix else path, *func_param)
 				except Exception as ex:
 					print_exc()
 					self.gui.guimsg('Could not export data!',
 					                f'Failed to save <u><b>{modes_dict[mode]}</b></u>.'
 					                f'<p>Error message: <b style="color: red">{str(ex)}</b></p>', 'c')
-					
+					changestatus(self.gui.sb, f'{modes_dict[mode]} data could not be saved', 'r', 0)
 				else:
 					self.gui.guimsg('Done!',
 					                f'<b>{modes_dict[mode]}</b> data properly saved.'
 					                f'<p>Save location: <a href={path.as_uri()}>{path.name}</a></p>',
 					                'i')
+					changestatus(self.gui.sb, f'{modes_dict[mode]} data saved', 'g', 0)
 	
 	#
 	# Methods for Graphics
@@ -768,6 +782,8 @@ class LIBSSA2(QObject):
 			self.gui.p4_peak.clear()
 			self.gui.p4_peak.addItems(self.spec.isolated['Element'])
 			self.gui.p4_npeak.setEnabled(True)
+			# Updates table in page 6
+			self.gui.update_tne_values()
 		
 		if not self.spec.isolated['Count']:
 			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
