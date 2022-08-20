@@ -1,10 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+<h1>LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyser</h1>
+<h3>Current stable version: <em>2.0.8</em></h3>
+<h2>About the software</h2>
+<p><strong>LIBSsa 2</strong> is a free software, licenced under the <strong>GNU Affero General Public License
+version 3</strong>, and written in <strong>Python 3.x</strong> for analyzing <strong>LIBS spectra</strong>.
+It can read multiple formats of data inside raw/text files, import the spectra, and
+perform multiple analysis in the data. The environment (spectra, peaks and results)
+may be saved into an encapsulated <strong>lb2e</strong> file.
+Finally, users can also export result of analysis in many common files (<strong>csv</strong> and <strong>xlsx</strong>).</p>
+<h2>Historical background</h2>
+<p>The <strong>LIBSsa 1</strong> was a software created in the middle of 2017 for my personal use
+in a LIBS class during my doctorate. Eventually, many colleagues from the
+<em>Optics and Photonics Laboratory</em> at <strong>Embrapa Instrumentation</strong> (Sao Carlos, SP, Brazil)
+enjoyed the application, and I continued developing it until late 2019.</p>
+<p>Eventually, the <em>LIBSsa</em> software became an important part of my doctorate/thesis,
+so I've decided to restructure it into a new - <em>better</em> - version. So, in the middle
+of 2020, the development of the <strong>LIBSsa 2</strong> started.</p>
+<h2>Features</h2>
+<ol>
+<li><strong>Importing Spectra</strong>: users can import data into LIBSsa 2 from any kind of raw/text
+data, including <strong>txt</strong>, <strong>csv</strong>, <strong>esf</strong> and <strong>ols</strong>. There are also many options in how data can be loaded:</li>
+<li><strong>Load methods</strong>: how files are read by the program<ol>
+<li><strong>Multi</strong>: one folder per sample, several files per sample</li>
+<li><strong>Single</strong>: one file per sample, multiple columns in each file</li>
+</ol>
+</li>
+<li><strong>Delimiters</strong>: TAB ("<strong>\t</strong>"), SPACE ('<strong>\s+</strong>'), comma ("<strong>.</strong>") and semicolon ("<strong>;</strong>")</li>
+<li><strong>Header</strong>: number of rows to skip</li>
+<li><strong>Wavelength and Counts</strong>: in which columns are the wavelength and counts data</li>
+<li><strong>Decimals</strong>: if user wants to round loaded signal (for improved performance)</li>
+<li><strong>FSN</strong> (Full Spectrum Normalization): can use signal information during the loading for normalization</li>
+<li><strong>Outliers removal</strong>: there are 2 algorithms for outliers removal in LIBSsa 2:</li>
+<li><strong>SAM</strong> (Spectral Angle Mapper): removes outliers based on how different a sample is from the average</li>
+<li><strong>MAD</strong> (Median Absolute Deviation): remove outliers based on a per wavelength criteria</li>
+<li><strong>Correlation Spectrum</strong>: if reference is provided, calculates Pearson-R as function of wavelength</li>
+<li><strong>Peak isolation</strong>: can isolate multiple peaks at once</li>
+<li><strong>Peak fitting</strong>: can perform peak fitting to obtain areas and heights for multiple functions/curves: </li>
+<li>Lorentzian</li>
+<li>Gaussian</li>
+<li>Voigt</li>
+<li>Trapezoidal*</li>
+<li><strong>Linear Regression</strong>: can use one or two peaks for obtaining linear models</li>
+<li><strong>PLS Regression</strong>: can create models and predict blind samples  </li>
+<li><strong>PCA</strong> (Principal Components Analysis): can run PCA on dataset, using RAW data or fitted data</li>
+<li><strong>Plasma parameters</strong>: by using the Saha-Boltzmann equation, can obtain plasma temperature (<strong>T [K]</strong>)
+and electrons density (<strong>Ne [cm-3]</strong>)</li>
+<li><strong>Save environment</strong>: if the user wants to keep all analysis into a single file, it is possible
+to save a <em>LIBSsa 2 environment file</em> (<strong>lb2e</strong>). The file is a lzma-compressed pickle containing all
+data loaded and processed, with about <strong>40%</strong> of the size of original/text spectra.  </li>
+<li><strong>Export data</strong>: it is also possible to export analysed data into <strong>csv</strong> and <strong>xlsx</strong> files</li>
+</ol>
+<h3>Installing Python</h3>
+<p>You will need to install Python 3.x (tested on 3.5+) in order to use the program.
+Python can be obtained from the official website: <a href="https://www.python.org/">https://www.python.org/</a>.</p>
+<h4>1. Linux users</h4>
+<p>If you use <strong>Linux</strong>, you probably already have it, as most of the distributions comes with
+Python pre-installed. However, if for some reason Python 3 is not installed, you'll have to
+install it (either from website) or from your distribution repositories. As an example,
+for Debian-based distribution, you can use <strong>apt</strong> (<em>Advanced package tool</em>):</p>
+<p><code>bash
+sudo apt install python3-minimal python3-pip python3-setuptools python3-wheel build-essential</code></p>
+<p>In case of any problems, check the official documentation about <a href="https://docs.python.org/3/using/unix.html">installing Python on
+Unix platforms</a>.</p>
+<h4>2. Windows users</h4>
+<p><strong>Windows</strong> users may obtain Python either from <a href="https://apps.microsoft.com/store/detail/python-39/9P7QFQMJRFP7">Microsoft Store</a>
+(if you use Windows 8+) or downloading it from the <a href="https://www.python.org">official website</a>.
+Also, one should not forget to mark during the installation to <em>ADD PYTHON TO PATH</em> and
+to <em>REMOVE MAX PATH 260 LENGTH LIMIT</em>.</p>
+<p>I also recommend checking the official documentation about <a href="https://docs.python.org/3/using/windows.html">installing Python on
+Windows platforms</a>.</p>
+<h3>External Libraries</h3>
+<p>To properly works, this program uses the following external libraries:</p>
+<ol>
+<li><a href="https://numpy.org/">NumPy</a> (~=1.22.3)</li>
+<li><a href="https://scipy.org/">SciPy</a> (~=1.8.0)</li>
+<li><a href="https://pandas.pydata.org/">Pandas</a> (~=1.4.1)</li>
+<li><a href="https://scikit-learn.org/stable/">Scikit-Learn</a> (~=1.1.2)</li>
+<li><a href="https://wiki.qt.io/Qt_for_Python">PySide6</a> (~=6.2.3)</li>
+<li><a href="https://pyqtgraph.readthedocs.io/en/latest/index.html">PyQtGraph</a> (~=0.12.4)</li>
+<li><a href="https://openpyxl.readthedocs.io/en/stable/">OpenPyXL</a> (~=3.0.5)</li>
+<li><a href="https://github.com/giampaolo/psutil">Psutil</a> (~=5.9.1)</li>
+<li><a href="https://python-markdown.github.io/">Markdown</a> (~3.4.1)</li>
+</ol>
+<p>And, besides those libraries, its dependencies as well.</p>
+<h4>Installing external libraries</h4>
+<p>External libraries may be installed using the <a href="https://docs.python.org/3/installing/index.html">PIP</a>
+tool. Just open a <strong>terminal</strong> or <strong>Windows PowerShell</strong> and type:</p>
+<p><code>powershell
+pip install numpy scipy pandas scikit-learn PySide6 pyqtgraph openpyxl psutil markdown --user</code></p>
+<p>Or using the file <em><strong>requirements.txt</strong></em> to make the installation simpler:</p>
+<p><code>powershell
+pip install -r requirements.txt --user</code></p>
+<p>You may also use <code>python -m pip install [COMMAND]</code> for installing libraries. Finally,
+advanced users are encouraged to use <a href="https://docs.python.org/3/library/venv.html">venv</a>
+(Virtual Environment).</p>
+<h3>Warranty</h3>
+<p>LIBSsa 2 is an open-source project. It is distributed in the hope that it will be
+useful, but <em>WITHOUT ANY WARRANTY</em>; without even the implied warranty of <em>MERCHANTABILITY</em>
+or <em>FITNESS FOR A PARTICULAR PURPOSE</em>. See the GNU Affero General Public License
+version 3 attached for more details.</p>
+<hr />
+<p>Developed by: <a href="mailto:kleydson.stenio@gmail.com?Subject=LIBSsa_2_QUESTIONS">Kleydson Stenio</a> @ 2022</p>

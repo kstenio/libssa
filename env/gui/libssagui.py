@@ -23,7 +23,7 @@ from numpy import zeros, int16, ones, ndarray, std, linspace, arange, hstack
 from pandas import DataFrame, read_excel
 from numpy.random import randint, uniform, random, rand
 from colorsys import hsv_to_rgb, hls_to_rgb
-from PySide6.QtCore import QFile, Qt, QEvent
+from PySide6.QtCore import QFile, Qt, QSize
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtUiTools import QUiLoader
 from pyqtgraph import PlotWidget, setConfigOption, mkBrush, mkPen, TextItem, BarGraphItem
@@ -63,6 +63,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.logo = QtWidgets.QLabel()
 			self.mbox = QtWidgets.QMessageBox()
 			self.mbox_pbar = QtWidgets.QProgressBar()
+			self.about = QtWidgets.QWidget()
 			# Menubar
 			self.menu_file_load = self.menu_file_save = self.menu_file_quit = QtGui.QAction()
 			self.menu_import_ref = self.menu_import_peaks = self.menu_import_tne = QtGui.QAction()
@@ -70,6 +71,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_fitted = self.menu_export_peaks_areas = QtGui.QAction()
 			self.menu_export_predictions_linear = self.menu_export_predictions_pls = QtGui.QAction()
 			self.menu_export_other_pca = self.menu_export_other_tne = self.menu_export_other_correl = QtGui.QAction()
+			self.menu_help_about = QtGui.QAction()
 			# Graph elements
 			self.g = PlotWidget()
 			self.g_selector = QtWidgets.QComboBox()
@@ -166,6 +168,10 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			color: #ffffff;}"""
 		self.toolbox.setStyleSheet(style)
 	
+	def show_about(self, html: str, version: str):
+		self.about = LIBSsaAbout(None, html, version)
+		self.about.show()
+	
 	# Load methods
 	def loadconfigs(self):
 		self.g.setTitle('LIBS Spectum')
@@ -206,7 +212,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		self.menu_export_other_pca = self.mw.findChild(QtGui.QAction, 'actionE09')
 		self.menu_export_other_tne = self.mw.findChild(QtGui.QAction, 'actionE10')
 		self.menu_export_other_correl = self.mw.findChild(QtGui.QAction, 'actionE11')
-		# self.menu_export_
+		self.menu_help_about = self.mw.findChild(QtGui.QAction, 'actionH01')
 		
 	def loadp1(self):
 		self.p1_smm = self.mw.findChild(QtWidgets.QRadioButton, 'p1rB1')
@@ -1031,3 +1037,35 @@ def changestatus(bar, message='', color='', bold=False):
 				bar.setStyleSheet('color:#%s' % color)
 		else:
 			raise ValueError('Wrong color length style. Please use 6 hexadecimal values.')
+
+
+class LIBSsaAbout(QtWidgets.QWidget):
+	def __init__(self, parent, html: str, version: str):
+		super().__init__(parent=parent)
+		# Creates simple widget to show the data
+		self.label = QtWidgets.QLabel(f'<b>About LIBSsa version <u style="color: blue">{version}</u></b>')
+		self.text = QtWidgets.QTextEdit(html)
+		self.ok = QtWidgets.QPushButton('OK')
+		self.vlayout = QtWidgets.QVBoxLayout()
+		self.hlayout = QtWidgets.QHBoxLayout()
+		self.s1 = QtWidgets.QSpacerItem(40, 20,
+		                                QtWidgets.QSizePolicy.Expanding,
+		                                QtWidgets.QSizePolicy.Minimum)
+		self.s2 = QtWidgets.QSpacerItem(40, 20,
+		                                QtWidgets.QSizePolicy.Expanding,
+		                                QtWidgets.QSizePolicy.Minimum)
+		# Add layout elements
+		self.vlayout.addWidget(self.label, 0)
+		self.vlayout.addWidget(self.text, 1)
+		self.hlayout.addItem(self.s1)
+		self.hlayout.addWidget(self.ok)
+		self.hlayout.addItem(self.s2)
+		self.vlayout.addLayout(self.hlayout, 2)
+		self.setLayout(self.vlayout)
+		# Connects
+		self.ok.clicked.connect(self.close)
+		# Configs
+		self.text.setReadOnly(True)
+		self.setWindowTitle('About LIBSsa')
+		self.text.setMinimumSize(QSize(1000, 500))
+		self.label.setAlignment(Qt.AlignCenter)

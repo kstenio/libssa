@@ -25,16 +25,16 @@ try:
 	import env.export as export
 	from time import time
 	from os import listdir
-	from psutil import virtual_memory
+	from markdown import markdown
 	from datetime import datetime
 	from traceback import print_exc
+	from psutil import virtual_memory
 	from pandas import DataFrame, Index
 	from pathlib import Path, PosixPath
 	from env.spectra import Spectra, Worker
 	from env.gui.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do, tne_do, array
-	from PySide6.QtGui import QKeyEvent
 	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow, QTableWidgetItem
 	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
 except (ImportError, ImportWarning) as err:
@@ -74,6 +74,7 @@ class LIBSSA2(QObject):
 			self.cores, self.timer = 0, 0
 			self.bytes_to_gb = 1073741824
 			self.memory = virtual_memory()
+			self.root = Path(__file__).parent
 			# connects
 			self.connects()
 			# extra variables
@@ -105,7 +106,7 @@ class LIBSSA2(QObject):
 		self.gui.menu_export_other_pca.triggered.connect(lambda: self.export_mechanism(9))
 		self.gui.menu_export_other_tne.triggered.connect(lambda: self.export_mechanism(10))
 		self.gui.menu_export_other_correl.triggered.connect(lambda: self.export_mechanism(11))
-		# self.gui.menu
+		self.gui.menu_help_about.triggered.connect(self.create_about)
 		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
@@ -132,6 +133,27 @@ class LIBSSA2(QObject):
 		self.cores = self.threadpool.maxThreadCount()
 		self.threadpool.setMaxThreadCount(self.cores - 1)
 	
+	def create_about(self):
+		readme = self.root.joinpath('README.md')
+		save = False
+		try:
+			if readme.is_file():
+				with readme.open('r') as r:
+					html = markdown(r.read())
+			else:
+				raise FileNotFoundError('File <b>README.md</b> not found.')
+		except FileNotFoundError:
+			self.gui.guimsg('Error',
+			                'Could not find <b>README.md</b> file inside application root.',
+			                'w')
+			print_exc()
+		else:
+			version = html.split('\n')[1].split('<em>')[1].split('<')[0]
+			self.gui.show_about(html, version)
+			if save:
+				with root.joinpath('doc', 'readme.html').open('w') as r:
+					r.write(html)
+			
 	#
 	# Menu input/output methods
 	#
@@ -160,13 +182,14 @@ class LIBSSA2(QObject):
 			                           f'Do you want to proceed?', 'q')
 			if question == QMessageBox.Yes:
 				# Now that user decided to export, continue...
+				changestatus(self.gui.sb, 'Please wait, saving environment...', 'b', 1)
 				save_file = Path(self.gui.guifd(Path.home().joinpath(f'LIBSsa_Environment_{dt}.lb2e'), 'gsf',
 				                                f'Choose filename to save environment', 'LIBSsa 2.0 Environment (*.lb2e)')[0])
 				if save_file.name in ('', '.'):
 					self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+					self.gui.sb.clearMessage()
 				else:
 					# Actually starts
-					changestatus(self.gui.sb, 'Please wait, saving environment...', 'b', 1)
 					save_file = save_file.with_suffix('.lb2e')
 					with lzma.open(save_file, 'wb', preset=3) as loc:
 						pickle.dump(self.spec, loc)
@@ -181,11 +204,13 @@ class LIBSSA2(QObject):
 						                f'Could not save <b>environment</b> data properly. Try free more RAM.', 'c')
 						changestatus(self.gui.sb, 'Error when saving environment', 'r', 0)
 		elif mode == 'load':
+			changestatus(self.gui.sb, 'Please wait, loading environment...', 'b', 1)
 			load_file = Path(self.gui.guifd(self.parent, 'gof',
 			                                f'Choose filename to load environment',
 			                                'LIBSsa 2.0 Environment (*.lb2e)')[0])
 			if load_file.name in ('', '.'):
 				self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
+				self.gui.sb.clearMessage()
 			else:
 				with lzma.open(load_file, 'rb') as loc:
 					self.spec = pickle.load(loc)
