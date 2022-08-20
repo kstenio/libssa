@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ./env/equations.py
+# Copyright (c) 2022 Kleydson Stenio.
 #
-#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as published
-#  by the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 # Imports
 from scipy.special import wofz
@@ -25,11 +23,15 @@ from numpy import sum as nsum, abs as nabs
 from numpy import ndarray, empty, sum, array_split, exp, real, log, pi
 
 
+#
 # Lorentzian functions
+#
 def lorentz(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Lorentz Function. All parameters are adjusted.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -45,8 +47,10 @@ def lorentz(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 
 def lorentz_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Lorentz Function. All parameters are adjusted but center.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -62,8 +66,10 @@ def lorentz_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 
 def lorentz_asymmetric(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Asymmetric Lorentz Function. All parameters are adjusted.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -78,10 +84,13 @@ def lorentz_asymmetric(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 		loa[x > c, i] = h / (1 + ((x[x > c] - c) / (0.5 * w *(1-m))) ** 2)
 	return sum(loa, 1)
 
+
 def lorentz_asymmetric_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Asymmetric Lorentz Function. All parameters are adjusted but center.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -96,10 +105,13 @@ def lorentz_asymmetric_fixed_center(x: ndarray, *args: [float], **kwargs: dict) 
 		loafc[x > c[i], i] = h / (1 + ((x[x > c[i]] - c[i]) / (0.5 * w * (1 - m))) ** 2)
 	return sum(loafc, 1)
 
+
 def lorentz_asymmetric_fixed_center_asymmetry(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Asymmetric Lorentz Function. All parameters are adjusted but center and asymmetry.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (number of peaks, center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -114,11 +126,15 @@ def lorentz_asymmetric_fixed_center_asymmetry(x: ndarray, *args: [float], **kwar
 	return sum(loafca, 1)
 
 
+#
 # Gaussian functions
+#
 def gauss(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Gaussian Function. All parameters are adjusted.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -134,8 +150,10 @@ def gauss(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 
 def gauss_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Gaussian Function. All parameters are adjusted but center.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -149,11 +167,15 @@ def gauss_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	return nsum(gafc, 1)
 
 
+#
 # Voigt functions
+#
 def voigt(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Voigt Profile function. All parameters are adjusted.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (center, asymmetry)
 	:return: y values for function (intensities)
 	"""
@@ -168,10 +190,13 @@ def voigt(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 		vo[:, i] = (a * real(wofz(z))) / (sigma*((2*pi)**0.5))
 	return nsum(vo, 1)
 
+
 def voigt_fixed_center(x: ndarray, *args: [float], **kwargs: dict) -> ndarray:
 	"""
+	Voigt Profile function. All parameters are adjusted but center.
+	
 	:param x: Input vector (wavelength for isolated region)
-	:param args: Parameters of function. These values can be optimized for fit.
+	:param args: Parameters of function. These values can be optimized for fit
 	:param kwargs: Extra fixed parameters (center, asymmetry)
 	:return: y values for function (intensities)
 	"""

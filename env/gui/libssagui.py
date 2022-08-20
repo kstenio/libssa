@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ./pic/libssagui.py
+# Copyright (c) 2022 Kleydson Stenio.
 #
-#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as published
-#  by the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 # Imports
 from env.config.ion import ionization_energies_ev
@@ -44,7 +42,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 
 	This is the main GUI class for LIBSsa.
 	
-	Every element here is loaded from libssa.ui file, and bound as class variables.
+	Every element here is loaded from libssagui.ui file, and bound as class variables.
 	With an object of this class, the main is able to control the entire gui.
 	"""
 	def __init__(self, uifile: str, logofile: str):

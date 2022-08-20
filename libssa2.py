@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  libssa.py
+# Copyright (c) 2022 Kleydson Stenio <kleydson.stenio@gmail.com>.
 #
-#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as published
-#  by the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 # Imports
 import sys
@@ -33,7 +31,7 @@ try:
 	from pandas import DataFrame, Index
 	from pathlib import Path, PosixPath
 	from env.spectra import Spectra, Worker
-	from pic.libssagui import LIBSsaGUI, changestatus
+	from env.gui.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
 	from env.functions import isopeaks, fitpeaks, linear_model, zeros, column_stack, pca_do, pca_scan, pls_do, tne_do, array
 	from PySide6.QtGui import QKeyEvent
@@ -1069,8 +1067,8 @@ class LIBSSA2(QObject):
 if __name__ == '__main__':
 	# checks the ui file and run LIBSsa main app
 	root = Path.cwd()
-	uif = root.joinpath('pic').joinpath('libssa.ui')
-	lof = root.joinpath('pic').joinpath('libssa.svg')
+	uif = root.joinpath('env', 'gui', 'libssagui.ui')
+	lof = root.joinpath('pic', 'libssa.svg')
 	QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 	app = QApplication(sys.argv)
 	if uif.is_file() and lof.is_file():

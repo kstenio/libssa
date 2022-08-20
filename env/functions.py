@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ./env/functions.py
+# Copyright (c) 2022 Kleydson Stenio.
 #
-#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as published
-#  by the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 # Imports
 from env.equations import *
@@ -28,7 +26,7 @@ from scipy.optimize import least_squares, OptimizeResult
 from numpy import exp, array, where, min as mini, hstack, vstack, polyfit, trapz, mean, zeros_like, linspace, column_stack, zeros, cumsum, ones, std, log
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn.cross_decomposition import PLSRegression as PLS
+from sklearn.cross_decomposition import PLSRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -54,6 +52,7 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 	new_wavelength = array([None] * len(elements))
 	noise = zeros((len(elements), len(counts), 2))
 	new_counts = array([array([None for X in range(len(counts))]) for Y in range(len(elements))], dtype=object)
+	subtract_by_region_minimum = False
 	# Cut data for each element in iso table
 	for i, e in enumerate(elements):
 		cut = where((wavelength >= lower[i]) & (wavelength <= upper[i]))[0]
@@ -70,14 +69,14 @@ def isopeaks(wavelength: ndarray, counts: ndarray, elements: list, lower: list, 
 					# If asked, also normalizes by the area
 					if anorm:
 						y[:, k] /= trapz(coefficients[1] + coefficients[0] * x, x)
-				# else:
-				# 	y_min = mini(y[:, k])
-				# 	if y_min > 0:
-				# 		y[:, k] -= y_min
-				# 	elif y_min < 0:
-				# 		y[:, k] += -1 * y_min
-				# 	else:
-				# 		pass
+				if subtract_by_region_minimum:
+					y_min = mini(y[:, k])
+					if y_min > 0:
+						y[:, k] -= y_min
+					elif y_min < 0:
+						y[:, k] += -1 * y_min
+					else:
+						pass
 			# Saves new count
 			new_counts[i][j] = y
 			# Gets the noise (Standard deviation of beginning and end of the peak)
@@ -109,16 +108,17 @@ def fit_guess(x: ndarray, y: ndarray, peaks: int, center: list, shape_id: str, a
 		# Ratio for values
 		r, d = 1 - 0.4*(i/peaks), x[-1] - x[0]
 		# Height/Area, Width, Center, Asymmetry
-		guess.append(r * max(y)) # Intensity is the highest value
-		guess.append(r * d / 4) # Width approximation by 1/4 of interval
+		guess.append(r * max(y))  # Intensity is the highest value
+		guess.append(r * d / 4)  # Width approximation by 1/4 of interval
 		if 'voigt' in shape_id.lower():
 			guess[-2] = r * max(y) * d / 2  # Area approximation by triangle
-			guess.append(r * d / 4) # Width approximation by 1/4 of interval
+			guess.append(r * d / 4)  # Width approximation by 1/4 of interval
 		if 'fixed' not in shape_id.lower():
-			guess.append(center[i]) # Center (user entered value)
+			guess.append(center[i])  # Center (user entered value)
 		if ('asymmetric' in shape_id.lower()) or ('asym' in shape_id.lower() and 'center fixed' in shape_id.lower()):
 			guess.append(asymmetry)  # Asymmetry (auto or user entered value)
 	return guess
+
 
 def residuals(guess: list, x: ndarray, y: ndarray, shape_id: str, **kwargs) -> ndarray:
 	"""
@@ -137,6 +137,7 @@ def residuals(guess: list, x: ndarray, y: ndarray, shape_id: str, **kwargs) -> n
 		return zeros_like(y)
 	else:
 		return y - kwargs[shape_id](x, *guess, **function_kwargs)
+
 
 def fit_values(ny: ndarray, shape: str, param: ndarray) -> tuple:
 	"""
@@ -160,6 +161,7 @@ def fit_values(ny: ndarray, shape: str, param: ndarray) -> tuple:
 		else:
 			a = 0
 	return h, w, a
+
 
 def fit_results(x: ndarray, y:ndarray, optimized: OptimizeResult, shape: str, npeaks: int, sdict: dict) -> tuple:
 	"""
@@ -191,6 +193,7 @@ def fit_results(x: ndarray, y:ndarray, optimized: OptimizeResult, shape: str, np
 		total_fit = column_stack((y, y))
 		heights[:], widths[:], areas[:] = max(y), (x[-1]-x[0])/4, trapz(y, x)
 	return column_stack((y, residual)), total_fit, heights, widths, areas
+
 
 def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmetry: list, isolated: dict, mean1st: bool, progress: Signal) -> tuple:
 	"""
@@ -259,10 +262,9 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 					                  peaks=npeaks, center=center,
 					                  shape_id=shape[i], asymmetry=asymmetry[i])
 					k_optimized = least_squares(residuals, guess,
-					                          args=(
-					                          w, average_spectrum, shape[i]),
-					                          kwargs=scd, ftol=tols[0], gtol=tols[1],
-					                          xtol=tols[2], max_nfev=tols[3])
+					                            args=(w, average_spectrum, shape[i]),
+					                            kwargs=scd, ftol=tols[0], gtol=tols[1],
+					                            xtol=tols[2], max_nfev=tols[3])
 					# Gets the result based on optimized solution
 					results = fit_results(w, average_spectrum, k_optimized, shape[i], len(center), scd)
 					# Saves some values
@@ -291,7 +293,8 @@ def fitpeaks(iso_wavelengths: ndarray, iso_counts: ndarray, shape: list, asymmet
 			progress.emit(j)
 	return nfevs, convegences, tuple(data), tuple(total), tuple(heights), tuple(widths), tuple(areas), tuple(areas_std), shape
 
-def equations_translator(center: list, asymmetry: float):
+
+def equations_translator(center: list, asymmetry: float) -> dict:
 	"""
 	Convenient function to return correct function to call (for fit).
 	
@@ -299,7 +302,7 @@ def equations_translator(center: list, asymmetry: float):
 	:param asymmetry: value for peak asymmetry
 	:return: dict to be used in fitpeaks
 	"""
-	shapes_and_curves_dict = {'Lorentzian' : lorentz,
+	shapes_and_curves_dict = {'Lorentzian': lorentz,
 	                          'Lorentzian [center fixed]' : lorentz_fixed_center,
 	                          'Asymmetric Lorentzian' : lorentz_asymmetric,
 	                          'Asym. Lorentzian [center fixed]' : lorentz_asymmetric_fixed_center,
@@ -313,22 +316,23 @@ def equations_translator(center: list, asymmetry: float):
 	                          'Asymmetry': asymmetry}
 	return shapes_and_curves_dict
 
-def linear_model(mode: str, reference: Series, values: tuple, base: str, base_peak: int, selected: str, selected_peak: int, elements: ndarray, noise: ndarray, param: str):
+
+def linear_model(mode: str, reference: Series, values: tuple, base: str, base_peak: int, selected: str, selected_peak: int, elements: ndarray, noise: ndarray, param: str) -> tuple:
 	"""
 	Performs linear model of two dependant variables: reference (true value) and the values (dependant).
 	Values can be areas or heights. The function fits a curve of type: Predict = INTERCEPT + SLOPE * Reference
 
-	:param mode: Mode of operation. Will defines if normalization is or isn't needed
-	:param reference: Vaules of reference
-	:param values: Values to be used for predicitons
-	:param base: String of the base peak
-	:param base_peak: Which peak is being used for base (if the peak is resulted as a multi-fitting)
-	:param selected: String of the selected peak (for single normalization)
-	:param selected_peak: Which peak is being used for select (if the peak is resulted as a multi-fitting)
-	:param elements: Full elements isolated (for all normalization)
-	:param noise: Array containing values of the standard deviation of noise for each sample (for LoD and LoQ)
-	:param param: Which parameter is being used (area or height)
-	:return: Tuple uf results to be stored in Spectra.linear (ref, predict, r2, rmse, slope, intercept, lod, loq)
+	:param mode: mode of operation. Will defines if normalization is or isn't needed
+	:param reference: vaules of reference
+	:param values: values to be used for predicitons
+	:param base: string of the base peak
+	:param base_peak: which peak is being used for base (if the peak is resulted as a multi-fitting)
+	:param selected: string of the selected peak (for single normalization)
+	:param selected_peak: which peak is being used for select (if the peak is resulted as a multi-fitting)
+	:param elements: full elements isolated (for all normalization)
+	:param noise: array containing values of the standard deviation of noise for each sample (for LoD and LoQ)
+	:param param: which parameter is being used (area or height)
+	:return: tuple of results to be stored in Spectra.linear (ref, predict, r2, rmse, slope, intercept, lod, loq)
 	"""
 	# Defines base variables
 	idx_b = where(elements == base)[0][0]
@@ -404,7 +408,17 @@ def linear_model(mode: str, reference: Series, values: tuple, base: str, base_pe
 	predict = array((list(zip(pred_name, pred_val))), dtype=object)
 	return ref, predict, array(r2), array(rmse), array(slope), array(intercept), array(lod), array(loq)
 
-def pca_scan(attributes, norm=False):
+
+def pca_scan(attributes: ndarray, norm: bool = False) -> tuple:
+	"""
+	PCA_Scan function. Receives the attributes matrix and returns the cumulative
+	explained variance and optimum number of components (where var > 0.95). If the
+	user requested to normalise the matrix, returns the transformed one.
+	
+	:param attributes: attributes matrix. Each row is a sample, and column an attribute
+	:param norm: boolean to choose if attribute matrix will be normalised or not
+	:return: tuple of results
+	"""
 	# organize attributes matrix
 	f_attributes = StandardScaler().fit_transform(attributes) if norm else attributes
 	# perform full PCA
@@ -419,20 +433,38 @@ def pca_scan(attributes, norm=False):
 	return f_attributes, explained_variance, optimum_ncomp
 
 
-def pca_do(normalized_attributes, n_comp):
-	pca = PCA(n_comp).fit(normalized_attributes)
+def pca_do(attributes: ndarray, n_comp: int) -> tuple:
+	"""
+	PCA_Do function. Uses the attributes to perform the PCA model, obtaining the
+	loadings and transformed date (scores) for each PC.
+	
+	:param attributes: attribute matrix (might be normalized)
+	:param n_comp: number of components to do the PCA
+	:return: tuple of results (scores and loadings)
+	"""
+	pca = PCA(n_comp).fit(attributes)
 	loadings = pca.components_.T
-	transformed = pca.transform(normalized_attributes)
+	transformed = pca.transform(attributes)
 	return transformed, loadings
 
 
-def pls_do(attributes, reference, n_comp, scale, cv=5):
+def pls_do(attributes: ndarray, reference: DataFrame, n_comp: int, scale: bool, cv_split: int = 5) -> tuple:
+	"""
+	Perform the PLS Regression in the attributes and returns the model and results of the regression.
+	
+	:param attributes: attribute matrix (samples in rows, attributes in columns)
+	:param reference: reference/true value DF for a single element (for modelling)
+	:param n_comp: number of components/latent variables of the model
+	:param scale: boolean to turn on/off the normalization of the input data
+	:param cv_split: determines how many groups will be used to perform cross validation (default: 5-fold)
+	:return: tuple of results
+	"""
 	# Organizes variables before applying model
-	pls = PLS(n_comp, scale=scale)
+	pls = PLSRegression(n_comp, scale=scale)
 	reference = array(reference).reshape(-1, 1)
 	# Now, we get cross validation data
-	cv_pred = cross_val_predict(pls, attributes, reference, cv=cv)
-	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv).max()
+	cv_pred = cross_val_predict(pls, attributes, reference, cv=cv_split)
+	cv_r2 = cross_val_score(pls, attributes, reference, scoring='r2', cv=cv_split).max()
 	# For pure prediction
 	pls.fit(attributes, reference)
 	predicted = pls.predict(attributes)
@@ -444,7 +476,22 @@ def pls_do(attributes, reference, n_comp, scale, cv=5):
 	return pls, reference, predicted, residual, predict_r2, predict_rmse, cv_pred, cv_r2, cv_rmse
 
 
-def tne_do(samples: tuple, param_array: ndarray, tne_df: DataFrame, ei_str: str):
+def tne_do(samples: tuple, param_array: ndarray, tne_df: DataFrame, ei_str: str) -> tuple:
+	"""
+	Does a Saha-Boltzmann plot to obtain plasma temperature and electrons density for
+	many samples. As input this functions needs values of energies of higher level (Ek),
+	Einstein probability of transition and degenerate energy levels (gAk) for the used
+	emission lines. Also, atomic and ionic lines are needed.
+	Those data can be obtained from NIST Atomic Spectra Database Lines Form:
+		* https://physics.nist.gov/PhysRefData/ASD/lines_form.html (accessed on Aug/2022)
+	Returns parameters of the plot, plus a report DF.
+	
+	:param samples: tuple containing the names of the samples
+	:param param_array: array with all calculated areas (or heights) for all peaks and samples
+	:param tne_df: DataFrame containing lines information (ionization, Ek and gAk)
+	:param ei_str: string containing the ionization energy of the element
+	:return: tuple of results (x, y, fit and parameters obtained from the plot)
+	"""
 	# Organizes useful variables
 	ei = float(ei_str.split()[0])
 	kb = 0.000086173303

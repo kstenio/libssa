@@ -1,26 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ./env/imports.py
+# Copyright (c) 2022 Kleydson Stenio.
 #
-#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as published
-#  by the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 # Imports
-import openpyxl
 from os import listdir
 from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import Path
@@ -28,6 +25,7 @@ from PySide6.QtCore import Signal
 from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract, trapz
 from numpy.linalg import norm
 from scipy.stats import pearsonr
+
 
 def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, fsn: list, progress: Signal) -> tuple:
 	"""
@@ -133,6 +131,7 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 	else:
 		raise ValueError('Wrong reading mode.')
 
+
 def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tuple:
 	"""
 	Function to perform outliers removal for spectra.
@@ -190,6 +189,7 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tupl
 	# Return result
 	return out_counts, array(removed_report)
 
+
 def refcorrel(file: Path) -> DataFrame:
 	"""
 	Convenient function to read references. For now, does little, but I'll add some checkups later...
@@ -198,6 +198,7 @@ def refcorrel(file: Path) -> DataFrame:
 	:return: dataframe after the loading
 	"""
 	return read_excel(file, index_col=0, engine='openpyxl')
+
 
 def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:
 	"""
@@ -217,9 +218,9 @@ def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal)
 		return mean_
 	
 	def onepearson(rows: int, m_matrix: ndarray, one_ref: Series):
-		p  = zeros(rows)
-		for i in range(rows):
-			p[i], _ = pearsonr(m_matrix[i, :], one_ref)
+		p = zeros(rows)
+		for ip in range(rows):
+			p[ip], _ = pearsonr(m_matrix[ip, :], one_ref)
 		return p
 	
 	# Main function

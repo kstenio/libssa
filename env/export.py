@@ -1,35 +1,43 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ./env/export.py
+# Copyright (c) 2022 Kleydson Stenio.
 #
-#  Copyright 2021 Kleydson Stenio <kleydson.stenio@gmail.com>
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#  This program is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU Affero General Public License as published
-#  by the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Affero General Public License for more details.
-#
-#  You should have received a copy of the GNU Affero General Public License
-#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 # Imports
 from pathlib import Path
-from numpy import linspace, array, hstack, zeros
 from env.spectra import Spectra
 from PySide6.QtWidgets import QTableWidget
+from numpy import linspace, array, hstack, zeros
 from pandas import DataFrame, Index, ExcelWriter
 from openpyxl.utils import get_column_letter as gcl
 
 
-# Export Functions
-def export_raw(folder_path: Path, spectra: Spectra, spectra_type: str = 'Raw'):
+def export_raw(folder_path: Path, spectra: Spectra, spectra_type: str = 'Raw') -> None:
+	"""
+	Export RAW function. This function receives a Spectra object and saves all
+	spectrum per sample in a single (.txt) file. The function may also receive a
+	spectra_type parameter, where it is possible to choose the outliers removed
+	version of the Spectra.
+	
+	:param folder_path: Path object containing the location to save the files
+	:param spectra: LIBSsa 2.0 Spectra object
+	:param spectra_type: Type of data to export. It can be 'Raw' or 'Outliers'
+	:return: None
+	"""
 	if spectra_type not in ('Raw', 'Outliers'):
 		raise AssertionError('Illegal value for spectra type!')
 	if not spectra.samples['Count']:
@@ -38,11 +46,19 @@ def export_raw(folder_path: Path, spectra: Spectra, spectra_type: str = 'Raw'):
 		w = spectra.wavelength['Raw']
 		for c, s in zip(spectra.intensities[spectra_type], spectra.samples['Path']):
 			df = DataFrame(index=Index(w, name='Wavelength'), data=c,
-			                  columns=[f'Shoot_{x}' for x in range(c.shape[1])])
+			               columns=[f'Shoot_{x}' for x in range(c.shape[1])])
 			df.to_csv(folder_path.joinpath(s.name), sep=' ')
 
 
-def export_iso_table(file_path: Path, widget: QTableWidget):
+def export_iso_table(file_path: Path, widget: QTableWidget) -> None:
+	"""
+	Export Iso Table function. This function receives a QTableWidget and saves
+	the values contained in its cells in a single spreadsheet (.xlsx) file.
+	
+	:param file_path: Path object containing location and name to save the file
+	:param widget: QTableWidget to save data from
+	:return: None
+	"""
 	rows = widget.rowCount()
 	cols = widget.columnCount()
 	if rows == 0:
@@ -57,7 +73,18 @@ def export_iso_table(file_path: Path, widget: QTableWidget):
 		resize_writer_columns(writer)
 	
 
-def export_iso_peaks(file_path: Path, spectra: Spectra):
+def export_iso_peaks(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export Iso Peaks function. This function receives a Spectra object and then
+	saves all isolated peaks into a single spreadsheet (.xlsx) file.
+	The saved file may have as many worksheets as the number of samples multiplied
+	by the number of isolated peaks. Each worksheet contains in the columns the
+	individual (isolated) spectrum for the peak/region.
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	isolated_peaks = spectra.isolated['Count']
 	if isolated_peaks == 0:
 		raise AttributeError('Perform peak isolation before using this feature!')
@@ -74,7 +101,20 @@ def export_iso_peaks(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def export_fit_peaks(file_path: Path, spectra: Spectra):
+def export_fit_peaks(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export Fit Peaks function. This function receives a Spectra object and then
+	saves all data of the averaged isolated peak, plus the adjusted curves into a
+	single spreadsheet (.xlsx) file.
+	The saved file have 3 worksheets for each isolated region/element:
+		* Observed: the averaged observed data/points
+		* Residuals: the subtraction of observed and adjusted points
+		* Peak-Fitting: the curves obtained with the parameters in the fit equation
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.fit['Area'] is spectra.base:
 		raise AttributeError('Perform peak fitting before using this feature!')
 	else:
@@ -108,7 +148,25 @@ def export_fit_peaks(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def export_fit_areas(file_path: Path, spectra: Spectra):
+def export_fit_areas(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export Fit Areas function. This function receives a Spectra object and then
+	saves all report data of the peak fittings into a single spreadsheet (.xlsx) file.
+	The saved file have one worksheet for each fitted peak, and contains all the parameters:
+		* Lower Wavelength
+		* Upper Wavelength
+		* #Evaluations
+		* Convergence
+		* Center of the i-th Peak
+		* Width of the i-th Peak
+		* Height of the i-th Peak
+		* Area of the i-th Peak
+		* Standard Deviation of the Area of the i-th Peak
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.fit['Area'] is spectra.base:
 		raise AttributeError('Perform peak fitting before using this feature!')
 	else:
@@ -134,11 +192,23 @@ def export_fit_areas(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def export_linear(file_path: Path, spectra: Spectra):
+def export_linear(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export Linear model function. This function receives a Spectra object and then
+	saves all parameters and curves of the adjusted Linear Model into a single
+	spreadsheet (.xlsx) file.
+	The saved file have 2 worksheets, containing:
+		* Model: reference, prediction and residual curves
+		* Metrics: slope, intercept, RMSE, R2, LoD/Q and the parameter (heights or areas).
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.linear['Predict'] is spectra.base:
 		raise AttributeError('Perform Linear Regression before trying to export dada!')
 	else:
-		# Creates clean df dict
+		# Creates clean DF dict
 		df = {x: y for x, y in zip(('Model', 'Metrics'), [DataFrame() for _ in range(2)])}
 		element = spectra.linear['Reference'][0]
 		reference = spectra.linear['Reference'][1]
@@ -164,11 +234,24 @@ def export_linear(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def export_pls(file_path: Path, spectra: Spectra):
+def export_pls(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export PLS model function. This function receives a Spectra object and then
+	saves all parameters and curves of the adjusted PLS Model into a single
+	spreadsheet (.xlsx) file.
+	The saved file have 3 worksheets, containing:
+		* Model: reference, prediction, cross validation prediction and residual curves
+		* Metrics: RMSE, R2, and attributes of the model
+		* Blind: predictions for blind samples using the model
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.pls['Model'] is spectra.base:
 		raise AttributeError('Perform PLS Regression before trying to export dada!')
 	else:
-		# Creates clean df dict
+		# Creates clean DF dict
 		df = {x: y for x, y in zip(('Model', 'Metrics', 'Blind'), [DataFrame() for _ in range(3)])}
 		# For Model
 		df['Model'].index = Index(spectra.pls['Samples'], name='Samples')
@@ -197,7 +280,19 @@ def export_pls(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def export_pca(file_path: Path, spectra: Spectra):
+def export_pca(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export PCA function. This function receives a Spectra object and then saves all
+	generated data of a Principal Components Analysis (PCA) into a single spreadsheet (.xlsx) file.
+	The saved file have 3 worksheets:
+		* Explained Variance: the explained cumulative variance as function of attributes/samples
+		* Scores: the data points in the principal components space
+		* Loadings: its valies as functions of the attributes/regions/wavelengths
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.pca['ExpVar'] is spectra.base:
 		raise AttributeError('Perform PCA algorythm before trying to export dada!')
 	else:
@@ -222,7 +317,7 @@ def export_pca(file_path: Path, spectra: Spectra):
 		att = att[sort]
 		loadings = spectra.pca['Loadings'][sort, :]
 		df3 = DataFrame(data=loadings, index=Index(att[sort], name=mode), columns=[f'Loading_{x+1}' for x in range(loadings.shape[1])])
-		# Creates Writer and saves each df into the writer
+		# Creates Writer and saves each DF into the writer
 		writer = ExcelWriter(file_path, engine='openpyxl')
 		df1.to_excel(writer, sheet_name='Explained Variance')
 		df2.to_excel(writer, sheet_name='Scores')
@@ -231,14 +326,26 @@ def export_pca(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def export_tne(file_path: Path, spectra: Spectra):
+def export_tne(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export T/Ne function. This function receives a Spectra object and then saves all
+	generated data of a Saha-Boltzmann plot (in the case, plasma temperature and electrons density)
+	into a single spreadsheet (.xlsx) file.
+	The saved file have 2 worksheets:
+		* Report: a table containing values of T, Ne, R2, R and deviations for each sample
+		* Saha-Boltzmann Plot: the plot for all samples. Contains the Ln's, Energies and adjusted curve
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.plasma['Report'] is spectra.base:
 		raise AttributeError('Run Saha-Boltzmann plot before trying to export dada!')
 	else:
 		writer = ExcelWriter(file_path, engine='openpyxl')
 		# We will save 2 worksheets: one for report, and another for the curves
 		df1 = spectra.plasma['Report']
-		# Although the 1st one was easy, the second is a bit more tricky (similar to fit one above)
+		# Although the 1st one was easy, the second is a bit more tricky
 		samples = df1.index.tolist()
 		x = spectra.plasma['En'].T
 		y = spectra.plasma['Ln'].T
@@ -259,10 +366,19 @@ def export_tne(file_path: Path, spectra: Spectra):
 		df2.to_excel(writer, index=False, sheet_name='Saha-Boltzmann Plot')
 		writer.save()
 		resize_writer_columns(writer)
-		# TODO: improve performance by using slice indexing
+		# TODO: improve performance by using slice indexing (as in export_fit_peaks)
 
 
-def export_correl(file_path: Path, spectra: Spectra):
+def export_correl(file_path: Path, spectra: Spectra) -> None:
+	"""
+	Export Correl function. This function receives a Spectra object and then saves all
+	generated data of a Pearson Correlation Spectrum for all elements/parameters entered
+	by the user (in the reference spreadsheet). The spectra are saved into a single spreadsheet (.xlsx) file.
+	
+	:param file_path: Path object containing location and name to save the file
+	:param spectra: LIBSsa 2.0 Spectra object
+	:return: None
+	"""
 	if spectra.pearson['Data'] is spectra.base:
 		raise AttributeError('Perform Correlation Spectrum routine before trying to export dada!')
 	else:
@@ -275,12 +391,22 @@ def export_correl(file_path: Path, spectra: Spectra):
 		resize_writer_columns(writer)
 
 
-def resize_writer_columns(writer: ExcelWriter, close: bool = True):
+def resize_writer_columns(writer: ExcelWriter, close: bool = True) -> None:
+	"""
+	Resize Writer Columns function. This is a helper function, which receives a pandas
+	ExcelWriter, walks into each column of all worksheets and resizes the columns based on
+	header name.
+	The function also may avoid closing the writer.
+	
+	:param writer: ExcelWriter to have the columns resized before saving the .xlsx file
+	:param close: boolean to decide whether close the writer or not
+	:return: None
+	"""
 	for w in writer.sheets:
-		wsheet = writer.sheets[w]
-		for col in wsheet.iter_cols():
+		worksheet = writer.sheets[w]
+		for col in worksheet.iter_cols():
 			name = col[0].value
 			if type(name) is str:
-				wsheet.column_dimensions[gcl(col[0].column)].width = max(10, int(len(name) * 1.5))
+				worksheet.column_dimensions[gcl(col[0].column)].width = max(10, int(len(name) * 1.5))
 	if close:
 		writer.close()
