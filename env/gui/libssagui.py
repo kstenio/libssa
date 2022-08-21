@@ -119,7 +119,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.p6_table = QtWidgets.QTableWidget()
 			self.p6_start = QtWidgets.QPushButton()
 			
-			# loads all elements
+			# Loads all elements
 			self.loadmain()
 			self.loadp1()
 			self.loadp2()
@@ -127,7 +127,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.loadp4()
 			self.loadp5()
 			self.loadp6()
-			# extra configs and connects
+			# Extra configs and connects
 			self.loadconfigs()
 			self.connects()
 			
@@ -136,9 +136,9 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		if uifile.open(QFile.ReadOnly):
 			try:
 				loader = QUiLoader()
-				# register PlotWidget (promoted in QtDesigner)
+				# Register PlotWidget (promoted in QtDesigner)
 				loader.registerCustomWidget(PlotWidget)
-				# loads QMainWindow
+				# Loads QMainWindow
 				window = loader.load(uifile)
 				uifile.close()
 				self.mw = window
@@ -182,11 +182,11 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		self.update_tne_values(True)
 		
 	def loadmain(self):
-		# main tab element and logo
+		# Main tab element and logo
 		self.sb = self.mw.findChild(QtWidgets.QStatusBar, 'statusbar')
 		self.toolbox = self.mw.findChild(QtWidgets.QToolBox, 'operationsMainToolBox')
 		self.logo = self.mw.findChild(QtWidgets.QLabel, 'mainLogo')
-		# elements from graph
+		# Elements from graph
 		self.g = self.mw.findChild(PlotWidget, 'graph')
 		self.g_selector = self.mw.findChild(QtWidgets.QComboBox, 'graphTypeCB')
 		self.g_minus = self.mw.findChild(QtWidgets.QToolButton, 'graphMinus')
@@ -194,7 +194,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		self.g_current_sb = self.mw.findChild(QtWidgets.QSpinBox, 'graphIndex')
 		self.g_max = self.mw.findChild(QtWidgets.QLabel, 'graphLabel3')
 		self.g_run = self.mw.findChild(QtWidgets.QToolButton, 'graphPlot')
-		# menu
+		# Menu
 		self.menu_file_load = self.mw.findChild(QtGui.QAction, 'actionF01')
 		self.menu_file_save = self.mw.findChild(QtGui.QAction, 'actionF02')
 		self.menu_file_quit = self.mw.findChild(QtGui.QAction, 'actionF03')
@@ -291,29 +291,31 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 	
 	# Connects helper
 	def connects(self):
-		# connects
+		# Connects
 		self.g_selector.currentIndexChanged.connect(self.setgoptions)
-		# p1
+		# P1
 		self.p1_sms.toggled.connect(self.modechanger)
 		self.p1_fsn_check.stateChanged.connect(lambda: self.config_fsn(0))
 		self.p1_fsn_type.currentIndexChanged.connect(lambda: self.config_fsn(1))
 		self.p1_fsn_lminus.valueChanged.connect(lambda: self.config_fsn(2))
 		self.p1_fsn_lplus.valueChanged.connect(lambda: self.config_fsn(3))
-		# p2
+		# P2
 		self.p2_dot.toggled.connect(self.setoutliers)
-		# p3
+		# P3
 		self.p3_isoadd.clicked.connect(lambda: self.changetable(True))
 		self.p3_isorem.clicked.connect(lambda: self.changetable(False))
 		self.p3_isotb.cellChanged.connect(self.checktable)
 		self.p3_linear.stateChanged.connect(self.normenable)
-		# p4
+		# P4
 		self.p4_peak.currentIndexChanged.connect(self.setpeaknorm)
 		self.p4_pnorm_combo.currentIndexChanged.connect(self.setnpeaksnorm)
 		self.p4_pnorm.toggled.connect(self.curvechanger)
-		# p6
+		# P5
+		pass
+		# P6
 		self.p6_element.currentIndexChanged.connect(lambda: self.update_tne_values(False))
 		self.p6_table.cellChanged.connect(self.check_tne_table)
-		# settings
+		# Settings
 		self.graphenable(False)
 		self.g_current_sb.setKeyboardTracking(False)
 		self.g_plus.clicked.connect(lambda: self.graphchangeval(1))
@@ -401,7 +403,8 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		
 	# Graph methods
 	def splot(self, x, y, clear=True, symbol=None, name=None, width=1):
-		if clear: self.g.clear()
+		if clear:
+			self.g.clear()
 		if symbol is None:
 			self.g.plot(x.reshape(-1), y.reshape(-1), pen=mkPen(randint(50, 200, (1, 3))[0], width=width), name=name)
 		else:
@@ -430,7 +433,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		[5] = Number of functions evaluations for convergence
 		[6] = Convergence (boolean)
 		"""
-		# important variables
+		# Important variables
 		rmsd = std(data[:, 1])
 		x = linspace(wavelength_iso[0], wavelength_iso[-1], 1000) if shape != 'Trapezoidal rule' else wavelength_iso
 		height_str = ', '.join([f'{h:.0E}' for h in height])
@@ -661,7 +664,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 	
 	def changetable(self, option: bool):
 		self.p3_isotb.blockSignals(True)
-		# creates set list for to-be-removed rows
+		# Creates set list for to-be-removed rows
 		selected = set([x.row() for x in self.p3_isotb.selectedIndexes()])
 		if selected.__len__() > 0:
 				for r in selected:
@@ -776,7 +779,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 							                              f'<br><i>Table entered range</i>: <b>{lower}</b> to <b>{upper}</b></p>', 'c')
 							return False
 					if lower < upper:
-						# checks center only if passed 1st verification
+						# Checks center only if passed 1st verification
 						try:
 							center = self.p3_isotb.item(r, 3).text().split(';')
 							peaks = int(self.p3_isotb.item(r, 4).text())
@@ -785,11 +788,11 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 							return False
 						else:
 							if len(center) == peaks:
-								# if number of peaks is according to center size, continues
+								# If number of peaks is according to center size, continues
 								center_err = False
 								for c in center:
 									if lower < float(c) < upper:
-										# all fine!
+										# All fine!
 										pass
 									else:
 										error_str = 'Peak center <b>must</b> be between lower and upper values!<p>' \
@@ -920,7 +923,6 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			for c in range(cols):
 				self.p6_table.setItem(r, c, QtWidgets.QTableWidgetItem(df_element.iloc[r, c]))
 		self.p6_table.blockSignals(False)
-		# self.check_tne_table(0, 2)
 	
 	def check_tne_table(self, row: int, col: int):
 		# Organizes data
@@ -992,8 +994,8 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 # Extra functions
 #
 def pretty_colors(colors):
-	"""uses golden ratio to create pleasant/pretty colours
-	returns in rgb form"""
+	# Uses golden ratio to create pretty colours
+	# Results are returned as a tuple (rgb)
 	output = zeros((colors, 3))
 	golden_ratio_conjugate = (1 + (7**0.5)) / 2
 	hue = random()
@@ -1006,12 +1008,14 @@ def pretty_colors(colors):
 	else:
 		return output
 
+
 def hsl_colors(colors):
 	output = ones((colors, 3))*255
 	for c in range(colors):
 		h, l, s = randint(190, 360)/360, uniform(0.30, 0.70), uniform(0.5, 1)
 		output[c, :] *= hls_to_rgb(h, l, s)
 	return int16(output)
+
 
 def changestatus(bar, message='', color='', bold=False):
 	if (message == '') and (color == ''):

@@ -25,11 +25,11 @@ try:
 	import env.export as export
 	from time import time
 	from os import listdir
+	from pandas import DataFrame
 	from markdown import markdown
 	from datetime import datetime
 	from traceback import print_exc
 	from psutil import virtual_memory
-	from pandas import DataFrame, Index
 	from pathlib import Path, PosixPath
 	from env.spectra import Spectra, Worker
 	from env.gui.libssagui import LIBSsaGUI, changestatus
@@ -54,7 +54,7 @@ class LIBSSA2(QObject):
 	In it, we have all needed functions, actions and connects for the app to work properly.
 	"""
 	def __init__(self, ui_file: str, logo_file: str):
-		# checks if ui file exists and warn users if not
+		# Checks if ui file exists and warn users if not
 		try:
 			super(LIBSSA2, self).__init__()
 			self.gui = LIBSsaGUI(ui_file, logo_file)
@@ -64,9 +64,9 @@ class LIBSSA2(QObject):
 			                     f'<p>Error message: <b style="color: red">{str(ex)}</b></p>')
 			sys.exit(1)
 		else:
-			# if all is fine with ui, then starts to read other modules
+			# If all is fine with ui, then starts to read other modules
 			self.spec = Spectra()
-			# defines global variables
+			# Defines global variables
 			self.threadpool = QThreadPool()
 			self.parent = PosixPath()
 			self.mbox = QMessageBox()
@@ -75,9 +75,9 @@ class LIBSSA2(QObject):
 			self.bytes_to_gb = 1073741824
 			self.memory = virtual_memory()
 			self.root = Path(__file__).parent
-			# connects
+			# Connects
 			self.connects()
-			# extra variables
+			# Extra variables
 			self.variables()
 	
 	def variables(self):
@@ -255,7 +255,7 @@ class LIBSSA2(QObject):
 			                'Please import data <b>before</b> using this feature.',
 			                'w')
 		else:
-			# shows warning
+			# Shows warning
 			msg_str = 'Reference spreadsheet file (<i>XLS</i> or <i>XLSX</i>) <b style="color: red">must</b> be structured in the following manner:' \
 			          '<ol>' \
 			          '<li>First column containing the identifier of the sample;</li>' \
@@ -282,12 +282,12 @@ class LIBSSA2(QObject):
 						                samples=self.spec.samples['Count']),
 					                'c')
 				else:
-					# enables gui element and saves val
+					# Enables gui element and saves val
 					self.spec.ref = ref_spreadsheet
 					self.gui.p2_correl_lb.setText(
 						'Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name)
 					self.gui.p2_apply_correl.setEnabled(True)
-					# puts values inside reference for calibration curve and PLS combo boxes
+					# Puts values inside reference for calibration curve and PLS combo boxes
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
 					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
 	
@@ -308,7 +308,6 @@ class LIBSSA2(QObject):
 		              6: 'Peaks Report', 7: 'Predicions (Linear Regression)', 8: 'Predictions (PLS Regression)',
 		              9: 'PCA Data', 10: 'Temperature and Ne Report', 11: 'Correlation Spectrum'}
 		# Creates variables to be used in the method
-		func, func_param, fd_params, msg_params, index = None, None, tuple(), tuple(), False
 		dt, suffix = datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss'), ''
 		# Gets values based on mode
 		if mode == 1:
@@ -565,14 +564,14 @@ class LIBSSA2(QObject):
 	# Methods for page 1 == Load spectra
 	#
 	def spopen(self):
-		# sets mode
+		# Sets mode
 		self.mode = 'Multiple' if self.gui.p1_smm.isChecked() else 'Single'
-		# gets folder from file dialog
+		# Gets folder from file dialog
 		folder = Path(self.gui.guifd(self.parent, 'ged', 'Select spectra folder for %s mode' % self.mode))
 		if str(folder) == '.':
 			self.gui.guimsg('Error', 'Cancelled by the user.', 'w')
 		else:
-			# lists all in folder
+			# Lists all in folder
 			samples = listdir(folder)
 			samples.sort()
 			samples_pathlib = [folder.joinpath(x) for x in samples]
@@ -584,45 +583,45 @@ class LIBSSA2(QObject):
 					self.spec.samples = self.spec.base
 					break
 			else:
-				# saves variables for further steps
+				# Saves variables for further steps
 				self.parent = folder
 				self.spec.clear()
 				self.spec.samples['Count'] = len(samples)
 				self.spec.samples['Name'] = tuple([x.stem for x in samples_pathlib])
 				self.spec.samples['Path'] = tuple(samples_pathlib)
-				# updates gui elements
+				# Updates gui elements
 				self.gui.p1_fdtext.setText(str(folder))
 				self.gui.p1_fdtext.setEnabled(True)
 	
 	def spload(self):
-		# inner function to receive result from worker
+		# Inner function to receive result from worker
 		def result(returned):
-			# saves result
+			# Saves result
 			self.spec.wavelength['Raw'] = returned[0]
 			self.spec.intensities['Raw'] = returned[1]
 			self.spec.intensities['Count'] = self.spec.samples['Count']
-			# enable gui elements
+			# Enable gui elements
 			self.gui.graphenable(True)
 			self.gui.p1_ldspectra.setEnabled(True)
 			self.gui.p2_apply_out.setEnabled(True)
-			# outputs timer
+			# Outputs timer
 			print('Timestamp:', time(), 'MSG: Load spectra count timer: %.2f seconds. ' % (time() - self.timer))
-			# updates gui elements
+			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(0)
 			self.setgrange()
 		
-		# inner function to receive errors from worker
+		# Inner function to receive errors from worker
 		def ld_error(runerror):
-			# closes progress bar and updates statusbar
+			# Closes progress bar and updates statusbar
 			self.gui.mbox.close()
 			changestatus(self.gui.sb, 'Could not import Spectra. Check parameters and try again.', 'r', 0)
-			# enable gui elements
+			# Enable gui elements
 			self.gui.graphenable(True)
 			self.gui.p1_ldspectra.setEnabled(True)
 			self.gui.p2_apply_out.setEnabled(True)
-			# outputs timer
+			# Outputs timer
 			print('Timestamp:', time(), 'ERROR: Could not import spectra. Timer: %.2f seconds.' % (time() - self.timer))
-			# ousputs error message
+			# Outputs error message
 			runerror_message = 'Could not import data properly! ' \
 			                   'Try recheck a spectrum file and change import parameters (mostly <b>header</b> or <b>delimiter</b>).' \
 			                   '<p>Error type: <b><i><u>%s</u></i></b></p>' \
@@ -632,11 +631,11 @@ class LIBSSA2(QObject):
 		# the method itself
 		error = False
 		fsn = [None, None, None]
-		# check if folder was selected
+		# Check if folder was selected
 		if not self.spec.samples['Count']:
 			self.gui.guimsg('Error', 'Please select <b>spectra folder</b> in order to load spectra.', 'w')
 			error = True
-		# check if fsn is enabled
+		# Check if fsn is enabled
 		if self.gui.p1_fsn_check.isChecked():
 			fsn_mode = 'IS' if self.gui.p1_fsn_type.currentText() == 'Internal Standard' else self.gui.p1_fsn_type.currentText()
 			fsn[0] = fsn_mode
@@ -650,9 +649,9 @@ class LIBSSA2(QObject):
 					fsn[1] = lm
 					fsn[2] = lp
 		if not error:
-			# disable load button
+			# Disable load button
 			self.gui.p1_ldspectra.setEnabled(False)
-			# configures worker
+			# Configures worker
 			changestatus(self.gui.sb, 'Please Wait. Loading spectra...', 'p', 1)
 			self.gui.dynamicbox('Loading data', '<b>Please wait</b>. Loading spectra into LIBSsa...', self.spec.samples['Count'])
 			worker = Worker(load, self.spec.samples['Path'], self.mode, self.gui.p1_delim.currentText(), self.gui.p1_header.value(), self.gui.p1_wcol.value(), self.gui.p1_ccol.value(), self.gui.p1_dec.value(), fsn)
@@ -668,42 +667,44 @@ class LIBSSA2(QObject):
 	# Methods for page 2 == Outliers and correlation spectrum
 	#
 	def outliers(self):
-		# inner function to receive result from worker
+		# Inner function to receive result from worker
 		def result(returned):
-			# saves result
+			# Saves result
 			self.spec.intensities['Outliers'], self.spec.intensities['Removed'] = returned
-			# enable apply button
+			# Enable apply button
 			self.gui.p2_apply_out.setEnabled(True)
-			# outputs timer
+			# Outputs timer
 			print('Timestamp:', time(), 'MSG: Outliers removal count timer: %.2f seconds. ' % (time() - self.timer))
 			# updates gui elements
 			self.gui.g_selector.setCurrentIndex(1)
 			self.setgrange()
-		# inner function to handle errors
+		# Inner function to handle errors
+		
 		def errors(runerror):
-			# closes progress bar and updates statusbar
+			# Closes progress bar and updates statusbar
 			self.gui.mbox.close()
 			changestatus(self.gui.sb, 'Could not perform outliers removal. Check spectra and try again.', 'r', 0)
 			# enable gui elements
 			self.gui.p2_apply_out.setEnabled(True)
-			# outputs timer (error)
+			# Outputs timer (error)
 			print('Timestamp:', time(),
 			      'ERROR: Could not remove outliers. Timer: %.2f seconds. ' % (time() - self.timer))
-			# ousputs error message
+			# Outputs error message
 			runerror_message = 'Could not remove outliers properly! ' \
 			                   'Try recheck spectra and try again.' \
 			                   '<p>Error type: <b><i><u>%s</u></i></b></p>' \
 			                   '<p>Error message:<br><b>%s</b></p>' % (
 			                   runerror[0], runerror[1])
 			self.gui.guimsg('Error!', runerror_message, 'c')
-		# main method itself
+		
+		# Main method itself
 		if not self.spec.intensities['Count']:
 			self.gui.guimsg('Error', 'Please import data <b>before</b> using this feature.', 'w')
 		else:
-			# defines type of outliers removal (and selected criteria)
+			# Defines type of outliers removal (and selected criteria)
 			out_type = 'SAM' if self.gui.p2_dot.isChecked() else 'MAD'
 			criteria = self.gui.p2_dot_c.value() if self.gui.p2_dot.isChecked() else self.gui.p2_mad_c.value()
-			# now, setup some configs and initialize worker
+			# Now, setup some configs and initialize worker
 			changestatus(self.gui.sb, 'Please Wait. Removing outliers...', 'p', 1)
 			self.gui.dynamicbox('Removing outliers', '<b>Please wait</b>. Using <b>%s</b> to remove outliers...' % out_type, self.spec.intensities['Count'])
 			self.gui.p2_apply_out.setEnabled(False)
@@ -717,23 +718,23 @@ class LIBSSA2(QObject):
 			self.threadpool.start(worker)
 	
 	def docorrel(self):
-		# inner function to receive result from worker
+		# Inner function to receive result from worker
 		def result(returned):
-			# saves result
+			# Saves result
 			self.spec.pearson['Data'] = returned[0]
 			self.spec.pearson['Full-Mean'] = returned[1]
 			self.spec.pearson['Zeros'] = returned[2]
-			# enable apply button
+			# Enable apply button
 			self.gui.p2_apply_correl.setEnabled(True)
-			# outputs timer
+			# Outputs timer
 			print('Timestamp:', time(),
 			      'MSG: Correlation spectrum count timer: %.2f seconds. ' % (
 						      time() - self.timer))
-			# updates gui elements
+			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(2)
 			self.setgrange()
 		
-		# setup some configs and initialize worker
+		# Setup some configs and initialize worker
 		changestatus(self.gui.sb, 'Please Wait. Creating correlation spectrum...', 'p', 1)
 		self.gui.dynamicbox('Creating correlation spectrum',
 		                    '<b>Please wait</b>. This may take a while...',
@@ -753,7 +754,7 @@ class LIBSSA2(QObject):
 	# Methods for page 3 == Regions and peak fitting
 	#
 	def peakiso(self):
-		# inner function to receive result from worker
+		# Inner function to receive result from worker
 		def result(returned):
 			# Saves returned values into Spectra object
 			self.spec.wavelength['Isolated'] = returned[0]
@@ -787,14 +788,14 @@ class LIBSSA2(QObject):
 				# Update some gui elements
 				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
 				self.gui.p3_isoapply.setEnabled(False)
-				# Defines if will use raw or outliers for isolation
+				# Defines if it will use raw or outliers for isolation
 				counts = self.spec.intensities['Outliers'] if self.spec.intensities['Outliers'].size > 1 else self.spec.intensities['Raw']
 				elements, lower, upper, center = [], [], [], []
 				for tb in range(self.gui.p3_isotb.rowCount()):
 					elements.append(self.gui.p3_isotb.item(tb, 0).text())
 					lower.append(float(self.gui.p3_isotb.item(tb, 1).text()))
 					upper.append(float(self.gui.p3_isotb.item(tb, 2).text()))
-					# for center
+					# For center
 					center_cell = self.gui.p3_isotb.item(tb, 3).text()
 					if ';' in center_cell:
 						center.append(list(map(float, self.gui.p3_isotb.item(tb, 3).text().split(';'))))
@@ -814,9 +815,9 @@ class LIBSSA2(QObject):
 			self.gui.guimsg('Error', 'Please enter isolation parameters in the <b>table</b> before using this feature.', 'w')
 			
 	def peakfit(self):
-		# inner function to receive result from worker
+		# Inner function to receive result from worker
 		def result(returned):
-			# saves result into each corresponding value inside Spectra
+			# Saves result into each corresponding value inside Spectra
 			self.spec.fit['NFev'] = returned[0]
 			self.spec.fit['Convergence'] = returned[1]
 			self.spec.fit['Data'] = returned[2]
@@ -826,14 +827,14 @@ class LIBSSA2(QObject):
 			self.spec.fit['Area'] = returned[6]
 			self.spec.fit['AreaSTD'] = returned[7]
 			self.spec.fit['Shape'] = returned[8]
-			# enable apply button
+			# Enable apply button
 			self.gui.p3_fitapply.setEnabled(True)
-			# outputs timer
+			# Outputs timer
 			print('Timestamp:', time(), 'MSG: Peak fitting count timer: %.2f seconds. ' % (time() - self.timer))
-			# updates gui elements
+			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(4)
 			self.setgrange()
-			# prepares elements for page 4
+			# Prepares elements for page 4
 			self.gui.p4_peak.clear()
 			self.gui.p4_peak.addItems(self.spec.isolated['Element'])
 			self.gui.p4_npeak.setEnabled(True)
@@ -843,7 +844,7 @@ class LIBSSA2(QObject):
 		if not self.spec.isolated['Count']:
 			self.gui.guimsg('Error', 'Please perform peak isolation <b>before</b> using this feature.', 'w')
 		else:
-			# updates gui elements
+			# Updates gui elements
 			changestatus(self.gui.sb, 'Please Wait. Performing peak fitting...', 'p', 1)
 			self.gui.p3_fitapply.setEnabled(False)
 			# Iterates over fit table rows to get selected values of shapes and asymmetry
@@ -880,7 +881,7 @@ class LIBSSA2(QObject):
 			else:
 				mode = 'Equivalent Peak'
 			# Defines variables to be passed to linear model function
-			noise =  self.spec.isolated['Noise']
+			noise = self.spec.isolated['Noise']
 			base, base_peak = self.gui.p4_peak.currentText(), self.gui.p4_npeak.value() - 1
 			selected, selected_peak = self.gui.p4_pnorm_combo.currentText(), self.gui.p4_npeak_norm.value() - 1
 			elements, reference = self.spec.isolated['Element'], self.spec.ref[self.gui.p4_ref.currentText()]
@@ -1090,7 +1091,7 @@ class LIBSSA2(QObject):
 			
 			
 if __name__ == '__main__':
-	# checks the ui file and run LIBSsa main app
+	# Checks the ui file and run LIBSsa main app
 	root = Path.cwd()
 	uif = root.joinpath('env', 'gui', 'libssagui.ui')
 	lof = root.joinpath('pic', 'libssa.svg')
