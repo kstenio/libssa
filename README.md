@@ -1,4 +1,4 @@
-# LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyser
+# LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
 ### Current stable version: _2.0.9_
 
@@ -10,17 +10,6 @@ It can read multiple formats of data inside raw/text files, import the spectra, 
 perform multiple analysis in the data. The environment (spectra, peaks and results)
 may be saved into an encapsulated **lb2e** file.
 Finally, users can also export result of analysis in many common files (**csv** and **xlsx**).
-
-## Historical background
-
-The **LIBSsa 1** was a software created in the middle of 2017 for my personal use
-in a LIBS class during my doctorate. Eventually, many colleagues from the
-_Optics and Photonics Laboratory_ at **Embrapa Instrumentation** (Sao Carlos, SP, Brazil)
-enjoyed the application, and I continued developing it until late 2019.
-
-Eventually, the _LIBSsa_ software became an important part of my doctorate/thesis,
-so I've decided to restructure it into a new - _better_ - version. So, in the middle
-of 2020, the development of the **LIBSsa 2** started.
 
 ## Features
 
@@ -102,16 +91,19 @@ And, besides those libraries, its dependencies as well.
 #### Installing external libraries
 
 External libraries may be installed using the [PIP](https://docs.python.org/3/installing/index.html)
-tool. Just open a **terminal** or **Windows PowerShell** and type:
-
-```powershell
-pip install numpy scipy pandas scikit-learn PySide6 pyqtgraph openpyxl psutil markdown --user
-```
-
-Or using the file _**requirements.txt**_ to make the installation simpler:
+tool and the file _**requirements.txt**_. Just open a **terminal** or **Windows PowerShell**
+and type:
 
 ```powershell
 pip install -r requirements.txt --user
+```
+
+With the command above, you'll install all needed libraries in a compatible (_tested_)
+version of the program. You may also install them directly, but be aware that this may lead
+to **unstable behaviour**:
+
+```powershell
+pip install numpy scipy pandas scikit-learn PySide6 pyqtgraph openpyxl psutil markdown --user
 ```
 
 You may also use `python -m pip install [COMMAND]` for installing libraries. Finally,
@@ -124,6 +116,17 @@ LIBSsa 2 is an open-source project. It is distributed in the hope that it will b
 useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
 or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
 version 3 attached for more details.
+
+## Historical background
+
+The **LIBSsa 1** was a software created in the middle of 2017 for my personal use
+in a LIBS class during my doctorate. Eventually, many colleagues from the
+_Optics and Photonics Laboratory_ at **Embrapa Instrumentation** (Sao Carlos, SP, Brazil)
+enjoyed the application, and I continued developing it until late 2019.
+
+Eventually, the _LIBSsa_ software became an important part of my doctorate/thesis,
+so I've decided to restructure it into a new - _better_ - version. So, in the middle
+of 2020, the development of the **LIBSsa 2** started.
 
 ---
 
