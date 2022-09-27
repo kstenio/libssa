@@ -47,7 +47,7 @@ def export_raw(folder_path: Path, spectra: Spectra, spectra_type: str = 'Raw') -
 		for c, s in zip(spectra.intensities[spectra_type], spectra.samples['Path']):
 			df = DataFrame(index=Index(w, name='Wavelength'), data=c,
 			               columns=[f'Shoot_{x}' for x in range(c.shape[1])])
-			df.to_csv(folder_path.joinpath(s.name), sep=' ')
+			df.to_csv(folder_path.joinpath(s.name).with_suffix('.txt'), sep=' ')
 
 
 def export_iso_table(file_path: Path, widget: QTableWidget) -> None:
