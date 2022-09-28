@@ -965,7 +965,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		self.p6_table.blockSignals(False)
 	
 	def update_table_from_spreadsheet(self, mode: str, filepath: Path):
-		tables = {'Peaks': (self.p3_isotb, ['Element', 'Lower WL', 'Center WL', 'Upper WL', '#Peaks']),
+		tables = {'Peaks': (self.p3_isotb, ['Element', 'Lower WL', 'Upper WL', 'Center WL', '#Peaks']),
 		          'TNe': (self.p6_table, ['Element', 'Ionization', 'gAk', 'Ek'])}
 		df = read_excel(filepath, dtype=str)
 		if df.columns.tolist() != tables[mode][1]:

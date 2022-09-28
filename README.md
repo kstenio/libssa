@@ -1,6 +1,6 @@
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.0.9_
+### Current stable version: _2.0.93_
 
 ## About the software
 
@@ -43,12 +43,12 @@ to save a _LIBSsa 2 environment file_ (**lb2e**). The file is a lzma-compressed 
 data loaded and processed, with about **40%** of the size of original/text spectra.  
 11. **Export data**: it is also possible to export analysed data into **csv** and **xlsx** files
 
-### Installing Python
+## Installing Python
 
 You will need to install Python 3.x (tested on 3.5+) in order to use the program.
 Python can be obtained from the official website: [https://www.python.org/](https://www.python.org/).
 
-#### 1. Linux users
+### 1. Linux users
 
 If you use **Linux**, you probably already have it, as most of the distributions comes with
 Python pre-installed. However, if for some reason Python 3 is not installed, you'll have to
@@ -62,7 +62,7 @@ sudo apt install python3-minimal python3-pip python3-setuptools python3-wheel bu
 In case of any problems, check the official documentation about [installing Python on
 Unix platforms](https://docs.python.org/3/using/unix.html).
 
-#### 2. Windows users
+### 2. Windows users
 
 **Windows** users may obtain Python either from [Microsoft Store](https://apps.microsoft.com/store/detail/python-39/9P7QFQMJRFP7)
 (if you use Windows 8+) or downloading it from the [official website](https://www.python.org).
@@ -72,7 +72,7 @@ to _REMOVE MAX PATH 260 LENGTH LIMIT_.
 I also recommend checking the official documentation about [installing Python on
 Windows platforms](https://docs.python.org/3/using/windows.html).
 
-### External Libraries
+## External Libraries
 
 To properly works, this program uses the following external libraries:
 
@@ -88,7 +88,7 @@ To properly works, this program uses the following external libraries:
 
 And, besides those libraries, its dependencies as well.
 
-#### Installing external libraries
+### Installing external libraries
 
 External libraries may be installed using the [PIP](https://docs.python.org/3/installing/index.html)
 tool and the file _**requirements.txt**_. Just open a **terminal** or **Windows PowerShell**
@@ -110,7 +110,7 @@ You may also use `python -m pip install [COMMAND]` for installing libraries. Fin
 advanced users are encouraged to use [venv](https://docs.python.org/3/library/venv.html)
 (Virtual Environment).
 
-### Warranty
+## Warranty
 
 LIBSsa 2 is an open-source project. It is distributed in the hope that it will be
 useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
@@ -121,11 +121,11 @@ version 3 attached for more details.
 
 The **LIBSsa 1** was a software created in the middle of 2017 for my personal use
 in a LIBS class during my doctorate. Eventually, many colleagues from the
-_Optics and Photonics Laboratory_ at **Embrapa Instrumentation** (Sao Carlos, SP, Brazil)
-enjoyed the application, and I continued developing it until late 2019.
+_Optics and Photonics Laboratory_ at [Embrapa Instrumentation](https://www.embrapa.br/en/instrumentacao)
+(Sao Carlos, SP, Brazil) enjoyed the application, and I continued developing it until late 2019.
 
 Eventually, the _LIBSsa_ software became an important part of my doctorate/thesis,
-so I've decided to restructure it into a new - _better_ - version. So, in the middle
+so I've decided to restructure it into a new - _better_ - version. Finally, in the middle
 of 2020, the development of the **LIBSsa 2** started.
 
 ---

@@ -65,7 +65,7 @@ def export_iso_table(file_path: Path, widget: QTableWidget) -> None:
 		raise AttributeError('Perform peak isolation before using this feature!')
 	else:
 		writer = ExcelWriter(file_path, engine='openpyxl')
-		df = DataFrame(index=range(rows), columns=['Element', 'Lower WL', 'Center WL', 'Upper WL', '#Peaks'], data='', dtype=str)
+		df = DataFrame(index=range(rows), columns=['Element', 'Lower WL', 'Upper WL', 'Center WL', '#Peaks'], data='', dtype=str)
 		for i in range(rows):
 			for j in range(cols):
 				df.iloc[i, j] = widget.item(i, j).text()
