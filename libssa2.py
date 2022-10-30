@@ -789,7 +789,7 @@ class LIBSSA2(QObject):
 				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
 				self.gui.p3_isoapply.setEnabled(False)
 				# Defines if it will use raw or outliers for isolation
-				counts = self.spec.intensities['Outliers'] if self.spec.intensities['Outliers'].size > 1 else self.spec.intensities['Raw']
+				counts = self.spec.intensities['Outliers'] if self.spec.intensities['Outliers'] is not self.spec.base else self.spec.intensities['Raw']
 				elements, lower, upper, center = [], [], [], []
 				for tb in range(self.gui.p3_isotb.rowCount()):
 					elements.append(self.gui.p3_isotb.item(tb, 0).text())
