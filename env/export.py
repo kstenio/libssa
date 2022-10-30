@@ -293,19 +293,20 @@ def export_pca(file_path: Path, spectra: Spectra) -> None:
 	:param spectra: LIBSsa 2.0 Spectra object
 	:return: None
 	"""
-	if spectra.pca['ExpVar'] is spectra.base:
+	if spectra.pca['Loadings'] is spectra.base:
 		raise AttributeError('Perform PCA algorythm before trying to export dada!')
 	else:
 		# Saves useful variables
 		mode = spectra.pca['Mode']
 		t_samples = spectra.samples['Count']
+		n_samples = Index(spectra.samples['Name'], name='Samples')
 		components = Index(range(1, t_samples+1), name='Components')
 		w = spectra.wavelength[mode] if mode in ('Raw', 'Isolated') else range(1, t_samples+1)
 		# Explained Variance
 		df1 = DataFrame({'Cumulative ExpVar': spectra.pca['ExpVar']}, index=components)
 		# Scores
 		pcs = spectra.pca['Transformed']
-		df2 = DataFrame(data=pcs, index=components, columns=[f'PC_{x+1}' for x in range(pcs.shape[1])])
+		df2 = DataFrame(data=pcs, index=n_samples, columns=[f'PC_{x+1}' for x in range(pcs.shape[1])])
 		# Loadings
 		if mode == 'Isolated':
 			att = array([])
@@ -407,6 +408,6 @@ def resize_writer_columns(writer: ExcelWriter, close: bool = True) -> None:
 		for col in worksheet.iter_cols():
 			name = col[0].value
 			if type(name) is str:
-				worksheet.column_dimensions[gcl(col[0].column)].width = max(10, int(len(name) * 1.5))
+				worksheet.column_dimensions[gcl(col[0].column)].width = max(10, int(len(name) * 1.8))
 	if close:
 		writer.close()
