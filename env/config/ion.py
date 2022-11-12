@@ -126,3 +126,22 @@ ionization_energies_ev = {
 	"Bh": 7.7,
 	"Hs": 7.6
 }
+
+# # THIS IS A BACKUP CODE OF HOW I DID GET ALL PREVIOUS VALUES FOR E_ION
+# from mendeleev import elements
+# import pandas as pd
+# from time import sleep
+# # Fetch each possible Ionization energy
+# link_ion_energy = 'https://physics.nist.gov/cgi-bin/ASD/ie.pl?spectra={element}+I&submit=Retrieve+Data&units=1&format=0&order=0&at_num_out=on&sp_name_out=on&ion_charge_out=on&el_name_out=on&seq_out=on&shells_out=on&level_out=on&ion_conf_out=on&e_out=0&unc_out=on&biblio=on'
+# df_ion_energy = pd.DataFrame(index=elements.__all__, columns=['Ionization Energy (eV)', 'Uncertainty (eV)'], dtype=str)
+# for e in df_ion_energy.index:
+# 	print(e)
+# 	try:
+# 		df = pd.read_html(link_ion_energy.format(element=e))[1].astype(str)
+# 		val1 = df['Ionization Energy (eV)'][0]
+# 		val2 = df['Uncertainty\xa0(eV)'][0]
+# 	except Exception as ex:
+# 		print(str(ex))
+# 	else:
+# 		df_ion_energy.loc[e] = [val1, val2]
+# 		sleep(0.15)

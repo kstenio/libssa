@@ -1,6 +1,6 @@
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.0.94_
+### Current stable version: _2.0.95_
 
 ## About the software
 

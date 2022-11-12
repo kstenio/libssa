@@ -228,6 +228,8 @@ class LIBSSA2(QObject):
 				if self.spec.ref.index.size > 1:
 					self.gui.p2_correl_lb.setText(f'Reference data imported with <b><u>{load_file.stem}</u></b> environment.')
 					self.gui.p2_apply_correl.setEnabled(True)
+					self.gui.p4_ref.clear()
+					self.gui.p5_pls_cal_ref.clear()
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
 					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
 				# If iso table was created before
