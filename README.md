@@ -1,6 +1,6 @@
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.0.95_
+### Current stable version: _2.0.96_
 
 ## About the software
 
@@ -110,13 +110,6 @@ You may also use `python -m pip install [COMMAND]` for installing libraries. Fin
 advanced users are encouraged to use [venv](https://docs.python.org/3/library/venv.html)
 (Virtual Environment).
 
-## Warranty
-
-LIBSsa 2 is an open-source project. It is distributed in the hope that it will be
-useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
-or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
-version 3 attached for more details.
-
 ## Historical background
 
 The **LIBSsa 1** was a software created in the middle of 2017 for my personal use
@@ -127,6 +120,13 @@ _Optics and Photonics Laboratory_ at [Embrapa Instrumentation](https://www.embra
 Eventually, the _LIBSsa_ software became an important part of my doctorate/thesis,
 so I've decided to restructure it into a new - _better_ - version. Finally, in the middle
 of 2020, the development of the **LIBSsa 2** started.
+
+## Warranty
+
+LIBSsa 2 is an open-source project. It is distributed in the hope that it will be
+useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
+or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
+version 3 attached for more details.
 
 ---
 

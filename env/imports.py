@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio.
+# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -13,25 +13,25 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License along
+# with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 
 
 # Imports
 from os import listdir
-from pandas import read_csv, read_excel, DataFrame, Series
 from pathlib import Path
-from PySide6.QtCore import Signal
-from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract, trapz
 from numpy.linalg import norm
 from scipy.stats import pearsonr
+from PySide6.QtCore import Signal
+from pandas import read_csv, read_excel, DataFrame, Series
+from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract, trapz
 
 
 def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, fsn: list, progress: Signal) -> tuple:
 	"""
 	This method loads spectra and returns global variables wavelength and counts.
 
-	:param folder: PosixPath list of input folder/files (sorted)
+	:param folder: tuple of Paths of input folder/files (sorted)
 	:param mode: file reading mode. 'Single' for one file per sample, or 'Multiple' for one folder per sample, multiple files per shoot
 	:param delim: delimiter (space, tab, comma and semicolon)
 	:param header: rows to skip in the spectra files

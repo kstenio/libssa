@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio.
+# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -13,16 +13,16 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License along
+# with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 
 
 # Imports
 from numpy import array
-from pandas import DataFrame
 from pathlib import Path
-from PySide6.QtCore import QObject, QRunnable, Signal, Slot
+from pandas import DataFrame
 from traceback import print_exc
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 
 
 # Signals for Qt worker
@@ -74,11 +74,11 @@ class Spectra(object):
 	Class for storing and organizing entire LIBSsa environment.
 	
 	It is divided in:
-	 properties = size, sample names and file
-	 base data = wavelengths and counts/intensities
-	 references = values for correlation and models
-	 models = values that store models properties and predictions
-	 plasma information = for temperature and plasma density
+		* properties = size, sample names and file
+		* base data = wavelengths and counts/intensities
+		* references = values for correlation and models
+		* models = values that store models properties and predictions
+		* plasma information = for temperature and plasma density
 	"""
 	# Base element
 	base = array([None], dtype=object)
@@ -115,6 +115,12 @@ class Spectra(object):
 		               'Tables': self.base, 'Element': '', 'Parameter': ''}
 	
 	def clear(self):
+		"""
+		clear method. Totally clear an object, except pls if previous calculated
+		(for blind predictions)
+		
+		:return: None
+		"""
 		pls = self.pls.copy()
 		self.__init__()
 		if pls['Model'] != self.base:

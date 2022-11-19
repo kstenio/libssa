@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio <kleydson.stenio@gmail.com>.
+# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -13,8 +13,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License along
+# with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 
 
 # Imports
@@ -25,12 +25,12 @@ try:
 	import env.export as export
 	from time import time
 	from os import listdir
+	from pathlib import Path
 	from pandas import DataFrame
 	from markdown import markdown
 	from datetime import datetime
 	from traceback import print_exc
 	from psutil import virtual_memory
-	from pathlib import Path, PosixPath
 	from env.spectra import Spectra, Worker
 	from env.gui.libssagui import LIBSsaGUI, changestatus
 	from env.imports import load, outliers, refcorrel, domulticorrel
@@ -43,6 +43,7 @@ except (ImportError, ImportWarning) as err:
 	      f'Check the README.md for extra info.\n')
 	if 'opengl' in str(err).lower():
 		print('If you are under Linux Mint 20+ (or Ubuntu 20.04+), try running: apt install libopengl0')
+	print_exc()
 	sys.exit(1)
 
 
@@ -68,7 +69,7 @@ class LIBSSA2(QObject):
 			self.spec = Spectra()
 			# Defines global variables
 			self.threadpool = QThreadPool()
-			self.parent = PosixPath()
+			self.parent = Path()
 			self.mbox = QMessageBox()
 			self.mode, self.delimiter = '', ''
 			self.cores, self.timer = 0, 0
@@ -284,12 +285,16 @@ class LIBSSA2(QObject):
 						                samples=self.spec.samples['Count']),
 					                'c')
 				else:
+					# Removes illegal slash in column names (if exists)
+					ref_spreadsheet.columns = [x.replace('/', '÷') for x in ref_spreadsheet.columns]
 					# Enables gui element and saves val
 					self.spec.ref = ref_spreadsheet
 					self.gui.p2_correl_lb.setText(
 						'Reference file <b><u>%s</u></b> properly imported to LIBSsa.' % ref_file.name)
 					self.gui.p2_apply_correl.setEnabled(True)
 					# Puts values inside reference for calibration curve and PLS combo boxes
+					self.gui.p4_ref.clear()
+					self.gui.p5_pls_cal_ref.clear()
 					self.gui.p4_ref.addItems(self.spec.ref.columns)
 					self.gui.p5_pls_cal_ref.addItems(self.spec.ref.columns)
 	
@@ -504,9 +509,9 @@ class LIBSSA2(QObject):
 			self.gui.mplot(self.spec.wavelength['Raw'], self.spec.intensities['Outliers'][idx])
 		elif self.gui.g_current == 'Correlation':
 			self.gui.g.setTitle(f"Correlation spectrum for <b>{self.spec.ref.columns[idx]}</b>")
-			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Data'][:, idx], False)
-			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Full-Mean'], False)
-			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Zeros'], False)
+			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Data'][:, idx], clear=True, name='Pearson')
+			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Full-Mean'], clear=False, name='Sampling Average Spectrum')
+			self.gui.splot(self.spec.wavelength['Raw'], self.spec.pearson['Zeros'], clear=False)
 		elif self.gui.g_current == 'Isolated':
 			# i == index for elements
 			# j == index for samples
@@ -791,7 +796,13 @@ class LIBSSA2(QObject):
 				changestatus(self.gui.sb, 'Please Wait. Isolating peaks...', 'p', 1)
 				self.gui.p3_isoapply.setEnabled(False)
 				# Defines if it will use raw or outliers for isolation
-				counts = self.spec.intensities['Outliers'] if self.spec.intensities['Outliers'] is not self.spec.base else self.spec.intensities['Raw']
+				if self.spec.intensities['Outliers'] is None or self.spec.intensities['Outliers'] is self.spec.base:
+					counts = self.spec.intensities['Raw']
+				else:
+					if self.spec.intensities['Outliers'][0] is None:
+						counts = self.spec.intensities['Raw']
+					else:
+						counts = self.spec.intensities['Outliers']
 				elements, lower, upper, center = [], [], [], []
 				for tb in range(self.gui.p3_isotb.rowCount()):
 					elements.append(self.gui.p3_isotb.item(tb, 0).text())
@@ -1094,7 +1105,7 @@ class LIBSSA2(QObject):
 			
 if __name__ == '__main__':
 	# Checks the ui file and run LIBSsa main app
-	root = Path.cwd()
+	root = Path(__file__).parent
 	uif = root.joinpath('env', 'gui', 'libssagui.ui')
 	lof = root.joinpath('pic', 'libssa.svg')
 	QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)

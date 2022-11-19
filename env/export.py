@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio.
+# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -13,8 +13,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 #
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License along
+# with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 
 
 # Imports
@@ -287,7 +287,7 @@ def export_pca(file_path: Path, spectra: Spectra) -> None:
 	The saved file have 3 worksheets:
 		* Explained Variance: the explained cumulative variance as function of attributes/samples
 		* Scores: the data points in the principal components space
-		* Loadings: its valies as functions of the attributes/regions/wavelengths
+		* Loadings: its values as functions of the attributes/regions/wavelengths
 	
 	:param file_path: Path object containing location and name to save the file
 	:param spectra: LIBSsa 2.0 Spectra object
@@ -301,7 +301,7 @@ def export_pca(file_path: Path, spectra: Spectra) -> None:
 		t_samples = spectra.samples['Count']
 		n_samples = Index(spectra.samples['Name'], name='Samples')
 		components = Index(range(1, t_samples+1), name='Components')
-		w = spectra.wavelength[mode] if mode in ('Raw', 'Isolated') else range(1, t_samples+1)
+		w = spectra.wavelength[mode] if mode in ('Raw', 'Isolated') else range(1, spectra.pca['Loadings'].shape[0]+1)
 		# Explained Variance
 		df1 = DataFrame({'Cumulative ExpVar': spectra.pca['ExpVar']}, index=components)
 		# Scores
@@ -387,6 +387,7 @@ def export_correl(file_path: Path, spectra: Spectra) -> None:
 		exdf = DataFrame(index=Index(spectra.wavelength['Raw'], name='Wavelength'),
 		                 columns=[f'{chr(961)}_{x}' for x in spectra.ref.columns],
 		                 data=spectra.pearson['Data'])
+		exdf.insert(0, 'Full Mean', spectra.pearson['Full-Mean'])
 		exdf.to_excel(writer, sheet_name='Correlation')
 		writer.save()
 		resize_writer_columns(writer)

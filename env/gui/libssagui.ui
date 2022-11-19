@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.95 Pre-Release</string>
+   <string>Laser Induced Breakdown Spectroscopy spectra analyser - LIBSsa - v2.0.96 Pre-Release</string>
   </property>
   <widget class="QWidget" name="libssaMainWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -474,8 +474,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>366</width>
-              <height>309</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -785,8 +785,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>302</width>
-              <height>250</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -976,6 +976,32 @@
                   </widget>
                  </item>
                  <item>
+                  <widget class="QLabel" name="p3lB1">
+                   <property name="text">
+                    <string>Default Shape:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="p3sB1">
+                   <property name="maximumSize">
+                    <size>
+                     <width>45</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>10</number>
+                   </property>
+                   <property name="value">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
                   <widget class="QToolButton" name="p3tB4">
                    <property name="minimumSize">
                     <size>
@@ -1009,8 +1035,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>306</width>
-              <height>290</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1310,8 +1336,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>378</width>
-              <height>346</height>
+              <width>382</width>
+              <height>393</height>
              </rect>
             </property>
             <attribute name="label">
