@@ -202,6 +202,8 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		:return: None
 		"""
 		self.g.setTitle('LIBS Spectum')
+		self.g.getAxis('left').enableAutoSIPrefix(False)
+		self.g.getAxis('bottom').enableAutoSIPrefix(False)
 		self.g_legend = self.g.addLegend()
 		self.loadstyle(self.logofile)
 		self.setgoptions()
@@ -591,7 +593,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		:return: None
 		"""
 		x, y = linear['Reference'][1], linear['Predict'][index, 1]
-		self.splot(x, x, clear=True, symbol=None, name='Ideal', width=2)
+		self.splot(x, x, clear=True, symbol='', name='Ideal', width=2)
 		self.splot(x, y, clear=False, symbol='o', name='Model')
 		linbox_str = f"Slope: <b>{linear['Slope'][index]:.3f}</b><br>" \
 		             f"Intercept: <b>{linear['Intercept'][index]:.3f}</b><br>" \
@@ -600,14 +602,11 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 					 f"LoD: <b>{linear['LoD'][index]:.3f}</b><br>"\
 					 f"LoQ: <b>{linear['LoQ'][index]:.3f}</b><br>" \
 					 f"Correlation: <b>{linear['R2'][index] ** 0.5:.0%}</b>"
-		linbox = TextItem(html=linbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff')
+		linbox = TextItem(html=linbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff77')
 		self.g.addItem(linbox)
-		may = y if max(y) > max(x) else x
-		miy = y if min(y) < min(x) else x
-		xpos = x[-1] + (x[-1] - x[0]) / 20
-		ypos = max(may) + (max(may) - min(miy))/20
+		xpos = x[x.argsort()][-1]
+		ypos = y[y.argsort()][-1]
 		linbox.setPos(xpos, ypos)
-		# Finally, performs auto-range
 		self.g.autoRange()
 	
 	def pcaplot(self, idx: int, attribute_type: str, pca_data: tuple):
@@ -652,10 +651,10 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		:return: None
 		"""
 		if mode == 'CV':
-			x = pls_data['Reference']
-			y1 = pls_data['Predict']
-			y2 = pls_data['CrossValPredict']
-			self.splot(x, x, clear=True, symbol=None, name='Ideal', width=2)
+			x = pls_data['Reference'].reshape(-1)
+			y1 = pls_data['Predict'].reshape(-1)
+			y2 = pls_data['CrossValPredict'].reshape(-1)
+			self.splot(x, x, clear=True, symbol='', name='Ideal', width=2)
 			self.splot(x, y1, clear=False, symbol='o', name='Predict')
 			self.splot(x, y2, clear=False, symbol='t', name='CV Predict')
 			# Adds message box (with report)
@@ -665,12 +664,10 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			             f"RMSEC_CV: <b>{pls_data['CrossValRMSE']:.3f}</b><br>" \
 			             f"Correlation: <b>{pls_data['PredictR2'] ** 0.5:.0%}</b>"
 			plsbox = TextItem(html=plsbox_str, anchor=(0, 1), angle=0,
-			                  border='#004de6', fill='#ccddff')
+			                  border='#004de6', fill='#ccddff77')
 			self.g.addItem(plsbox)
-			may = y2 if max(y2) > max(x) else x
-			miy = y2 if min(y2) < min(x) else x
-			xpos = x[-1] + (x[-1] - x[0]) / 20
-			ypos = max(may) + (max(may) - min(miy)) / 20
+			xpos = x[x.argsort()][-1]
+			ypos = max(y1[y1.argsort()][-1], y2[y2.argsort()][-1])
 			plsbox.setPos(xpos, ypos)
 		elif mode == 'Blind':
 			prediction = pls_data['BlindPredict']

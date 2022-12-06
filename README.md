@@ -1,6 +1,6 @@
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.0.96_
+### Current stable version: _2.0.97_
 
 ## About the software
 
@@ -52,7 +52,7 @@ Python can be obtained from the official website: [https://www.python.org/](http
 
 If you use **Linux**, you probably already have it, as most of the distributions comes with
 Python pre-installed. However, if for some reason Python 3 is not installed, you'll have to
-install it (either from website) or from your distribution repositories. As an example,
+install it either from website or from your distribution repositories. As an example,
 for Debian-based distribution, you can use **apt** (_Advanced package tool_):
 
 ```bash
