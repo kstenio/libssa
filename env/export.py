@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -45,8 +45,9 @@ def export_raw(folder_path: Path, spectra: Spectra, spectra_type: str = 'Raw') -
 	else:
 		w = spectra.wavelength['Raw']
 		for c, s in zip(spectra.intensities[spectra_type], spectra.samples['Path']):
-			df = DataFrame(index=Index(w, name='Wavelength'), data=c,
-			               columns=[f'Shoot_{x}' for x in range(c.shape[1])])
+			df = DataFrame(
+				index=Index(w, name='Wavelength'), data=c,
+				columns=[f'Shoot_{x}' for x in range(c.shape[1])])
 			df.to_csv(folder_path.joinpath(s.name).with_suffix('.txt'), sep=' ')
 
 
@@ -65,7 +66,9 @@ def export_iso_table(file_path: Path, widget: QTableWidget) -> None:
 		raise AttributeError('Perform peak isolation before using this feature!')
 	else:
 		writer = ExcelWriter(file_path, engine='openpyxl')
-		df = DataFrame(index=range(rows), columns=['Element', 'Lower WL', 'Upper WL', 'Center WL', '#Peaks'], data='', dtype=str)
+		df = DataFrame(
+			index=range(rows),
+			columns=['Element', 'Lower WL', 'Upper WL', 'Center WL', '#Peaks'], data='', dtype=str)
 		for i in range(rows):
 			for j in range(cols):
 				df.iloc[i, j] = widget.item(i, j).text()
@@ -97,7 +100,6 @@ def export_iso_peaks(file_path: Path, spectra: Spectra) -> None:
 				zf = len(str(cols))
 				df = DataFrame(data=c_iso, index=w_iso, columns=[f'S_{str(x).zfill(zf)}' for x in range(cols)])
 				df.to_excel(writer, sheet_name=s)
-			writer.save()
 		resize_writer_columns(writer)
 
 
@@ -137,14 +139,15 @@ def export_fit_peaks(file_path: Path, spectra: Spectra) -> None:
 				columns3[j::parameters[2]] = [f'Sample_{s}_Fit_{j+1}' for s in spectra.samples['Name']]
 				zero_peaks_matrix[:, j::parameters[2]] = t
 			try:
-				df3 = DataFrame(data=zero_peaks_matrix, index=Index(linspace(w[0], w[-1], 1000), name='Wavelength'), columns=columns3)
+				df3 = DataFrame(
+					data=zero_peaks_matrix,
+					index=Index(linspace(w[0], w[-1], 1000), name='Wavelength'), columns=columns3)
 			except ValueError:
 				df3 = DataFrame(data=zero_peaks_matrix, index=Index(w, name='Wavelength'), columns=columns3)
 			# Saves DFs to writer
 			df1.to_excel(writer, sheet_name=f'{e}_Observed')
 			df2.to_excel(writer, sheet_name=f'{e}_Residuals')
 			df3.to_excel(writer, sheet_name=f'{e}_Peak-Fitting')
-			writer.save()
 		resize_writer_columns(writer)
 
 
@@ -188,7 +191,6 @@ def export_fit_areas(file_path: Path, spectra: Spectra) -> None:
 			# Now, saves the DF
 			shape = spectra.fit['Shape'][i].replace('[', '').replace(']', '')
 			df.to_excel(writer, sheet_name=f'{e}_{shape.replace("/", "+")}')
-			writer.save()
 		resize_writer_columns(writer)
 
 
@@ -230,7 +232,6 @@ def export_linear(file_path: Path, spectra: Spectra) -> None:
 		writer = ExcelWriter(file_path, engine='openpyxl')
 		for d in df.keys():
 			df[d].to_excel(writer, sheet_name=f'{element}_{d}')
-		writer.save()
 		resize_writer_columns(writer)
 
 
@@ -276,7 +277,6 @@ def export_pls(file_path: Path, spectra: Spectra) -> None:
 		writer = ExcelWriter(file_path, engine='openpyxl')
 		for d in df.keys():
 			df[d].to_excel(writer, sheet_name=d)
-		writer.save()
 		resize_writer_columns(writer)
 
 
@@ -317,13 +317,14 @@ def export_pca(file_path: Path, spectra: Spectra) -> None:
 		sort = att.argsort()
 		att = att[sort]
 		loadings = spectra.pca['Loadings'][sort, :]
-		df3 = DataFrame(data=loadings, index=Index(att[sort], name=mode), columns=[f'Loading_{x+1}' for x in range(loadings.shape[1])])
+		df3 = DataFrame(
+			data=loadings,
+			index=Index(att[sort], name=mode), columns=[f'Loading_{x+1}' for x in range(loadings.shape[1])])
 		# Creates Writer and saves each DF into the writer
 		writer = ExcelWriter(file_path, engine='openpyxl')
 		df1.to_excel(writer, sheet_name='Explained Variance')
 		df2.to_excel(writer, sheet_name='Scores')
 		df3.to_excel(writer, sheet_name='Loadings')
-		writer.save()
 		resize_writer_columns(writer)
 
 
@@ -365,9 +366,7 @@ def export_tne(file_path: Path, spectra: Spectra) -> None:
 		# Saves DFs
 		df1.to_excel(writer, sheet_name='Report')
 		df2.to_excel(writer, index=False, sheet_name='Saha-Boltzmann Plot')
-		writer.save()
 		resize_writer_columns(writer)
-		# TODO: improve performance by using slice indexing (as in export_fit_peaks)
 
 
 def export_correl(file_path: Path, spectra: Spectra) -> None:
@@ -384,12 +383,12 @@ def export_correl(file_path: Path, spectra: Spectra) -> None:
 		raise AttributeError('Perform Correlation Spectrum routine before trying to export dada!')
 	else:
 		writer = ExcelWriter(file_path, engine='openpyxl')
-		exdf = DataFrame(index=Index(spectra.wavelength['Raw'], name='Wavelength'),
-		                 columns=[f'{chr(961)}_{x}' for x in spectra.ref.columns],
-		                 data=spectra.pearson['Data'])
+		exdf = DataFrame(
+			index=Index(spectra.wavelength['Raw'], name='Wavelength'),
+			columns=[f'{chr(961)}_{x}' for x in spectra.ref.columns],
+			data=spectra.pearson['Data'])
 		exdf.insert(0, 'Full Mean', spectra.pearson['Full-Mean'])
 		exdf.to_excel(writer, sheet_name='Correlation')
-		writer.save()
 		resize_writer_columns(writer)
 
 

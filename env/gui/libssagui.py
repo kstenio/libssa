@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -562,7 +562,8 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		# Last one is for total (sum of peaks)
 		self.g.plot(x, total[:, -1], pen=mkPen(randint(50, 220, (1, 3))[0], width=2.5), name='Total')
 		# Organizes string for fit box
-		fitbox_str = f'Shape: <b>{shape}</b><br>' \
+		fitbox_str = f'<span style="color:#330066">' \
+		             f'Shape: <b>{shape}</b><br>' \
 		             f'Evaluations: <b>{nfev}</b><br>' \
 		             f'Convergence: <b>{conv}</b><br>' \
 		             f'Height: <b>{height_str}</b><br>' \
@@ -570,10 +571,12 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		if area_std.mean() > 0:
 			fitbox_str += f'Area: <b>{area_str}</b><br>' \
 			              f'AreaSTD: <b>{areastd_str}</b><br>' \
-			              f'RMSD: <b>{rmsd:.0E}</b>'
+			              f'RMSD: <b>{rmsd:.0E}</b>' \
+			              f'</span>'
 		else:
 			fitbox_str += f'Area: <b>{area_str}</b><br>' \
-			              f'RMSD: <b>{rmsd:.0E}</b>'
+			              f'RMSD: <b>{rmsd:.0E}</b>' \
+			              f'</span>'
 		fitbox = TextItem(html=fitbox_str, anchor=(1, 0), angle=0, border='#6600cc', fill='#f2e6ff')
 		# Adds fit box to graphic and sets its position
 		self.g.addItem(fitbox)
@@ -595,13 +598,14 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		x, y = linear['Reference'][1], linear['Predict'][index, 1]
 		self.splot(x, x, clear=True, symbol='', name='Ideal', width=2)
 		self.splot(x, y, clear=False, symbol='o', name='Model')
-		linbox_str = f"Slope: <b>{linear['Slope'][index]:.3f}</b><br>" \
+		linbox_str = f'<span style="color:#330066">' \
+		             f"Slope: <b>{linear['Slope'][index]:.3f}</b><br>" \
 		             f"Intercept: <b>{linear['Intercept'][index]:.3f}</b><br>" \
 		             f"R2: <b>{linear['R2'][index]:.3f}</b><br>" \
 		             f"RMSE: <b>{linear['RMSE'][index]:.3f}</b><br>" \
 					 f"LoD: <b>{linear['LoD'][index]:.3f}</b><br>"\
 					 f"LoQ: <b>{linear['LoQ'][index]:.3f}</b><br>" \
-					 f"Correlation: <b>{linear['R2'][index] ** 0.5:.0%}</b>"
+					 f"Correlation: <b>{linear['R2'][index] ** 0.5:.0%}</b></span>"
 		linbox = TextItem(html=linbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff77')
 		self.g.addItem(linbox)
 		xpos = x[x.argsort()][-1]
@@ -658,13 +662,15 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.splot(x, y1, clear=False, symbol='o', name='Predict')
 			self.splot(x, y2, clear=False, symbol='t', name='CV Predict')
 			# Adds message box (with report)
-			plsbox_str = f"R2: <b>{pls_data['PredictR2']:.3f}</b><br>" \
+			plsbox_str = f'<span style="color:#330066">' \
+			             f"R2: <b>{pls_data['PredictR2']:.3f}</b><br>" \
 			             f"R2_CV: <b>{pls_data['CrossValR2']:.3f}</b><br>" \
 			             f"RMSEC: <b>{pls_data['PredictRMSE']:.3f}</b><br>" \
 			             f"RMSEC_CV: <b>{pls_data['CrossValRMSE']:.3f}</b><br>" \
-			             f"Correlation: <b>{pls_data['PredictR2'] ** 0.5:.0%}</b>"
-			plsbox = TextItem(html=plsbox_str, anchor=(0, 1), angle=0,
-			                  border='#004de6', fill='#ccddff77')
+			             f"Correlation: <b>{pls_data['PredictR2'] ** 0.5:.0%}</b></span>"
+			plsbox = TextItem(
+				html=plsbox_str, anchor=(0, 1), angle=0,
+				border='#004de6', fill='#ccddff77')
 			self.g.addItem(plsbox)
 			xpos = x[x.argsort()][-1]
 			ypos = max(y1[y1.argsort()][-1], y2[y2.argsort()][-1])
@@ -692,12 +698,13 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		y = plasma_params['Ln'][idx]
 		fit = plasma_params['Fit'][idx]
 		t, st, ne, sne, r2, r = plasma_params['Report'].loc[plasma_params['Report'].index[idx]]
-		pbox_str = f'T: <b>{t:.0f} K</b><br>' \
+		pbox_str = f'<span style="color:#330066">' \
+		           f'T: <b>{t:.0f} K</b><br>' \
 		           f'ΔT: <b>{st:.0f} K</b><br>' \
 		           f'N<sub>e</sub>: <b>{ne:.1e} cm<sup>-3</sup></b><br>' \
 		           f'ΔN<sub>e</sub>: <b>{sne:.1e} cm<sup>-3</sup></b><br>' \
 		           f'R2: <b>{r2:.3f}</b><br>' \
-		           f'Correlation: <b>{r:.0%}</b>'
+		           f'Correlation: <b>{r:.0%}</b></span>'
 		pbox = TextItem(html=pbox_str, anchor=(0, 1), angle=0, border='#004de6', fill='#ccddff')
 		self.g.addItem(pbox)
 		pbox.setPos(x.max(), y.max())

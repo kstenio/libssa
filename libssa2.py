@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2022 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -38,11 +38,14 @@ try:
 	from PySide6.QtWidgets import QApplication, QMessageBox, QMainWindow, QTableWidgetItem
 	from PySide6.QtCore import QThreadPool, QObject, QCoreApplication, Qt
 except (ImportError, ImportWarning) as err:
+	err_msg = str(err)
 	print(f'\nYou have missing libraries to install.\n\n'
-	      f'\tError message: {str(err)}\n\n'
+	      f'\tError message: {err_msg}\n\n'
 	      f'Check the README.md for extra info.\n')
-	if 'opengl' in str(err).lower():
-		print('If you are under Linux Mint 20+ (or Ubuntu 20.04+), try running: apt install libopengl0')
+	if 'opengl' in err_msg.lower():
+		print('If you are under Linux Mint 20+ (or Ubuntu 20.04+), try running: "apt install libopengl0"')
+	elif 'xcb' in err_msg.lower():
+		print('If you are under Linux Mint 20+ (or Ubuntu 20.04+), try running: "apt install libxcb-xinerama0 libxcb-cursor0"')
 	print_exc()
 	sys.exit(1)
 
