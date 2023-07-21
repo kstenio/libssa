@@ -903,7 +903,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 				try:
 					float(value)
 				except ValueError:
-					error[0], error[1] = True, 'This cell can only accept <b>numbers<b>.'
+					error[0], error[1] = True, 'This cell can only accept <b>numbers</b>.'
 			# Center column
 			elif col == 3:
 				for char in value:
@@ -926,7 +926,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 					peak_value = int(float(value))
 					self.p3_isotb.item(row, col).setText(str(peak_value))
 				except ValueError:
-					error[0], error[1] = True, 'This cell can only accept <b>integers<b>.'
+					error[0], error[1] = True, 'This cell can only accept <b>integers</b>.'
 		# Shows error message and clear cell (if error was found)
 		if error[0]:
 			self.guimsg('Wrong value assigned', error[1], 'w')

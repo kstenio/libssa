@@ -1,6 +1,6 @@
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.0.98_
+### Current stable version: _2.0.99_
 
 ## About the software
 
@@ -111,9 +111,14 @@ The **LIBSsa 1** was a software created in the middle of 2017 for my personal us
 Eventually, many colleagues from the _Optics and Photonics Laboratory_ at [Embrapa Instrumentation](https://www.embrapa.br/en/instrumentacao)
 (Sao Carlos, SP, Brazil) enjoyed the application, and I continued developing it until late 2019.
 
-At some point, the _LIBSsa_ software became an important part of my doctorate/thesis,
+At some point, the _LIBSsa_ software became an important part of my [doctorate/thesis](https://repositorio.ufscar.br/handle/ufscar/18072),
 so I decided to restructure it into a new - _better_ - version. Finally, in the middle of 2020,
 the development of **LIBSsa 2** started.
+
+## Acknowledgements
+
+The present software (up to version 2.0.99) was supported by the Coordination for the Improvement
+of Higher Education Personnel - Brazil (CAPES) - Finance Code 001, and by Embrapa Instrumentation.
 
 ## Warranty
 
