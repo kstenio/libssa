@@ -86,6 +86,7 @@ class LIBSSA2(QObject):
 	
 	def variables(self):
 		self.parent = Path.cwd()
+		self.create_about()
 	
 	def connects(self):
 		# Main
@@ -110,7 +111,6 @@ class LIBSSA2(QObject):
 		self.gui.menu_export_other_pca.triggered.connect(lambda: self.export_mechanism(9))
 		self.gui.menu_export_other_tne.triggered.connect(lambda: self.export_mechanism(10))
 		self.gui.menu_export_other_correl.triggered.connect(lambda: self.export_mechanism(11))
-		self.gui.menu_help_about.triggered.connect(self.create_about)
 		# Page 1
 		self.gui.p1_fdbtn.clicked.connect(self.spopen)
 		self.gui.p1_ldspectra.clicked.connect(self.spload)
@@ -152,8 +152,9 @@ class LIBSSA2(QObject):
 			                'w')
 			print_exc()
 		else:
-			version = html.split('\n')[1].split('<em>')[1].split('<')[0]
-			self.gui.show_about(html, version)
+			self.gui.version = html.split('\n')[1].split('<em>')[1].split('<')[0]
+			self.gui.about_html = html
+			self.gui.mw.setWindowTitle(f'Laser Induced Breakdown Spectroscopy spectra analyzer - LIBSsa - v{self.gui.version}')
 			if save:
 				with root.joinpath('doc', 'readme.html').open('w') as r:
 					r.write(html)

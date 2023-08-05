@@ -1,6 +1,6 @@
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.0.99_
+### Current stable version: _2.1_
 
 ## About the software
 
@@ -41,7 +41,7 @@ The file is a lzma-compressed pickle containing all the data loaded and processe
 
 ## Installing Python
 
-You will need to install Python 3.x (tested on 3.5 to 3.9) to use the program.
+You will need to install Python 3.x to use the program (tested on 3.9 with current libraries).
 Python can be obtained from the official website: [https://www.python.org/](https://www.python.org/).
 
 ### 1. Linux Users
@@ -126,6 +126,13 @@ LIBSsa 2 is an open-source project. It is distributed in the hope that it will b
 useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
 or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
 version 3 attached for more details.
+
+## Copyright
+
+You are free to use and redistribute LIBSsa 2 (and are, in fact, encouraged to do so), provided that proper credit is given to the developer
+and/or this repository is mentioned. Please be aware that the source code (v2.0.99) is registered with the Brazilian National Institute of
+Industrial Property (INPI-BR) *– a member of the [TRIPS Agreement](https://www.wto.org/english/tratop_e/trips_e/intel2_e.htm) –* under
+the process number BR512023002165-2.
 
 ---
 

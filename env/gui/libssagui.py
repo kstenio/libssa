@@ -54,6 +54,8 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.loadui(uifile)
 			self.logofile = logofile
 			self.peaknormitems = []
+			self.version = '2'
+			self.about_html = ''
 		except Exception as err:
 			raise ValueError('Could not initialize UI file. Error message:\n\t%s' % str(err))
 		# If no error was found, loads all remaining widgets
@@ -120,7 +122,6 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.p6_ion = QtWidgets.QLabel()
 			self.p6_table = QtWidgets.QTableWidget()
 			self.p6_start = QtWidgets.QPushButton()
-			
 			# Loads all elements
 			self.loadmain()
 			self.loadp1()
@@ -154,7 +155,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			except Exception as ex:
 				raise ex
 			else:
-				self.mw.show()
+				self.mw.showMaximized()
 		else:
 			raise FileNotFoundError('Could not load UI file.')
 
@@ -183,15 +184,12 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			color: #ffffff;}"""
 		self.toolbox.setStyleSheet(style)
 	
-	def show_about(self, html: str, version: str):
+	def show_about(self):
 		"""
 		show_about method. Creates the About dialog.
-
-		:param html: str of the html file (obtained from the README.md)
-		:param version: str of the current program version
 		:return: None
 		"""
-		self.about = LIBSsaAbout(None, html, version)
+		self.about = LIBSsaAbout(None, self.about_html, self.version)
 		self.about.show()
 	
 	# Load methods
@@ -364,6 +362,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		"""
 		# Connects
 		self.g_selector.currentIndexChanged.connect(self.setgoptions)
+		self.menu_help_about.triggered.connect(self.show_about)
 		# P1
 		self.p1_sms.toggled.connect(self.modechanger)
 		self.p1_fsn_check.stateChanged.connect(lambda: self.config_fsn(0))
