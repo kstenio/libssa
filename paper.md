@@ -39,11 +39,7 @@ the analysis of LIBS spectra. It combines multiple tools used in LIBS analysis i
 isolation of spectral lines, curve fitting, linear models (calibration curves), Principal Components Analysis (PCA) and 
 calculation of plasma temperature and electron density.
 
-<p align="center">
-	<strong>Figure 1</strong> - Logo of LIBSsa<br>
-    <a href=""><img alt="logo" src="./pic/libssa.svg" width="80%"></a><br>
-	Source: <a href="https://github.com/kstenio/libssa" target="_blank" rel="noopener noreferrer">libssa repository</a>.
-</p>
+![Logo of LIBSsa. Source: [LIBSsa repository](https://github.com/kstenio/libssa/).\label{fig:1}](./pic/libssa.svg)
 
 # Statement of need
 
@@ -65,11 +61,7 @@ Knowing these challenges in making the LIBS technique more widely used, Stenio [
 that would automate the LIBS analysis, incorporating strategies used in several works in the literature [@marangoni2016phosphorus, @nicolodelli2014quantification, @de2021total, @stenio2022carbon, @castro2016twelve, @stenio2022direct].
 In this way, the LIBSsa software was conceived.
 
-<p align="center">
-	<strong>Figure 2</strong> - LIBSsa home screen tab with spectra loaded<br>
-    <a href=""><img alt="home" src="./pic/libssa.png" width="80%"></a><br>
-	Source: self-authored.
-</p>
+![LIBSsa home screen tab with spectra loaded. Source: self-authored.\label{fig:2}](./pic/libssa.png)
 
 The main purpose of LIBSsa is to help scientist in LIBS/spectroscopy field gain speed and practicality when analyzing LIBS
 spectra, allowing fast assessment of which is the best calibration strategy for they sample set.
@@ -80,11 +72,7 @@ Use of LIBSsa is straight forward: the user selects the input source (where LIBS
 program and do a wide range of treatments. In each step, it is possible to save/export data into multiple file formats 
 (txt, csv and xlsx). Figure 3 shows a usual workflow of LIBSsa analysis.  
 
-<p align="center">
-	<strong>Figure 3</strong> - LIBSsa working fluxogram<br>
-    <a href=""><img alt="logo" src="./pic/libssa_fluxogram.png"></a><br>
-	Source: self-authored.
-</p>
+![LIBSsa working fluxogram. Source: self-authored.\label{fig:3}](./pic/libssa_fluxogram.png)
 
 In order to properly operates, the program uses the libraries **NumPy** [@harris2020array] and **SciPy** [@virtanen2020scipy] for 
 most calculations, **pandas** [@mckinney2010data] and **openpyxl** to export spreadsheets [@openpyxl2023v312], **scikit-learn** [@pedregosa2011scikit]
