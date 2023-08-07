@@ -57,8 +57,8 @@ of using instrumentation but also in scientific data analysis tools, such as [R]
 [MATLAB](https://www.mathworks.com/products/matlab.html), [OriginLab](https://www.originlab.com/), [Weka](https://www.cs.waikato.ac.nz/ml/weka/),
 among others. Although these software are powerful tools for signal analysis, they are not dedicated tools for LIBS spectra analysis.
 
-Knowing these challenges in making the LIBS technique more widely used, Stenio [@kstenio2023] proposed the creation of a software
-that would automate the LIBS analysis, incorporating strategies used in several works in the literature [@marangoni2016phosphorus, @nicolodelli2014quantification, @de2021total, @stenio2022carbon, @castro2016twelve, @stenio2022direct].
+Knowing these challenges in making the LIBS technique more widely used, the authors [@kstenio2023] did propose the creation of a software
+that would automate the LIBS analysis, incorporating strategies used in several works in the literature [@marangoni2016phosphorus; @nicolodelli2014quantification; @de2021total; @stenio2022carbon; @castro2016twelve; @stenio2022direct].
 In this way, the LIBSsa software was conceived.
 
 ![LIBSsa home screen tab with spectra loaded. Source: self-authored.\label{fig:2}](./pic/libssa.png)
