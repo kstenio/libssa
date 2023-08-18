@@ -4,7 +4,7 @@ tags:
   - LIBS
   - Python
   - spectroscopy
-  - modelling
+  - modeling
   - automation
 authors:
   - name: Kleydson Stenio
@@ -26,58 +26,61 @@ bibliography: paper.bib
 
 # Summary
 
-Laser Induced Breakdown Spectroscopy (LIBS) is a technique that uses a high-energy pulsed laser to detect and analyze 
+Laser-Induced Breakdown Spectroscopy (LIBS) is a technique that uses a high-energy pulsed laser to detect and analyze
 elements present in a sample. The laser beam is directed through an optical system (commonly mirrors, lenses, prisms,
-or optical fibers) and focused onto the sample's surface. When the laser interacts with the sample, part of it is ablated,
-vaporized, and generates a high-temperature plasma. The species present in the plasma emits electromagnetic radiation
-that is characteristic of each element present in the sample. This radiation is then collected by lenses and conveyed
-through an optical fiber to a spectrometer, where the separation and detection of wavelengths occur, typically using a
-CCD (charge-coupled device) or ICCD (intensified charge-coupled device) device. Finally, a spectrum is generated [@miziolek2006laser].
+or optical fibers) and focused onto the sample's surface. When the laser interacts with the sample, a part is ablated,
+vaporized, and generates a high-temperature plasma. The species in the plasma emit electromagnetic radiation characteristics
+of each element in the sample. This radiation is collected by lenses and conveyed through an optical fiber to a spectrometer,
+where diffraction occurs. The diffracted light is detected using a CCD (charge-coupled device) or ICCD (intensified charge-coupled device).
+Finally, a spectrum (\autoref{fig:1}) is generated [@miziolek2006laser].
 
-The _Laser Induced Breakdown Spectroscopy spectra analyzer_ (**LIBSsa**) is an open souce software written in Python focused in
-the analysis of LIBS spectra. It combines multiple tools used in LIBS analysis into one single application, such as outliers removal,
-isolation of spectral lines, curve fitting, linear models (calibration curves), Principal Components Analysis (PCA) and 
-calculation of plasma temperature and electron density.
+![Characteristic LIBS spectrum. Source: self-authored.\label{fig:1}](./pic/libs_spectrum.png)
 
-![Logo of LIBSsa. Source: [LIBSsa repository](https://github.com/kstenio/libssa/).\label{fig:1}](./pic/libssa.svg)
+The Laser-Induced Breakdown Spectroscopy spectra analyzer (**LIBSsa**) is open-source software written in Python focused on
+analyzing LIBS spectra. It combines multiple tools used in LIBS analysis into only one application, such as outliers removal,
+isolation of spectral lines, curve fitting, linear models (calibration curves), Principal Components Analysis (PCA),
+and plasma temperature and electron density calculation.
+
+![Logo of LIBSsa. Source: [LIBSsa repository](https://github.com/kstenio/libssa/).\label{fig:2}](./pic/libssa.svg)
 
 # Statement of need
 
-LIBS measurement is much simpler than other common elementary characterization techniques such as Flame Absorption
-Atomic Spectrometry (FAAS) or ICP (Inductively Coupled Plasma), since it does not require acid digestion for sample preparation,
-and the spectrum of a sample can be obtained in seconds, however the analysis of its signal may be highly complex.
+LIBS measurement is much simpler than other standard elementary characterization techniques, such as Flame Absorption Atomic Spectrometry
+(FAAS) or ICP (Inductively Coupled Plasma), since it does not require acid digestion for sample preparation. Furthermore, the user
+can obtain a sample spectrum in seconds. Nonetheless, the analysis of its signal may be highly complex.
 
-Much of the complexity in analyzing LIBS spectra arises mainly due to matrix effects, which hinder the ability to obtain 
-calibration blanks and, consequently, generate universal calibration curves. As a result, analysts need to adopt various
-calibration and signal processing strategies to achieve quantitative measurements.
+Much of the complexity in analyzing LIBS spectra arises mainly due to matrix effects, which hinder the ability to obtain
+calibration blanks and generate universal calibration curves. As a result, analysts need to adopt various calibration and
+signal-processing strategies to achieve quantitative measurements.
 
-In general, those who work with LIBS commonly develop their own tools to process the measured signal and extract satisfactory
-results. However, this practice has the effect of generating highly specialized users of the technique, not only in terms
-of using instrumentation but also in scientific data analysis tools, such as [R](https://www.r-project.org/),
-[MATLAB](https://www.mathworks.com/products/matlab.html), [OriginLab](https://www.originlab.com/), [Weka](https://www.cs.waikato.ac.nz/ml/weka/),
-among others. Although these software are powerful tools for signal analysis, they are not dedicated tools for LIBS spectra analysis.
+In general, those working with LIBS commonly develop tools to process the measured signal and extract satisfactory results.
+However, this practice has the effect of generating highly specialized users of the technique, not only in terms of using
+instrumentation but also in scientific data analysis tools, such as [R](https://www.r-project.org/), [MATLAB](https://www.mathworks.com/products/matlab.html),
+[OriginLab](https://www.originlab.com/), [Weka](https://www.cs.waikato.ac.nz/ml/weka/), among others. Although these software
+are powerful tools for signal analysis, they are not dedicated tools for LIBS spectra analysis.
 
-Knowing these challenges in making the LIBS technique more widely used, the authors [@kstenio2023] did propose the creation of a software
-that would automate the LIBS analysis, incorporating strategies used in several works in the literature [@marangoni2016phosphorus; @nicolodelli2014quantification; @de2021total; @stenio2022carbon; @castro2016twelve; @stenio2022direct].
-In this way, the LIBSsa software was conceived.
+Knowing about these challenges and aiming to make the LIBS technique more widely used, the authors [@kstenio2023] proposed a
+software creation that would automate the LIBS analysis, incorporating strategies used in several works in the literature
+[@marangoni2016phosphorus; @nicolodelli2014quantification; @de2021total; @stenio2022carbon; @castro2016twelve; @stenio2022direct].
+In this way, the LIBSsa software was conceived (\autoref{fig:3}).
 
-![LIBSsa home screen tab with spectra loaded. Source: self-authored.\label{fig:2}](./pic/libssa.png)
+![LIBSsa home screen tab with spectra loaded. Source: self-authored.\label{fig:3}](./pic/libssa.png)
 
-The main purpose of LIBSsa is to help scientist in LIBS/spectroscopy field gain speed and practicality when analyzing LIBS
-spectra, allowing fast assessment of which is the best calibration strategy for they sample set.
+The main purpose of LIBSsa is to help scientists in LIBS/spectroscopy field gain speed and practicality when analyzing LIBS
+spectra, allowing fast assessment of which is the best calibration strategy for the sample set.
 
 # Brief software description
 
-Use of LIBSsa is straight forward: the user selects the input source (where LIBS spectra are located), load them into the
-program and do a wide range of treatments. In each step, it is possible to save/export data into multiple file formats 
-(txt, csv and xlsx). Figure 3 shows a usual workflow of LIBSsa analysis.  
+LIBSsa is straightforward: the user selects the input source (where LIBS spectra are located), loads them into the program, and 
+does a wide range of treatments. In each step, it is possible to save/export data into multiple file formats (txt, csv and xlsx).
+\autoref{fig:4} shows a usual workflow of LIBSsa analysis.
 
-![LIBSsa working fluxogram. Source: self-authored.\label{fig:3}](./pic/libssa_fluxogram.png)
+![LIBSsa working fluxogram. Source: self-authored.\label{fig:4}](./pic/libssa_fluxogram.png)
 
-In order to properly operates, the program uses the libraries **NumPy** [@harris2020array] and **SciPy** [@virtanen2020scipy] for 
-most calculations, **pandas** [@mckinney2010data] and **openpyxl** to export spreadsheets [@openpyxl2023v312], **scikit-learn** [@pedregosa2011scikit]
-to do linear, PLS and PCA models, **pyqtgraph** [@pyqtgraph2023v0133] to show in program graphics, and finally **PySide6** [@pyside62023v643] as
-the graphical user interface (GUI) framework.
+In order to properly operates, the program uses the libraries **NumPy** [@harris2020array] and **SciPy** [@virtanen2020scipy] 
+for most calculations, **pandas** [@mckinney2010data] and **openpyxl** [@openpyxl2023v312] to export spreadsheets, 
+**scikit-learn** [@pedregosa2011scikit] to do linear, PLS and PCA models, **pyqtgraph** [@pyqtgraph2023v0133] to show in
+program graphics, and finally **PySide6** [@pyside62023v643] as the graphical user interface (GUI) framework.
 
 # Author contributions
 
@@ -89,9 +92,9 @@ validation: K. S., D. M. B. P. M.; visualization: K. S.; writing – original dr
 
 There are no conflicts to declare.
 
-# Acknowledgements
+# Acknowledgments
 
-The development of LIBSsa software (up to version 2.0.99) was supported by the Coordination for the Improvement
-of Higher Education Personnel - Brazil (CAPES) - Finance Code 001, and by Embrapa Instrumentation.
+The development of LIBSsa software (up to version 2.0.99) was supported by the Coordination for the Improvement of Higher 
+Education Personnel - Brazil (CAPES) - Finance Code 001 and by Embrapa Instrumentation.
 
 # References
