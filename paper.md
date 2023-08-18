@@ -50,9 +50,10 @@ and plasma temperature and electron density calculation.
 
 # Statement of need
 
-LIBS measurement is much simpler than other standard elementary characterization techniques, such as Flame Absorption Atomic Spectrometry
-(FAAS) or ICP (Inductively Coupled Plasma), since it does not require acid digestion for sample preparation. Furthermore, the user
-can obtain a sample spectrum in seconds. Nonetheless, the analysis of its signal may be highly complex.
+LIBS measurement is much simpler than other standard elementary characterization techniques, such as Flame Absorption Atomic
+Spectrometry (FAAS) or Inductively Coupled Plasma Optical Emission Spectroscopy (ICP OES), since it does not require acid digestion
+for sample preparation. Furthermore, the user can obtain a sample spectrum in seconds. Nonetheless, the analysis of its signal
+may be highly complex.
 
 Much of the complexity in analyzing LIBS spectra arises mainly due to matrix effects, which hinder the ability to obtain
 calibration blanks and generate universal calibration curves. As a result, analysts need to adopt various calibration and
