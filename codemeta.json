@@ -1,0 +1,23 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "http://orcid.org/0000-0002-1407-9712",
+      "@type": "Person",
+      "email": "kleydson@estudante.ufscar.br",
+      "name": "Kleydson Stenio",
+      "affiliation": "Department of Biotechnology, Federal University of São Carlos, São Carlos, SP 13563-905, Brazil"
+    }
+  ],
+  "identifier": "",
+  "codeRepository": "https://github.com/kstenio/libssa",
+  "datePublished": "2023-08-21",
+  "dateModified": "2023-08-21",
+  "dateCreated": "2023-08-21",
+  "description": "An open source software for analyzing LIBS spectra",
+  "keywords": "LIBS, Python, spectroscopy, modeling, automation",
+  "license": " AGPL v3.0",
+  "title": "libssa",
+  "version": "v2.1.0"
+}
