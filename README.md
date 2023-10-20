@@ -129,10 +129,15 @@ version 3 attached for more details.
 
 ## Copyright
 
-You are free to use and redistribute LIBSsa 2 (and are, in fact, encouraged to do so), provided that proper credit is given to the developer
-and/or this repository is mentioned. Please be aware that the source code (v2.0.99) is registered with the Brazilian National Institute of
-Industrial Property (INPI-BR) *– a member of the [TRIPS Agreement](https://www.wto.org/english/tratop_e/trips_e/intel2_e.htm) –* under
-the process number BR512023002165-2.
+You are free to use and redistribute LIBSsa 2 (and are, in fact, encouraged to do so), provided that 
+proper credit is given to the developer and/or this repository is mentioned. The software is licensed under the AGPL-3.0.
+
+To ensure the open-source nature of LIBSsa 2 and prevent any attempt to transform it into proprietary software, the source code
+of a previous version (2.0.99) has been registered with the Brazilian National Institute of Industrial Property (INPI-BR). 
+This registration provides an additional layer of protection in accordance with the principles of the 
+*[TRIPS Agreement]([url](https://www.wto.org/english/tratop_e/trips_e/intel2_e.htm))* and is documented under the process number *BR 51 2023 002165-2*.
+
+By taking these measures, we are committed to maintaining LIBSsa 2 as an open-source tool for the LIBS community.
 
 ---
 
