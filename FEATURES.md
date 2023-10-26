@@ -35,7 +35,7 @@ The file is a lzma-compressed pickle containing all the data loaded and processe
 Figure above shows a usual workflow of LIBSsa analysis.
 
 <p align="center">
-	<a href=""><img alt="libssa_flowchart" src="./pic/libssa_fluxogram.png" width="900em"></a>
+	<img alt="libssa_flowchart" src="./pic/libssa_fluxogram.png" width="900em"><br>
 	<i>LIBSsa working flowchart</i>
 </p>
 
