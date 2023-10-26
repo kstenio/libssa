@@ -83,8 +83,6 @@ useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHA
 or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
 version 3 [attached](./LICENSE.txt) for more details.
 
----
-
 ## Historical background
 
 The **LIBSsa 1** was a software created in the middle of 2017 for my personal use in a LIBS class during my doctorate.
