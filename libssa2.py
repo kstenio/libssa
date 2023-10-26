@@ -152,8 +152,10 @@ class LIBSSA2(QObject):
 			                'w')
 			print_exc()
 		else:
-			self.gui.version = html.split('\n')[1].split('<em>')[1].split('<')[0]
-			self.gui.about_html = html
+			self.gui.version = html.split('\n')[5].split('<em>')[1].split('<')[0]
+			self.gui.about_html = html.replace(
+				'width="500em"', 'width=500 height=70').replace(
+				'width="900em"', 'width=900 height=530')
 			self.gui.mw.setWindowTitle(f'Laser Induced Breakdown Spectroscopy spectra analyzer - LIBSsa - v{self.gui.version}')
 			if save:
 				with root.joinpath('doc', 'readme.html').open('w') as r:
