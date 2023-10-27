@@ -30,16 +30,16 @@ There are also many options for how data can be loaded:
 The file is a lzma-compressed pickle containing all the data loaded and processed, with about **40%** of the size of the original/text spectra.
 11. **Export Data**: It is also possible to export analyzed data into **csv** and **xlsx** files.
 
+## Additional information on the features
+
+If you encounter any issues on how to use LIBSsa, or how the features mentioned above works, I describe them thoroughly in my 
+[thesis](https://repositorio.ufscar.br/handle/ufscar/18072) (chapter 9). Please be aware tha the text is writen in _Brazilian Portuguese_. 
+
 ## LIBSsa flowchart
 
 Figure above shows a usual workflow of LIBSsa analysis.
 
 <p align="center">
-	<a href=""><img alt="libssa_flowchart" src="./pic/libssa_fluxogram.png" width="900em"></a>
+	<img alt="libssa_flowchart" src="./pic/libssa_fluxogram.png" width="900em"><br>
 	<i>LIBSsa working flowchart</i>
 </p>
-
-# Additional information on the features
-
-If you encounter any issues on how to use LIBSsa, or how the features mentioned above works, I describe them thoroughly in my 
-[thesis](https://repositorio.ufscar.br/handle/ufscar/18072) (chapter 9). Please be aware tha the text is writen in _Brazilian Portuguese_. 
