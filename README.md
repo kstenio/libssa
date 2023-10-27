@@ -37,8 +37,15 @@ the official website, [https://www.python.org/](https://www.python.org/) and, if
 official instructions on how install Python on [Linux Distributions](https://docs.python.org/3/using/unix.html), 
 [Windows](https://docs.python.org/3/using/windows.html) and [macOS](https://docs.python.org/3/using/mac.html).
 
-With Python installed, you'll need to install the **_external libraries_** that LIBSsa uses. To work properly, this program 
-uses the following external libraries:
+With Python installed, you'll need to download the [software zip](https://github.com/kstenio/libssa/archive/refs/heads/master.zip), 
+or clone the repository using [git](https://git-scm.com/):
+
+```shell
+git clone https://github.com/kstenio/libssa.git
+cd libssa
+```
+
+Then, install the following **_external libraries_** that LIBSsa uses:
 
 1. [NumPy](https://numpy.org/) (~=1.25.1)
 2. [SciPy](https://scipy.org/) (~=1.11.1)
@@ -50,19 +57,17 @@ uses the following external libraries:
 8. [Psutil](https://github.com/giampaolo/psutil) (~=5.9.5)
 9. [Markdown](https://python-markdown.github.io/) (~=3.4.3) 
 
-
-
 The `requirements.txt` file lists all the above libraries needed, and you can install them using the 
 [PIP](https://docs.python.org/3/installing/index.html) tool. From inside the application folder, open a **terminal** or 
 **Windows PowerShell** and type:
 
-```bash
+```shell
 pip install -r requirements.txt --user
 ```
 
 And with all set up, feel free to run LIBSsa: 
 
-```bash
+```shell
 python libssa.py
 ```
 
@@ -110,6 +115,10 @@ To ensure the open-source nature of LIBSsa 2 and prevent any attempt to transfor
 of a previous version (2.0.99) has been registered with the Brazilian National Institute of Industrial Property (INPI-BR). 
 This registration provides an additional layer of protection in accordance with the principles of the 
 *[TRIPS Agreement](https://www.wto.org/english/tratop_e/trips_e/intel2_e.htm)* and is documented under the process number *BR 51 2023 002165-2*.
+
+LIBSsa also uses content from other projects: SVG icons are from [Font Awesome](https://fontawesome.com/), and the logo 
+is based on the [PT_Sans font](https://fonts.google.com/specimen/PT+Sans). License to those content are available in the 
+[doc/open_source_licenses](./doc/open_source_licenses) folder.
 
 ---
 

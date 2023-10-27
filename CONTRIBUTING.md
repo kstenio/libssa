@@ -73,6 +73,7 @@ Additional features that could be implemented include:
 3. Architectural improvements
 	1. Creating a new Spectra class or updating the existing one to implement class methods for data processing (minimizing the main program operations).
 	2. Modifying the GUI library or updating the program to new versions of PySide, including new features for better use of processing and RAM memory.
+	3. Updating LIBSsa to work with newer versions of Python, like 3.10 and 3.11 (this includes checking newer versions of libraries as well) 
 4. Feature improvements, including:
 	1. New data processing algorithms.
 	2. New quantification models, including non-linear ones.
@@ -81,6 +82,8 @@ Additional features that could be implemented include:
 	1. Improving current functions.
 	2. Correcting any bugs.
 	3. Optimizing the existing code.
+6. Packaging
+	1. It would be nice to create a proper Python package for LIBSsa
 
 ## Contact
 
