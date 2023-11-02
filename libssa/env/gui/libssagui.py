@@ -21,7 +21,7 @@
 from pathlib import Path
 from string import punctuation
 from colorsys import hsv_to_rgb, hls_to_rgb
-from env.config.ion import ionization_energies_ev
+from libssa.env.config.ion import ionization_energies_ev
 from pandas import DataFrame, read_excel
 from numpy.random import randint, uniform, random, rand
 from numpy import zeros, int16, ones, ndarray, std, linspace, arange, hstack

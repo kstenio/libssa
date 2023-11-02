@@ -19,7 +19,7 @@
 
 # Imports
 from pathlib import Path
-from env.spectra import Spectra
+from libssa.env.spectra import Spectra
 from PySide6.QtWidgets import QTableWidget
 from numpy import linspace, array, hstack, zeros
 from pandas import DataFrame, Index, ExcelWriter
