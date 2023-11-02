@@ -74,7 +74,7 @@ except (ImportError, ImportWarning) as err:
 
 
 # LIBSsa main class
-class LIBSSA2(QObject):
+class LIBSSA2(QMainWindow):
     """
     This is LIBSsa main APP.
 
@@ -200,11 +200,11 @@ class LIBSSA2(QObject):
             else:
                 raise FileNotFoundError("File <b>README.md</b> not found.")
         except FileNotFoundError:
-            self.gui.guimsg(
-                "Error",
-                "Could not find <b>README.md</b> file inside application root.",
-                "w",
-            )
+            # self.gui.guimsg(
+            #     "Error",
+            #     "Could not find <b>README.md</b> file inside application root.",
+            #     "w",
+            # )
             print_exc()
         else:
             self.gui.version = html.split("\n")[1].split("<em>")[1].split("<")[0]
