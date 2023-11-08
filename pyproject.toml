@@ -51,5 +51,5 @@ libssa-gui = "libssa.libssa2:spawn_gui"
 # This sets up git tag based versioning based on setuptools-scm.
 # I highly recommend using this!
 [tool.setuptools_scm]
-version_scheme = "no-guess-dev"
+version_scheme = "guess-next-dev"  # "no-guess-dev"
 local_scheme = "no-local-version"  # "node-and-date"
