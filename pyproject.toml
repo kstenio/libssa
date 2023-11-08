@@ -19,15 +19,15 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "numpy~=1.25.1",
+    "numpy<=1.25.1",
     "scipy<=1.11.1",
-    "pandas~=2.0.3",
-    "scikit-learn~=1.3.0",
+    "pandas<=2.0.3",
+    "scikit-learn<=1.3.0",
     "PySide6<=6.4.3",
-    "pyqtgraph~=0.13.3",
-    "openpyxl~=3.1.2",
-    "psutil~=5.9.5",
-    "Markdown~=3.4.3"
+    "pyqtgraph<=0.13.3",
+    "openpyxl<=3.1.2",
+    "psutil<=5.9.5",
+    "Markdown<=3.4.3"
 ]
 
 [project.urls]
@@ -48,8 +48,12 @@ dependencies = [
 [project.gui-scripts]
 libssa-gui = "libssa.libssa2:spawn_gui"
 
+[tool.setuptools]
+# py-modules = []
+packages = ["libssa"]
+
 # This sets up git tag based versioning based on setuptools-scm.
 # I highly recommend using this!
 [tool.setuptools_scm]
-version_scheme = "guess-next-dev"  # "no-guess-dev"
-local_scheme = "no-local-version"  # "node-and-date"
+version_scheme = "no-guess-dev"
+local_scheme = "node-and-date"

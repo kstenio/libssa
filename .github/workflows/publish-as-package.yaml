@@ -8,9 +8,9 @@
 
 name: Upload Python Package [Test]
 
-on: [push]
-#  release:
-#    types: [published]
+on: # [push]
+  release:
+    types: [published]
 
 jobs:
   deploy:

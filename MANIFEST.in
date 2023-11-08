@@ -1,2 +1,3 @@
 recursive-include libssa/pic *
 recursive-include libssa *.ui
+recursive-include libssa *.md
