@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=64.0.1", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libssa"
+dynamic = ["version"]
+authors = [
+    { name = "Kleydson Stenio" },
+]
+description = "Put a short project description here"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+requires-python = ">3.8,<3.11"
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy~=1.25.1",
+    "scipy~=1.11.1",
+    "pandas~=2.0.3",
+    "scikit-learn~=1.3.0",
+    "PySide6~=6.4.3",
+    "pyqtgraph~=0.13.3",
+    "openpyxl~=3.1.2",
+    "psutil~=5.9.5",
+    "Markdown~=3.4.3"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kstenio/libssa"
+"Bug Tracker" = "https://github.com/kstenio/libssa/issues"
+
+# If you want to add optional dependencies, 
+# e.g., extra installs via `pip install libssa[dev]` you can do this via
+# [project.optional-dependencies]
+#dev = [
+#    "pytest",
+#    "pytest-qt",
+#    "black",
+#    "pip-tools",
+#    ...
+# ]
+
+[project.gui-scripts]
+libssa-gui = "libssa.libssa2:spawn_gui"
+
+# This sets up git tag based versioning based on setuptools-scm.
+# I highly recommend using this!
+[tool.setuptools_scm]
+version_scheme = "no-guess-dev"
+local_scheme = "node-and-date"

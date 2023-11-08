@@ -18,7 +18,7 @@
 
 
 # Imports
-from env.equations import *
+from libssa.env.equations import *
 from pandas import Series, DataFrame
 from PySide6.QtCore import Signal
 from scipy.stats import linregress
