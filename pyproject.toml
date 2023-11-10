@@ -47,6 +47,9 @@ dependencies = [
 [project.gui-scripts]
 libssa-gui = "libssa.libssa2:spawn_gui"
 
+[tool.setuptools]
+packages = ["libssa"]
+
 [tool.setuptools.packages.find]
 include = ["libssa"]
 
