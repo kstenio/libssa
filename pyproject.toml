@@ -8,9 +8,8 @@ dynamic = ["version"]
 authors = [
     { name = "Kleydson Stenio" },
 ]
-description = "Put a short project description here"
+description = "An open source software for analyzing LIBS spectra"
 readme = "README.md"
-license = { file = "LICENSE.txt" }
 requires-python = ">3.8,<3.11"
 classifiers = [
     "Programming Language :: Python :: 3.9",
@@ -49,8 +48,10 @@ dependencies = [
 libssa-gui = "libssa.libssa2:spawn_gui"
 
 [tool.setuptools]
-# py-modules = []
 packages = ["libssa"]
+
+[tool.setuptools.packages.find]
+include = ["libssa"]
 
 # This sets up git tag based versioning based on setuptools-scm.
 # I highly recommend using this!
