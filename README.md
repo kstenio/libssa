@@ -39,7 +39,19 @@ the official website, [https://www.python.org/](https://www.python.org/) and, if
 official instructions on how install Python on [Linux Distributions](https://docs.python.org/3/using/unix.html), 
 [Windows](https://docs.python.org/3/using/windows.html) and [macOS](https://docs.python.org/3/using/mac.html).
 
-With Python installed, you'll need to download the [software zip](https://github.com/kstenio/libssa/archive/refs/heads/master.zip), 
+### 1. Simple install (PyPI version)
+
+LIBSsa is distributed as a [Python Package](https://pypi.org/project/libssa/) on **PyPI**. With Python and [PIP](https://docs.python.org/3/installing/index.html)
+installed, just run from inside a **terminal** or **Windows PowerShell** and type:
+
+```shell
+pip install libssa
+libssa-gui
+```
+
+### 2. SRC install (GitHub version)
+
+If you prefer interacting with the source code of LIBSsa, you may download the [software zip](https://github.com/kstenio/libssa/archive/refs/heads/master.zip), 
 or clone the repository using [git](https://git-scm.com/):
 
 ```shell
@@ -59,17 +71,16 @@ Then, install the following **_external libraries_** that LIBSsa uses:
 8. [Psutil](https://github.com/giampaolo/psutil) (~=5.9.5)
 9. [Markdown](https://python-markdown.github.io/) (~=3.4.3) 
 
-The `requirements.txt` file lists all the above libraries needed, and you can install them using the 
-[PIP](https://docs.python.org/3/installing/index.html) tool. From inside the application folder, open a **terminal** or 
-**Windows PowerShell** and type:
+The `requirements.txt` file lists all the above libraries needed, and you can install them using **PIP** as well:
 
 ```shell
-pip install -r requirements.txt --user
+pip install -r requirements.txt
 ```
 
 And with all set up, feel free to run LIBSsa: 
 
 ```shell
+cd libssa
 python libssa.py
 ```
 
