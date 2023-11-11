@@ -18,7 +18,7 @@ into an encapsulated **lb2e** file.
 	<i>LIBSsa main window</i>
 </p>
 
-For a full list of features implemented in LIBSsa, you may check the [FEATURES.md](https://raw.githubusercontent.com/kstenio/libssa/master/FEATURES.md) file but, in short, you can: 
+For a full list of features implemented in LIBSsa, you may check the [FEATURES.md](https://github.com/kstenio/libssa/blob/master/FEATURES.md) file but, in short, you can: 
 remove of outliers using SAM or MAD algorithms, perform full spectrum normalization (FSN), create correlation spectrum, 
 do peak isolation, peak fitting (Gaussian, Lorentzian, and Voigt), univariate linear models, multivariate partial least 
 squares regression (PLSR), principal components analysis (PCA), and obtain plasma temperature and electron density values 
@@ -81,7 +81,7 @@ Lastly, advanced users are encouraged to use [venv](https://docs.python.org/3/li
 ## Contributing
 
 If you wish to contribute to the development of LIBSsa, please check for the guidelines in the 
-[CONTRIBUTING.md](https://raw.githubusercontent.com/kstenio/libssa/master/CONTRIBUTING.md) file.
+[CONTRIBUTING.md](https://github.com/kstenio/libssa/blob/master/CONTRIBUTING.md) file.
 
 ## Warranty
 
