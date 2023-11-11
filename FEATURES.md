@@ -40,6 +40,6 @@ If you encounter any issues on how to use LIBSsa, or how the features mentioned 
 Figure above shows a usual workflow of LIBSsa analysis.
 
 <p align="center">
-	<img alt="libssa_flowchart" src="libssa/pic/examples/libssa_fluxogram.png" width="900em"><br>
+	<img alt="libssa_flowchart" src="https://github.com/kstenio/libssa/raw/master/libssa/pic/examples/libssa_fluxogram.png" width="900em"><br>
 	<i>LIBSsa working flowchart</i>
 </p>
