@@ -19,7 +19,7 @@ into an encapsulated **lb2e** file.
 </p>
 
 For a full list of features implemented in LIBSsa, you may check the [FEATURES.md](https://github.com/kstenio/libssa/blob/master/FEATURES.md) file but, in short, you can: 
-remove of outliers using SAM or MAD algorithms, perform full spectrum normalization (FSN), create correlation spectrum, 
+remove outliers using SAM or MAD algorithms, perform full spectrum normalization (FSN), create correlation spectrum, 
 do peak isolation, peak fitting (Gaussian, Lorentzian, and Voigt), univariate linear models, multivariate partial least 
 squares regression (PLSR), principal components analysis (PCA), and obtain plasma temperature and electron density values 
 using Saha-Boltzmann (modified to LIBS) equation.
