@@ -4,9 +4,12 @@
 
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/libssa?color=5500d4)
-![PyPI - Version](https://img.shields.io/pypi/v/libssa?color=6c037f)
-![PyPI - License](https://img.shields.io/pypi/l/libssa?color=902da6)
+![PyPI - Python Version](https://badgen.net/pypi/python/libssa/?color=5500d4)
+![GitHub - Commits](https://badgen.net/github/commits/kstenio/libssa/?color=6c037f&icon=github)
+![GitHub - Contributors](https://badgen.net/github/contributors/kstenio/libssa/?color=902da6&icon=github)
+![GitHub - Releases](https://badgen.net/github/release/kstenio/libssa/?color=6865aa&icon=github)
+![PyPI - Release](https://badgen.net/pypi/v/libssa/?color=0507ee&icon=pypi)
+![GitHub - License](https://badgen.net/github/license/kstenio/libssa/?color=05c8fe)
 
 **LIBSsa 2** is free software, licensed under the **GNU Affero General Public License version 3**, 
 and written in **Python 3.x** for analyzing **LIBS spectra**. It can read several formats of data inside raw/text files,
@@ -56,10 +59,18 @@ or clone the repository using [git](https://git-scm.com/):
 
 ```shell
 git clone https://github.com/kstenio/libssa.git
-cd libssa
 ```
 
-Then, install the following **_external libraries_** that LIBSsa uses:
+Then, you can use PIP to install LIBSsa in editable mode :
+
+```shell
+cd libssa
+pip install -e .
+libssa-gui
+```
+
+In editable mode, every change made to the source code will also be reflected into the package. Doing this, you'll also 
+install the following **_external libraries_** that LIBSsa uses:
 
 1. [NumPy](https://numpy.org/) (~=1.25.1)
 2. [SciPy](https://scipy.org/) (~=1.11.1)
@@ -70,22 +81,6 @@ Then, install the following **_external libraries_** that LIBSsa uses:
 7. [OpenPyXL](https://openpyxl.readthedocs.io/en/stable/) (~=3.1.2)
 8. [Psutil](https://github.com/giampaolo/psutil) (~=5.9.5)
 9. [Markdown](https://python-markdown.github.io/) (~=3.4.3) 
-
-The `requirements.txt` file lists all the above libraries needed, and you can install them using **PIP** as well:
-
-```shell
-pip install -r requirements.txt
-```
-
-And with all set up, feel free to run LIBSsa: 
-
-```shell
-cd libssa
-python libssa.py
-```
-
-Please note that I **did not test LIBSsa with newer versions of Python or libraries**, so using Python >3.9 or different versions 
-of the libraries may lead to misbehaviour. 
 
 Lastly, advanced users are encouraged to use [venv](https://docs.python.org/3/library/venv.html) (Virtual Environment).
 
