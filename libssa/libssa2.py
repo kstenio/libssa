@@ -79,6 +79,7 @@ class LIBSSA2(QMainWindow):
 
 	In it, we have all needed functions, actions and connects for the app to work properly.
 	"""
+	# TODO: fix svg path for icons
 
 	def __init__(self, ui_file: str, logo_file: str):
 		# Checks if ui file exists and warn users if not

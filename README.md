@@ -4,12 +4,12 @@
 
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-![PyPI - Python Version](https://badgen.net/pypi/python/libssa/?color=5500d4)
-![GitHub - Commits](https://badgen.net/github/commits/kstenio/libssa/?color=6c037f&icon=github)
-![GitHub - Contributors](https://badgen.net/github/contributors/kstenio/libssa/?color=902da6&icon=github)
-![GitHub - Releases](https://badgen.net/github/release/kstenio/libssa/?color=6865aa&icon=github)
-![PyPI - Release](https://badgen.net/pypi/v/libssa/?color=0507ee&icon=pypi)
-![GitHub - License](https://badgen.net/github/license/kstenio/libssa/?color=05c8fe)
+[![PyPI - Python Version](https://badgen.net/pypi/python/libssa/?color=5500d4)](https://www.python.org/downloads/)
+[![GitHub - Commits](https://badgen.net/github/commits/kstenio/libssa/?color=6c037f&icon=github)](https://github.com/kstenio/libssa/commits/)
+[![GitHub - Contributors](https://badgen.net/github/contributors/kstenio/libssa/?color=902da6&icon=github)](https://github.com/kstenio/libssa/graphs/contributors)
+[![GitHub - Releases](https://badgen.net/github/release/kstenio/libssa/?color=6865aa&icon=github)](https://github.com/kstenio/libssa/releases)
+[![PyPI - Release](https://badgen.net/pypi/v/libssa/?color=0507ee&icon=pypi)](https://pypi.org/project/libssa/)
+[![GitHub - License](https://badgen.net/github/license/kstenio/libssa/?color=05c8fe)](https://www.gnu.org/licenses/agpl-3.0.html.en)
 
 **LIBSsa 2** is free software, licensed under the **GNU Affero General Public License version 3**, 
 and written in **Python 3.x** for analyzing **LIBS spectra**. It can read several formats of data inside raw/text files,

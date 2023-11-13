@@ -35,14 +35,13 @@ dependencies = [
 
 # If you want to add optional dependencies, 
 # e.g., extra installs via `pip install libssa[dev]` you can do this via
-# [project.optional-dependencies]
-#dev = [
-#    "pytest",
-#    "pytest-qt",
-#    "black",
-#    "pip-tools",
-#    ...
-# ]
+ [project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-qt",
+    "black",
+    "pip-tools"
+ ]
 
 [project.gui-scripts]
 libssa-gui = "libssa.libssa2:spawn_gui"
