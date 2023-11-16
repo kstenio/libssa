@@ -68,7 +68,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.mbox_pbar = QtWidgets.QProgressBar()
 			self.about = QtWidgets.QWidget()
 			# Menubar
-			self.menu_file_load = self.menu_file_save = self.menu_file_quit = QtGui.QAction()
+			self.menu_file_load = self.menu_file_save = self.menu_file_sample = self.menu_file_quit = QtGui.QAction()
 			self.menu_import_ref = self.menu_import_peaks = self.menu_import_tne = QtGui.QAction()
 			self.menu_export_fullspectra_raw = self.menu_export_fullspectra_out = QtGui.QAction()
 			self.menu_export_peaks_table = self.menu_export_peaks_isolated = self.menu_export_peaks_fitted = self.menu_export_peaks_areas = QtGui.QAction()
@@ -230,6 +230,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		self.menu_file_load = self.mw.findChild(QtGui.QAction, 'actionF01')
 		self.menu_file_save = self.mw.findChild(QtGui.QAction, 'actionF02')
 		self.menu_file_quit = self.mw.findChild(QtGui.QAction, 'actionF03')
+		self.menu_file_sample = self.mw.findChild(QtGui.QAction, 'actionF04')
 		self.menu_import_ref = self.mw.findChild(QtGui.QAction, 'actionI01')
 		self.menu_import_peaks = self.mw.findChild(QtGui.QAction, 'actionI02')
 		self.menu_import_tne = self.mw.findChild(QtGui.QAction, 'actionI03')

@@ -54,8 +54,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>382</width>
-              <height>393</height>
+              <width>368</width>
+              <height>411</height>
              </rect>
             </property>
             <attribute name="label">
@@ -475,7 +475,7 @@
               <x>0</x>
               <y>0</y>
               <width>382</width>
-              <height>393</height>
+              <height>377</height>
              </rect>
             </property>
             <attribute name="label">
@@ -786,7 +786,7 @@
               <x>0</x>
               <y>0</y>
               <width>382</width>
-              <height>393</height>
+              <height>377</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1036,7 +1036,7 @@
               <x>0</x>
               <y>0</y>
               <width>382</width>
-              <height>393</height>
+              <height>377</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1337,7 +1337,7 @@
               <x>0</x>
               <y>0</y>
               <width>382</width>
-              <height>393</height>
+              <height>377</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1794,7 +1794,7 @@
               <x>0</x>
               <y>0</y>
               <width>382</width>
-              <height>393</height>
+              <height>377</height>
              </rect>
             </property>
             <attribute name="label">
@@ -2123,7 +2123,7 @@
      <x>0</x>
      <y>0</y>
      <width>1216</width>
-     <height>20</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -2132,6 +2132,8 @@
     </property>
     <addaction name="actionF01"/>
     <addaction name="actionF02"/>
+    <addaction name="separator"/>
+    <addaction name="actionF04"/>
     <addaction name="separator"/>
     <addaction name="actionF03"/>
    </widget>
@@ -2362,6 +2364,11 @@
     <string>Correlation spectra</string>
    </property>
   </action>
+  <action name="actionF04">
+   <property name="text">
+    <string>Load sample spectra</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -2373,7 +2380,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="p4bG1"/>
   <buttongroup name="p4bG2"/>
+  <buttongroup name="p4bG1"/>
  </buttongroups>
 </ui>

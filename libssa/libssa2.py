@@ -22,6 +22,8 @@ try:
 	import sys
 	import lzma
 	import pickle
+	import tarfile
+	import tempfile
 	import libssa.env.export as export
 	from time import time
 	from os import listdir
@@ -105,7 +107,8 @@ class LIBSSA2(QMainWindow):
 			self.cores, self.timer = 0, 0
 			self.bytes_to_gb = 1073741824
 			self.memory = virtual_memory()
-			self.root = Path(__file__).parent
+			self.tempfolder = Path(__file__)
+			self.root = self.tempfolder.parent
 			# Connects
 			self.connects()
 			# Extra variables
@@ -123,6 +126,7 @@ class LIBSSA2(QMainWindow):
 		# Menu
 		self.gui.menu_file_load.triggered.connect(lambda: self.environment("load"))
 		self.gui.menu_file_save.triggered.connect(lambda: self.environment("save"))
+		self.gui.menu_file_sample.triggered.connect(self.loadsample_spectra)
 		self.gui.menu_file_quit.triggered.connect(self.gui.mw.close)
 		self.gui.menu_import_ref.triggered.connect(self.loadref)
 		self.gui.menu_import_peaks.triggered.connect(
@@ -344,6 +348,16 @@ class LIBSSA2(QMainWindow):
 					self.gui.p6_element.setCurrentText(element)
 		else:
 			raise AssertionError(f"Illegal operation mode: {mode}")
+	
+	def loadsample_spectra(self):
+		self.tempfolder = Path(tempfile.mkdtemp(prefix='libssa_', suffix='_sampledata'))
+		tar = tarfile.open(
+			self.root.joinpath('synthetic_samples_ultra-low-res-spectrometer_c-model.tar.gz'),
+			mode='r:gz')
+		tar.extractall(path=self.tempfolder, filter='data')
+		tar.close()
+		self.spopen(path=Path(self.tempfolder))
+		self.spload()
 
 	def loadref(self):
 		if not self.spec.samples["Count"]:
@@ -815,18 +829,22 @@ class LIBSSA2(QMainWindow):
 	#
 	# Methods for page 1 == Load spectra
 	#
-	def spopen(self):
-		# Sets mode
-		self.mode = "Multiple" if self.gui.p1_smm.isChecked() else "Single"
-		# Gets folder from file dialog
-		folder = Path(
-			self.gui.guifd(
-				self.parent, "ged", "Select spectra folder for %s mode" % self.mode
+	def spopen(self, path: Path = None):
+		# Gets folder from file dialog if path is None
+		if path is None:
+			folder = Path(
+				self.gui.guifd(
+					self.parent, "ged", "Select spectra folder for %s mode" % self.mode
+				)
 			)
-		)
+		else:
+			folder = path
+			self.gui.p1_sms.toggle()
 		if str(folder) == ".":
 			self.gui.guimsg("Error", "Cancelled by the user.", "w")
 		else:
+			# Sets mode
+			self.mode = "Multiple" if self.gui.p1_smm.isChecked() else "Single"
 			# Lists all in folder
 			samples = listdir(folder)
 			samples.sort()
@@ -875,7 +893,12 @@ class LIBSSA2(QMainWindow):
 			# Updates gui elements
 			self.gui.g_selector.setCurrentIndex(0)
 			self.setgrange()
-
+			# Cleanup tempfolder
+			if self.tempfolder.is_dir():
+				for f in [self.tempfolder.joinpath(x) for x in listdir(str(self.tempfolder))]:
+					f.unlink()
+				self.tempfolder.rmdir()
+		
 		# Inner function to receive errors from worker
 		def ld_error(runerror):
 			# Closes progress bar and updates statusbar
