@@ -830,8 +830,8 @@ class LIBSSA2(QMainWindow):
 	# Methods for page 1 == Load spectra
 	#
 	def spopen(self, path: Path = None):
-		# Gets folder from file dialog if path is None
-		if path is None:
+		# Gets folder from file dialog if path is None or False
+		if path in (None, False):
 			folder = Path(
 				self.gui.guifd(
 					self.parent, "ged", "Select spectra folder for %s mode" % self.mode
