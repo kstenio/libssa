@@ -2,8 +2,8 @@
 A basic test to see if the gui starts up properly
 """
 from pathlib import Path
-
 import libssa.libssa2 as libssa
+
 
 def test_startup(qtbot):
     """
