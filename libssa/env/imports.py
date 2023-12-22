@@ -46,7 +46,7 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 	if delim == 'TAB':
 		delim = '\t'
 	elif delim == 'SPACE':
-		delim = '\s+'
+		delim = r'\s+'
 	# Creates wavelength and counts vectors
 	wavelength, counts, count, sort = array(([None])), array(([None]*len(folder)), dtype=object), None, False
 	if mode == "Single":
