@@ -54,7 +54,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 			self.loadui(uifile)
 			self.logofile = logofile
 			self.peaknormitems = []
-			self.version = '2.1'
+			self.version = '2.2'
 			self.about_html = ''
 		except Exception as err:
 			raise ValueError('Could not initialize UI file. Error message:\n\t%s' % str(err))
