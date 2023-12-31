@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Stenio
+  given-names: Kleydson
+  orcid: https://orcid.org/0000-0002-1407-9712
+title: "Laser Induced Breakdown Spectroscopy spectra analyzer"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.10447381
+version: v2.2.0
+date-released: 2023-12-31
