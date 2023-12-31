@@ -4,7 +4,7 @@
 
 # LIBSsa2 - Laser Induced Breakdown Spectroscopy spectra analyzer
 
-### Current stable version: _2.1_
+### Current stable version: _2.2_
 
 **LIBSsa 2** is free software, licensed under the **GNU Affero General Public License version 3**, 
 and written in **Python 3.x** for analyzing **LIBS spectra**. It can read several formats of data inside raw/text files,
