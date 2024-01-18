@@ -1,12 +1,36 @@
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+cff-version: "1.2.0"
 authors:
 - family-names: Stenio
   given-names: Kleydson
-  orcid: https://orcid.org/0000-0002-1407-9712
-title: "Laser Induced Breakdown Spectroscopy spectra analyzer"
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.10447381
-version: v2.2.0
-date-released: 2023-12-31
+  orcid: "https://orcid.org/0000-0002-1407-9712"
+- family-names: Milori
+  given-names: Débora Marcondes Bastos Pereira
+  orcid: "https://orcid.org/0000-0003-1253-7174"
+contact:
+- family-names: Stenio
+  given-names: Kleydson
+  orcid: "https://orcid.org/0000-0002-1407-9712"
+doi: 10.5281/zenodo.10447382
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Stenio
+    given-names: Kleydson
+    orcid: "https://orcid.org/0000-0002-1407-9712"
+  - family-names: Milori
+    given-names: Débora Marcondes Bastos Pereira
+    orcid: "https://orcid.org/0000-0003-1253-7174"
+  date-published: 2024-01-11
+  doi: 10.21105/joss.05961
+  issn: 2475-9066
+  issue: 93
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 5961
+  title: "LIBSsa: an open source software for analyzing LIBS spectra"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.05961"
+  volume: 9
+title: "LIBSsa: an open source software for analyzing LIBS spectra"
