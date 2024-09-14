@@ -12,7 +12,7 @@ jobs:
   deploy:
 
     runs-on: ubuntu-latest
-    environment:
+    env:
       POETRY_VIRTUALENVS_CREATE: true
       POETRY_VIRTUALENVS_IN_PROJECT: true
 
