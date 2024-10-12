@@ -20,14 +20,18 @@
 # Imports
 from os import listdir
 from pathlib import Path
-from numpy.linalg import norm
+
+from numpy import abs as nabs
+from numpy import dot, mean, array, trapz, zeros, median, ndarray, subtract, array_equal, column_stack
+from pandas import Series, DataFrame, read_csv, read_excel
 from scipy.stats import pearsonr
+from numpy.linalg import norm
 from PySide6.QtCore import Signal
-from pandas import read_csv, read_excel, DataFrame, Series
-from numpy import array, array_equal, ndarray, column_stack, mean, dot, zeros, median, abs as nabs, subtract, trapz
 
 
-def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, fsn: list, progress: Signal) -> tuple:
+def load(
+	folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int, dec: int, fsn: list, progress: Signal
+) -> tuple:
 	"""
 	This method loads spectra and returns global variables wavelength and counts.
 
@@ -48,8 +52,8 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 	elif delim == 'SPACE':
 		delim = r'\s+'
 	# Creates wavelength and counts vectors
-	wavelength, counts, count, sort = array(([None])), array(([None]*len(folder)), dtype=object), None, False
-	if mode == "Single":
+	wavelength, counts, count, sort = array(([None])), array(([None] * len(folder)), dtype=object), None, False
+	if mode == 'Single':
 		# Reads all files
 		for i, file in enumerate(folder):
 			if i == 0:
@@ -79,13 +83,13 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 					is_cut = counts[i][is_idx, :]
 					counts[i] /= is_cut.max(axis=0)
 			# Emits signal for GUI
-			progress.emit(i+1)
+			progress.emit(i + 1)
 		# By the end - if needed - sorts wavelength
 		if sort:
 			wavelength.sort()
 		# Return values
 		return wavelength, counts
-	elif mode == "Multiple":
+	elif mode == 'Multiple':
 		# Reads all files in each folder
 		for j, folders in enumerate(folder):
 			files = listdir(folders)
@@ -94,14 +98,28 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 			for k, spectrum in enumerate(files):
 				# Reads wavelength
 				if (j == 0) and (k == 0):
-					wavelength = read_csv(spectrum, usecols=[wcol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec).T[0]
+					wavelength = (
+						read_csv(spectrum, usecols=[wcol - 1], delimiter=delim, skiprows=header)
+						.to_numpy(dtype=float)
+						.round(dec)
+						.T[0]
+					)
 					if not array_equal(wavelength, wavelength[wavelength.argsort()]):
 						sort = True
 				# Reads counts
 				if k == 0:
-					count = read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)
+					count = (
+						read_csv(spectrum, usecols=[ccol - 1], delimiter=delim, skiprows=header)
+						.to_numpy(dtype=float)
+						.round(dec)
+					)
 				else:
-					count = column_stack((count, read_csv(spectrum, usecols=[ccol-1], delimiter=delim, skiprows=header).to_numpy(dtype=float).round(dec)))
+					count = column_stack((
+						count,
+						read_csv(spectrum, usecols=[ccol - 1], delimiter=delim, skiprows=header)
+						.to_numpy(dtype=float)
+						.round(dec),
+					))
 			# Back in j loop, save count in counts vector and sort if needed
 			counts[j] = count
 			if sort:
@@ -135,7 +153,7 @@ def load(folder: tuple, mode: str, delim: str, header: int, wcol: int, ccol: int
 def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tuple:
 	"""
 	Function to perform outliers removal for spectra.
-	
+
 	:param mode: operation mode, SAM (Spectral Angle Mapper) or MAD (median Absolute Deviation)
 	:param criteria: criteria for exclusion (0:1 for SAM, 2:2.5:3 for MAD)
 	:param counts: full Spectra object with intensities for sample set
@@ -151,7 +169,7 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tupl
 			out_counts[i] = out_average
 			removed = [0, counts['Raw'][i].shape[1]]
 			for j in range(counts['Raw'][i].shape[1]):
-				costheta = dot(out_average, counts['Raw'][i][:, j]) / ( norm(out_average)*norm(counts['Raw'][i][:, j]) )
+				costheta = dot(out_average, counts['Raw'][i][:, j]) / (norm(out_average) * norm(counts['Raw'][i][:, j]))
 				if costheta >= criteria:
 					out_counts[i] = column_stack((out_counts[i], counts['Raw'][i][:, j]))
 				else:
@@ -193,7 +211,7 @@ def outliers(mode: str, criteria: float, counts: dict, progress: Signal) -> tupl
 def refcorrel(file: Path) -> DataFrame:
 	"""
 	Convenient function to read references. For now, does little, but I'll add some checkups later...
-	
+
 	:param file: path of file of reference (xls, xlsx)
 	:return: dataframe after the loading
 	"""
@@ -203,26 +221,27 @@ def refcorrel(file: Path) -> DataFrame:
 def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal) -> ndarray:
 	"""
 	Function that calculates bitwise Pearson correlation
-	
+
 	:param wsize: size of wavelength
 	:param counts: intensities for every sample
 	:param ref: values of reference (each element in a column)
 	:param progress: PySide Signal object (for multithreading)
 	:return: object array containing Pearson, zeros and mean of sample set (I'll change this to a proper 3D array later...)
 	"""
+
 	# Extra functions
 	def meanmatrix(rows: int, full_matrix: ndarray):
 		mean_ = zeros((rows, full_matrix.__len__()))
 		for i, m in enumerate(full_matrix):
 			mean_[:, i] = mean(m, 1)
 		return mean_
-	
+
 	def onepearson(rows: int, m_matrix: ndarray, one_ref: Series):
 		p = zeros(rows)
 		for ip in range(rows):
 			p[ip], _ = pearsonr(m_matrix[ip, :], one_ref)
 		return p
-	
+
 	# Main function
 	pearson = zeros((wsize, ref.columns.__len__()))
 	mean_matrix = meanmatrix(wsize, counts)
@@ -234,6 +253,6 @@ def domulticorrel(wsize: int, counts: ndarray, ref: DataFrame, progress: Signal)
 	full_mean = mean(mean_matrix, 1)
 	full_mean /= max(full_mean)
 	# Organizes return array
-	return_array = array(([None]*3), dtype=object)
+	return_array = array(([None] * 3), dtype=object)
 	return_array[0], return_array[1], return_array[2] = pearson, full_mean, zeros(wsize)
 	return return_array
