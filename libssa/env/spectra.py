@@ -18,17 +18,19 @@
 
 
 # Imports
-from numpy import array
 from pathlib import Path
-from pandas import DataFrame
 from traceback import print_exc
-from PySide6.QtCore import QObject, QRunnable, Signal, Slot
+
+from numpy import array
+from pandas import DataFrame
+from PySide6.QtCore import Slot, Signal, QObject, QRunnable
 
 
 # Signals for Qt worker
 class WorkerSignals(QObject):
 	def __init__(self):
 		super(WorkerSignals, self).__init__()
+
 	# Types of signals for LIBSsa
 	progress = Signal(int)
 	error = Signal(tuple)
@@ -47,7 +49,7 @@ class Worker(QRunnable):
 		self.signals = WorkerSignals()
 		# Adds callback (progress) to kwargs
 		self.kwargs['progress'] = self.signals.progress
-	
+
 	@Slot(name='run')
 	def run(self):
 		try:
@@ -70,9 +72,9 @@ class Worker(QRunnable):
 class Spectra(object):
 	"""
 	LIBSsa: Spectra
-	
+
 	Class for storing and organizing entire LIBSsa environment.
-	
+
 	It is divided in:
 		* properties = size, sample names and file
 		* base data = wavelengths and counts/intensities
@@ -80,9 +82,10 @@ class Spectra(object):
 		* models = values that store models properties and predictions
 		* plasma information = for temperature and plasma density
 	"""
+
 	# Base element
 	base = array([None], dtype=object)
-	
+
 	def __init__(self):
 		# Sample set and properties
 		self.samples = {'Count': 0, 'Name': tuple([None]), 'Path': tuple([Path()])}
@@ -93,32 +96,79 @@ class Spectra(object):
 		self.ref = DataFrame({'Empty': [0]})
 		self.pearson = {'Data': self.base, 'Full-Mean': self.base, 'Zeros': self.base}
 		# Results from isolation and peak fitting
-		self.isolated = {'Count': 0, 'NSamples': 0, 'Element': self.base,
-		                 'Center': self.base, 'Upper': self.base, 'Lower': self.base,
-						 'Noise': self.base, 'Table': DataFrame()}
-		self.fit = {'Area': self.base, 'AreaSTD': self.base, 'Width': self.base, 'Height': self.base,
-		            'Shape': self.base, 'NFev': self.base, 'Convergence': self.base,
-		            'Data': self.base, 'Total': self.base}
+		self.isolated = {
+			'Count': 0,
+			'NSamples': 0,
+			'Element': self.base,
+			'Center': self.base,
+			'Upper': self.base,
+			'Lower': self.base,
+			'Noise': self.base,
+			'Table': DataFrame(),
+		}
+		self.fit = {
+			'Area': self.base,
+			'AreaSTD': self.base,
+			'Width': self.base,
+			'Height': self.base,
+			'Shape': self.base,
+			'NFev': self.base,
+			'Convergence': self.base,
+			'Data': self.base,
+			'Total': self.base,
+		}
 		# Models
-		self.linear = {'Reference': self.base, 'Predict': self.base,
-					   'R2': self.base, 'RMSE': self.base,
-					   'Slope': self.base, 'Intercept': self.base,
-					   'LoD': self.base, 'LoQ': self.base, 'Element': ''}
-		self.pca = {'Mode': None, 'OptComp': 0, 'ExpVar': self.base,
-		            'Attributes': self.base, 'Transformed': self.base, 'Loadings': self.base}
-		self.pls = {'Element': self.base, 'Model': self.base, 'NComps': 0, 'Samples': self.base,
-		            'Reference': self.base, 'Predict': self.base, 'Residual': self.base, 'Att': '',
-		            'PredictR2': self.base, 'PredictRMSE': self.base, 'CrossValPredict': self.base,
-		            'CrossValR2': self.base, 'CrossValRMSE': self.base, 'BlindPredict': self.base}
+		self.linear = {
+			'Reference': self.base,
+			'Predict': self.base,
+			'R2': self.base,
+			'RMSE': self.base,
+			'Slope': self.base,
+			'Intercept': self.base,
+			'LoD': self.base,
+			'LoQ': self.base,
+			'Element': '',
+		}
+		self.pca = {
+			'Mode': None,
+			'OptComp': 0,
+			'ExpVar': self.base,
+			'Attributes': self.base,
+			'Transformed': self.base,
+			'Loadings': self.base,
+		}
+		self.pls = {
+			'Element': self.base,
+			'Model': self.base,
+			'NComps': 0,
+			'Samples': self.base,
+			'Reference': self.base,
+			'Predict': self.base,
+			'Residual': self.base,
+			'Att': '',
+			'PredictR2': self.base,
+			'PredictRMSE': self.base,
+			'CrossValPredict': self.base,
+			'CrossValR2': self.base,
+			'CrossValRMSE': self.base,
+			'BlindPredict': self.base,
+		}
 		# Plasma properties
-		self.plasma = {'Ln': self.base, 'En': self.base, 'Fit': self.base, 'Report': self.base,
-		               'Tables': self.base, 'Element': '', 'Parameter': ''}
-	
+		self.plasma = {
+			'Ln': self.base,
+			'En': self.base,
+			'Fit': self.base,
+			'Report': self.base,
+			'Tables': self.base,
+			'Element': '',
+			'Parameter': '',
+		}
+
 	def clear(self):
 		"""
 		clear method. Totally clear an object, except pls if previous calculated
 		(for blind predictions)
-		
+
 		:return: None
 		"""
 		pls = self.pls.copy()
