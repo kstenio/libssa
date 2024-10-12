@@ -32,8 +32,8 @@ The file is a lzma-compressed pickle containing all the data loaded and processe
 
 ## Additional information on the features
 
-If you encounter any issues on how to use LIBSsa, or how the features mentioned above works, I describe them thoroughly in my 
-[thesis](https://repositorio.ufscar.br/handle/ufscar/18072) (chapter 9). Please be aware tha the text is writen in _Brazilian Portuguese_. 
+If you encounter any issues on how to use LIBSsa, or how the features mentioned above works, I describe them thoroughly in my
+[thesis](https://repositorio.ufscar.br/handle/ufscar/18072) (chapter 9). Please be aware tha the text is writen in _Brazilian Portuguese_.
 
 ## LIBSsa flowchart
 
