@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "libssa"
-version = "2.5.0a2"
+version = "2.5.0a1"
 description = "LIBSsa: an open source software for analyzing LIBS spectra"
 authors = [{ name = "Kleydson Stenio", email = "9257942+kstenio@users.noreply.github.com" }]
 readme = "README.md"
