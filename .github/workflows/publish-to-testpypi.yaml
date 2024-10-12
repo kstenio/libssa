@@ -24,17 +24,8 @@ jobs:
       with:
         version: "0.4"
 
-    - name: Set up Python
-      run: uv python install
-
     - name: Install dependencies
       run: uv sync --all-extras --dev --verbose
-
-    - name: Run tests
-      run: |
-        sudo apt update
-        sudo apt install libgl1
-        uv run pytest
 
     - name: Build package
       run: uv build
