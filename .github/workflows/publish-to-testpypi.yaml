@@ -11,7 +11,7 @@ on:
 jobs:
   deploy:
 
-    name: uv-deploy
+    name: uv-development-deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -25,15 +25,16 @@ jobs:
         version: "0.4"
 
     - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version-file: "pyproject.toml"
+      run: uv python install
 
     - name: Install dependencies
       run: uv sync --all-extras --dev --verbose
 
     - name: Run tests
-      run: uv run pytest
+      run: |
+        sudo apt update
+        sudo apt install libgl1
+        uv run pytest
 
     - name: Build package
       run: uv build
