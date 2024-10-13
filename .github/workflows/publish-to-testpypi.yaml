@@ -1,0 +1,36 @@
+name: Upload Python Package to TestPyPI
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+
+    name: uv-development-deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "0.4"
+
+    - name: Install dependencies
+      run: uv sync --verbose
+
+    - name: Build package
+      run: uv build
+
+    - name: Publish package to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/

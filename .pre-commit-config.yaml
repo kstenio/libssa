@@ -1,0 +1,113 @@
+repos:
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files # description: prevents giant files from being committed.
+        stages: [pre-commit]
+      
+      - id: check-ast # description: simply checks whether the files parse as valid python.
+        stages: [pre-commit]
+      
+      - id: check-builtin-literals # description: requires literal syntax when initializing empty or zero python builtin types.
+        stages: [pre-commit]
+      
+      - id: check-case-conflict # description: checks for files that would conflict in case-insensitive filesystems.
+        stages: [pre-commit]
+      
+      - id: check-executables-have-shebangs # description: ensures that (non-binary) executables have a shebang.
+        stages: [pre-commit]
+      
+      - id: check-json # description: checks json files for parseable syntax.
+        stages: [pre-commit]
+      
+      - id: pretty-format-json # description: sets a standard for formatting json files.
+        stages: [pre-commit]
+        args: [--indent=4, --no-ensure-ascii, --autofix]
+      
+      - id: check-merge-conflict # description: checks for files that contain merge conflict strings.
+        stages: [pre-commit]
+      
+      - id: check-symlinks # description: checks for symlinks which do not point to anything.
+        stages: [pre-commit]
+      
+      - id: check-toml # description: checks toml files for parseable syntax.
+        stages: [pre-commit]
+      
+      - id: check-vcs-permalinks # description: ensures that links to vcs websites are permalinks.
+        stages: [pre-commit]
+      
+      - id: check-xml # description: checks xml files for parseable syntax.
+        stages: [pre-commit]
+      
+      - id: check-yaml # description: checks yaml files for parseable syntax.
+        stages: [pre-commit]
+      
+      - id: destroyed-symlinks # description: detects symlinks which are changed to regular files with a content of a path which that symlink was pointing to.
+        stages: [pre-commit]
+      
+      - id: detect-private-key # description: detects the presence of private keys.
+        stages: [pre-commit]
+      
+      - id: fix-byte-order-marker # description: removes utf-8 byte order marker.
+        stages: [pre-commit]
+      
+      - id: forbid-new-submodules # description: prevents addition of new git submodules.
+        stages: [pre-commit]
+      
+      - id: forbid-submodules # description: forbids any submodules in the repository.
+        stages: [pre-commit]
+      
+      - id: name-tests-test # description: verifies that test files are named correctly.
+        stages: [pre-commit]
+        args: [--pytest-test-first]
+      
+      - id: no-commit-to-branch # description: don't commit to branch.
+        stages: [pre-commit, pre-push]
+        args: [--branch, master, --branch, develop]
+      
+      - id: sort-simple-yaml # description: sorts simple yaml files which consist only of top-level keys, preserving comments and blocks.
+        stages: [pre-commit]
+  
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.18.0
+    hooks:
+      - id: pyupgrade
+        stages: [pre-commit]
+  
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
+    hooks:
+      - id: ruff
+        stages: [pre-commit]
+        args: [--select=I]
+      
+      - id: ruff-format
+        stages: [pre-commit]
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--strict, --force-scope, chore, build , ci, docs, feat, fix, perf, refactor, style, test]
+
+  - repo: meta
+    hooks:
+      - id: identity
+        name: run tests warning
+        stages: [pre-push]
+        args:
+          - '*** ********************************************************************************* ***'
+          - '***                                     WARNING                                       ***'
+          - '***                                                                                   ***'
+          - '*** 1. RUN TESTS BEFORE SUBMITTING A PR!                                              ***'
+          - '*** 2. CHANGES IN `pyproject.toml` or `.pre-commit-config.yaml` WILL NOT BE ACCEPTED! ***'
+          - '***                                                                                   ***'
+          - '*** ********************************************************************************* ***'
+        pass_filenames: false
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+  - pre-push
