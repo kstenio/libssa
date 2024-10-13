@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2023 Florian Dobener <florian.dobener@physik.hu-berlin.de> [@domna]
-#                    Kleydson Stenio (kleydson.stenio@gmail.com) [@kstenio]
+# Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -16,22 +14,3 @@
 #
 # You should have received a copy of the GNU Affero General Public License along
 # with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
-"""
-A basic test to see if the gui starts up properly
-"""
-
-# Imports
-from pathlib import Path
-
-import libssa.libssa2 as libssa
-
-
-def test_startup(qtbot):
-	"""
-	Test if the gui starts up
-	"""
-	root = Path(__file__).parents[1]
-	uif = root.joinpath('libssa', 'env', 'gui', 'libssagui.ui')
-	lof = root.joinpath('libssa', 'pic', 'libssa.svg')
-	app = libssa.LIBSSA2(uif, lof)
-	qtbot.addWidget(app)

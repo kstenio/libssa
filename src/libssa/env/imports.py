@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -52,7 +51,7 @@ def load(
 	elif delim == 'SPACE':
 		delim = r'\s+'
 	# Creates wavelength and counts vectors
-	wavelength, counts, count, sort = array(([None])), array(([None] * len(folder)), dtype=object), None, False
+	wavelength, counts, count, sort = array([None]), array(([None] * len(folder)), dtype=object), None, False
 	if mode == 'Single':
 		# Reads all files
 		for i, file in enumerate(folder):

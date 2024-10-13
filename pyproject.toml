@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "libssa"
-version = "2.5.0a1"
+version = "2.5.0a5"
 description = "LIBSsa: an open source software for analyzing LIBS spectra"
 authors = [{ name = "Kleydson Stenio", email = "9257942+kstenio@users.noreply.github.com" }]
 readme = "README.md"
@@ -19,27 +19,26 @@ classifiers = [
 ]
 requires-python = ">=3.9,<3.12"
 dependencies = [
+    "markdown<=3.4.3",
     "numpy<=1.25.1",
-    "scipy<=1.11.1",
-    "pandas<=2.0.3",
-    "scikit-learn<=1.3.0",
-    "PySide6<=6.4.3",
-    "pyqtgraph<=0.13.3",
     "openpyxl<=3.1.2",
+    "pandas<=2.0.3",
     "psutil<=5.9.5",
-    "Markdown<=3.4.3"
+    "pyqtgraph<=0.13.3",
+    "pyside6<=6.4.3",
+    "scikit-learn<=1.3.0",
+    "scipy<=1.11.1"
 ]
 
 [project.scripts]
 libssa-gui = "libssa.libssa2:spawn_gui"
 
 [project.urls]
-Homepage = "https://kstenio.github.io/libssa/"
-Repository = "https://github.com/kstenio/libssa"
+Homepage = "https://github.com/kstenio/libssa"
 Documentation = "https://kstenio.github.io/libssa/"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["src/tests"]
 
 [tool.ruff]
 line-length = 128
