@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
@@ -80,7 +79,7 @@ class LIBSSA2(QMainWindow):
 	def __init__(self, ui_file: str, logo_file: str):
 		# Checks if ui file exists and warn users if not
 		try:
-			super(LIBSSA2, self).__init__()
+			super().__init__()
 			self.gui = LIBSsaGUI(ui_file, logo_file)
 		except Exception as ex:
 			QMessageBox.critical(

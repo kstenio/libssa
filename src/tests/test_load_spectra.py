@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
@@ -40,7 +39,7 @@ WAVE_MAX = 1000
 
 
 # Qt Signal mock class
-class Signal(object): ...
+class Signal: ...
 
 
 class SignalMock(Signal):

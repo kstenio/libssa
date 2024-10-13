@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
@@ -49,7 +48,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 	"""
 
 	def __init__(self, uifile: str, logofile: str):
-		super(LIBSsaGUI, self).__init__(parent=None)
+		super().__init__(parent=None)
 		# Loads main window
 		try:
 			self.mw = QtWidgets.QMainWindow()
@@ -894,7 +893,7 @@ class LIBSsaGUI(QtWidgets.QMainWindow):
 		"""
 		self.p3_isotb.blockSignals(True)
 		# Creates set list for to-be-removed rows
-		selected = set([x.row() for x in self.p3_isotb.selectedIndexes()])
+		selected = {x.row() for x in self.p3_isotb.selectedIndexes()}
 		if selected.__len__() > 0:
 			for r in selected:
 				if option:

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2023 Florian Dobener <florian.dobener@physik.hu-berlin.de> [@domna]
 #               2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com) [@kstenio]
