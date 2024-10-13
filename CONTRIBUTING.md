@@ -85,8 +85,7 @@ Additional features that could be implemented include:
 
 ## Contact
 
-You can find my contact information throughout the code. In case you missed it, you can [email me](mailto:kleydson.stenio@gmail.com?Subject=LIBSsa_Contributing).
-Feel free to contact me for any information not available in this guide, or if you're interested in becoming a maintainer.
+Feel free to [contact me](mailto:kleydson.stenio@gmail.com?Subject=LIBSsa_Contributing) for any information not available in this guide, or if you're interested in becoming a maintainer.
 I'm available to provide feedback and assistance with code and issues.
 
 ## References

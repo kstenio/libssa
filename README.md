@@ -128,4 +128,4 @@ is based on the [PT_Sans font](https://fonts.google.com/specimen/PT+Sans). Licen
 
 ---
 
-Developed by: [Kleydson Stenio](mailto:kleydson.stenio@gmail.com?Subject=LIBSsa_QUESTIONS) @ 2023
+Developed by: [Kleydson Stenio](mailto:9257942+kstenio@users.noreply.github.com?Subject=LIBSsa_QUESTIONS) @ 2024
