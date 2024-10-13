@@ -97,7 +97,14 @@ repos:
       - id: identity
         name: run tests warning
         stages: [pre-push]
-        args: ['*** WARNING: RUN TESTS BEFORE SUBMITTING A PR! ***']
+        args:
+          - '*** ********************************************************************************* ***'
+          - '***                                     WARNING                                       ***'
+          - '***                                                                                   ***'
+          - '*** 1. RUN TESTS BEFORE SUBMITTING A PR!                                              ***'
+          - '*** 2. CHANGES IN `pyproject.toml` or `.pre-commit-config.yaml` WILL NOT BE ACCEPTED! ***'
+          - '***                                                                                   ***'
+          - '*** ********************************************************************************* ***'
         pass_filenames: false
 
 default_install_hook_types:
