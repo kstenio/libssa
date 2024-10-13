@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -80,7 +79,7 @@ class LIBSSA2(QMainWindow):
 	def __init__(self, ui_file: str, logo_file: str):
 		# Checks if ui file exists and warn users if not
 		try:
-			super(LIBSSA2, self).__init__()
+			super().__init__()
 			self.gui = LIBSsaGUI(ui_file, logo_file)
 		except Exception as ex:
 			QMessageBox.critical(
@@ -297,7 +296,9 @@ class LIBSSA2(QMainWindow):
 
 	def loadsample_spectra(self):
 		self.tempfolder = Path(tempfile.mkdtemp(prefix='libssa_', suffix='_sampledata'))
-		tar = tarfile.open(self.root.joinpath('synthetic_samples_ultra-low-res-spectrometer_c-model.tar.gz'), mode='r:gz')
+		tar = tarfile.open(
+			self.root.joinpath('data', 'synthetic_samples_ultra-low-res-spectrometer_c-model.tar.gz'), mode='r:gz'
+		)
 		tar.extractall(path=self.tempfolder, filter='data')
 		tar.close()
 		self.spopen(path=Path(self.tempfolder))

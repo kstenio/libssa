@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2023 Florian Dobener <florian.dobener@physik.hu-berlin.de> [@domna]
-#                    Kleydson Stenio (kleydson.stenio@gmail.com) [@kstenio]
+#               2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com) [@kstenio]
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published

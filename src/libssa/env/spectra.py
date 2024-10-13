@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -29,7 +28,7 @@ from PySide6.QtCore import Slot, Signal, QObject, QRunnable
 # Signals for Qt worker
 class WorkerSignals(QObject):
 	def __init__(self):
-		super(WorkerSignals, self).__init__()
+		super().__init__()
 
 	# Types of signals for LIBSsa
 	progress = Signal(int)
@@ -41,7 +40,7 @@ class WorkerSignals(QObject):
 # Main QThreadPool worker
 class Worker(QRunnable):
 	def __init__(self, fn, *args, **kwargs):
-		super(Worker, self).__init__()
+		super().__init__()
 		# Base args
 		self.fn = fn
 		self.args = args
@@ -69,7 +68,7 @@ class Worker(QRunnable):
 
 
 # LIBSsa main spectra class
-class Spectra(object):
+class Spectra:
 	"""
 	LIBSsa: Spectra
 

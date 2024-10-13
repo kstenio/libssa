@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
-# Copyright (c) 2023 Kleydson Stenio (kleydson.stenio@gmail.com).
+# Copyright (c) 2024 Kleydson Stenio (9257942+kstenio@users.noreply.github.com).
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -40,7 +39,7 @@ WAVE_MAX = 1000
 
 
 # Qt Signal mock class
-class Signal(object): ...
+class Signal: ...
 
 
 class SignalMock(Signal):
