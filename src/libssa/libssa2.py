@@ -297,7 +297,9 @@ class LIBSSA2(QMainWindow):
 
 	def loadsample_spectra(self):
 		self.tempfolder = Path(tempfile.mkdtemp(prefix='libssa_', suffix='_sampledata'))
-		tar = tarfile.open(self.root.joinpath('synthetic_samples_ultra-low-res-spectrometer_c-model.tar.gz'), mode='r:gz')
+		tar = tarfile.open(
+			self.root.joinpath('data', 'synthetic_samples_ultra-low-res-spectrometer_c-model.tar.gz'), mode='r:gz'
+		)
 		tar.extractall(path=self.tempfolder, filter='data')
 		tar.close()
 		self.spopen(path=Path(self.tempfolder))
