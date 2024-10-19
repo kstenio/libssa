@@ -21,6 +21,13 @@ pc-run:
 pc-run-all:
 	uv run pre-commit run --all-files
 
+# Commitizen commands (type -> alpha|beta|rc)
+bump:
+	uv run cz bump
+
+bump-prerelease:
+	uv run cz bump --prerelease $(type)
+
 # Ruff commands
 ruff-run:
 	uv run ruff check --select I --fix
