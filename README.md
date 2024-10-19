@@ -11,6 +11,8 @@
 [![PyPI - Release](https://badgen.net/pypi/v/libssa/?color=0507ee&icon=pypi)](https://pypi.org/project/libssa/)
 [![GitHub - License](https://badgen.net/github/license/kstenio/libssa/?color=05c8fe)](https://www.gnu.org/licenses/agpl-3.0.html.en)
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.05961/status.svg)](https://doi.org/10.21105/joss.05961)
+
 **LIBSsa 2** is free software, licensed under the **GNU Affero General Public License version 3**,
 and written in **Python 3.x** for analyzing **LIBS spectra**. It can read several formats of data inside raw/text files,
 import the spectra, and perform multiple analyses on the data. The environment (spectra, peaks, and results) may also be saved
@@ -84,6 +86,49 @@ install the following **_external libraries_** that LIBSsa uses:
 
 Lastly, advanced users are encouraged to use [venv](https://docs.python.org/3/library/venv.html) (Virtual Environment).
 
+### 3. Using uv (for development)
+
+If you want more than just to use the application and aim to implement changes or improvements, LIBSsa uses [**uv**](https://docs.astral.sh/uv/)
+as its package and project manager. After installing **uv** and cloning this repository, you can initialize the environment with:
+
+```shell
+uv sync --dev
+```
+
+This will install all the necessary libraries, including those for development. The main development dependencies are:
+
+1. [uv](https://github.com/astral-sh/uv) (>=0.4,<0.5)
+2. [ruff](https://github.com/astral-sh/ruff) (>=0.6.9)
+3. [pre-commit](https://pre-commit.com/) (>=4.0.1)
+4. [commitizen](https://commitizen-tools.github.io/commitizen/) (>=3.29.1)
+5. [pytest](https://docs.pytest.org/en/stable/) (>=8.3.3)
+6. [pytest-qt](https://github.com/pytest-dev/pytest-qt) (>=4.4.0)
+
+Once the environment is set up, you can run LIBSsa (or any other dependency tool) with `uv run`:
+
+```shell
+uv run libssa-gui                            # Runs LIBSsa
+uv run pytest                                # Runs automated tests
+uv run ruff check .                          # Runs code checker/linter
+uv run ruff format                           # Runs code formatter
+uv run pre-commit install --install-hooks    # Sets up pre-commit hooks
+uv run pre-commit                            # Runs pre-commit
+uv run cz bump                               # Uses commitizen for auto-versioning LIBSsa (after proper commit)
+uv run cz bump --prerelease [alpha|beta|rc]  # Same as above, with prerelease flag
+```
+
+Additionally, some command aliases are available through the **Makefile** standard, which uses [make](https://www.gnu.org/software/make/)
+to keep _aliases_. Make usually comes pre-installed in Linux distributions and macOS; however, for Windows (outside WSL), it needs to
+be [installed separately](https://gnuwin32.sourceforge.net/packages/make.htm).
+
+Below are some available commands; for additional ones, check the project [Makefile](https://github.com/kstenio/libssa/blob/master/Makefile).
+
+```shell
+make install-uv-linux  # Installs uv on Linux using `curl`
+make setup             # Sets up the environment (installs dependencies)
+make test              # Runs tests
+```
+
 ## Contributing
 
 If you wish to contribute to the development of LIBSsa, please check for the guidelines in the
@@ -94,7 +139,7 @@ If you wish to contribute to the development of LIBSsa, please check for the gui
 LIBSsa 2 is an open-source project. It is distributed in the hope that it will be
 useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
 or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
-version 3 [attached](./LICENSE.txt) for more details.
+version 3 [attached](https://github.com/kstenio/libssa/blob/master/LICENSE.txt) for more details.
 
 ## Historical background
 
@@ -110,7 +155,7 @@ the development of **LIBSsa 2** started.
 
 The present software (up to version 2.0.99) was supported by the Coordination for the Improvement
 of Higher Education Personnel - Brazil (CAPES) - Finance Code 001, and by the Laboratory of Optics and Photonics
-at Embrapa Instrumentation, under the supervision of Dr. Debora Milori.
+at Embrapa Instrumentation, under the supervision of [Dr. Debora Milori](https://lattes.cnpq.br/7400112076142555).
 
 ## Copyright
 
@@ -124,7 +169,7 @@ This registration provides an additional layer of protection in accordance with 
 
 LIBSsa also uses content from other projects: SVG icons are from [Font Awesome](https://fontawesome.com/), and the logo
 is based on the [PT_Sans font](https://fonts.google.com/specimen/PT+Sans). License to those content are available in the
-[doc/open_source_licenses](./doc/open_source_licenses) folder.
+[doc/open_source_licenses](https://github.com/kstenio/libssa/blob/master/doc/open_source_licenses) folder.
 
 ---
 
