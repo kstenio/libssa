@@ -2,10 +2,12 @@ name: Upload Python Package to TestPyPI
 
 on:
   push:
-    branches: [develop]
+    branches:
+      - develop
 
 jobs:
   deploy:
+
     name: uv-development-deploy
     runs-on: ubuntu-latest
     permissions:
@@ -23,13 +25,12 @@ jobs:
         version: "0.4"
 
     - name: Install dependencies
-      run: uv sync --no-dev --no-install-project
+      run: uv sync --verbose
 
     - name: Build package
       run: uv build
 
     - name: Publish package to TestPyPI
-      run: uv publish --trusted-publishing automatic
-      env:
-        UV_PUBLISH_URL: https://test.pypi.org/legacy/
-        UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
