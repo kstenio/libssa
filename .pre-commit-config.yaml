@@ -90,7 +90,7 @@ repos:
     hooks:
       - id: conventional-pre-commit
         stages: [commit-msg]
-        args: [--strict, --force-scope, chore, build , ci, docs, feat, fix, perf, refactor, style, test]
+        args: [--strict, --force-scope, chore, build , ci, docs, feat, fix, new, perf, refactor, style, test]
 
   - repo: meta
     hooks:
