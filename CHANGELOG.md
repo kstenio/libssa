@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v2.5.1b0 (2024-10-19)
+
+### Continuous Integration
+
+- **autoversion**: adding and setting up commitizen for auto-version bump mechanism ([`91a93e8`](https://github.com/kstenio/libssa/commit/91a93e803a7e91c3a1197f54071e0e286aa5b76f))
+
 ## v2.5.0 (2024-10-13)
 
 ### Breaking
