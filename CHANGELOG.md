@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v2.5.1b2 (2024-10-19)
+
+### Documentation
+
+- **readme**: updated README.md and Makefile commands ([`3393290`](https://github.com/kstenio/libssa/commit/33932903b7c0a5e9d7b00b4dacd2d6788c024629))
+
 ## v2.5.1b1 (2024-10-19)
 
 ### Chores
