@@ -1,6 +1,21 @@
 # CHANGELOG
 
 
+## v2.5.1b5 (2024-10-19)
+
+### Chores
+
+- **fix**: minor adjustment [skip-ci] ([`a52eccb`](https://github.com/kstenio/libssa/commit/a52eccb6632c0f876c2b052d573e3aff5bca3843))
+
+### Continuous Integration
+
+- **forcemerge**: fixing issues after a issues during previous merge ([`250c882`](https://github.com/kstenio/libssa/commit/250c88232f6c767f06523622e773041749d7fa73))
+- **force-merge**: 'develop' into ci/autoversion (ours) [skip ci] ([`758c406`](https://github.com/kstenio/libssa/commit/758c406c89c61522d69d1aa697644f28cfe997a6))
+- **merge**: <- develop ([`30b1e11`](https://github.com/kstenio/libssa/commit/30b1e11117aa1938f7d914470b4f1dd20e207cb4))
+- **merge**: develop <- ci/autoversion [2] ([`9be401c`](https://github.com/kstenio/libssa/commit/9be401c2e29c203711160d880787b852a4cd6e23))
+- **merge**: develop <- ci/autoversion [3] ([`0e8928b`](https://github.com/kstenio/libssa/commit/0e8928b6645d68dabaae5af47599bc00356efe5c))
+- **merge**: develop <- ci/autoversion ([`a3d7df9`](https://github.com/kstenio/libssa/commit/a3d7df9355c46428471907733e4a63c743a5e336))
+
 ## v2.5.1b4 (2024-10-19)
 
 ### Builds

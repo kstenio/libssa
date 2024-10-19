@@ -207,7 +207,7 @@ wheels = [
 
 [[package]]
 name = "libssa"
-version = "2.5.1b4"
+version = "2.5.1b5"
 source = { editable = "." }
 dependencies = [
     { name = "markdown" },
