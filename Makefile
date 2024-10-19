@@ -22,10 +22,10 @@ pc-run-all:
 	uv run pre-commit run --all-files
 
 # Commitizen commands (type -> alpha|beta|rc)
-bump: setup
+bump:
 	uv run cz bump
 
-bump-prerelease: setup
+bump-prerelease:
 	uv run cz bump --prerelease $(type)
 
 # Ruff commands
