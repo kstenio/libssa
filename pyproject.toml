@@ -39,7 +39,7 @@ Documentation = "https://kstenio.github.io/libssa/"
 
 [tool.commitizen]
 annotated_tag = true
-bump_message = "ci(auto-version-bump): updating libssa from $current_version → $new_version [skip-ci]"
+bump_message = "ci(auto-version-bump): updating libssa from $current_version → $new_version [skip ci]"
 changelog_file = "CHANGELOG.md"
 changelog_incremental = true
 name = "cz_customize"
