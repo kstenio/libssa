@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v2.5.1b3 (2024-10-19)
+
+### Builds
+
+- **publish-with-uv**: using uv to publish (testpypi) ([`e91f4ac`](https://github.com/kstenio/libssa/commit/e91f4ac8b78445e364fe0c8afebb20076611bc3d))
+
 ## v2.5.1b2 (2024-10-19)
 
 ### Documentation
