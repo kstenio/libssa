@@ -155,7 +155,7 @@ the development of **LIBSsa 2** started.
 
 The present software (up to version 2.0.99) was supported by the Coordination for the Improvement
 of Higher Education Personnel - Brazil (CAPES) - Finance Code 001, and by the Laboratory of Optics and Photonics
-at Embrapa Instrumentation, under the supervision of [Dr. Debora Milori](http://lattes.cnpq.br/7400112076142555).
+at Embrapa Instrumentation, under the supervision of [Dr. Debora Milori](https://lattes.cnpq.br/7400112076142555).
 
 ## Copyright
 
