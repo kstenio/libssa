@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v2.5.1b1 (2024-10-19)
+
+### Chores
+
+- **makefile**: adding Makefile aliases to project ([`412a8fd`](https://github.com/kstenio/libssa/commit/412a8fdabc57b1bcf7edf2aa095ad9cc1ba7cb95))
+
 ## v2.5.1b0 (2024-10-19)
 
 ### Continuous Integration
