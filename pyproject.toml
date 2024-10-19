@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "libssa"
-version = "2.5.0"
+version = "2.5.1b3"
 description = "LIBSsa: an open source software for analyzing LIBS spectra"
 authors = [{ name = "Kleydson Stenio", email = "9257942+kstenio@users.noreply.github.com" }]
 readme = "README.md"
@@ -36,6 +36,27 @@ libssa-gui = "libssa.libssa2:spawn_gui"
 [project.urls]
 Homepage = "https://github.com/kstenio/libssa"
 Documentation = "https://kstenio.github.io/libssa/"
+
+[tool.commitizen]
+annotated_tag = true
+bump_message = "ci(auto-version-bump): updating libssa from $current_version → $new_version [skip-ci]"
+changelog_file = "CHANGELOG.md"
+changelog_incremental = true
+name = "cz_customize"
+tag_format = "v$version"
+template = "doc/changelog_template/CHANGELOG.md.j2"
+update_changelog_on_bump = true
+version_files = ["src/__version__.py", "pyproject.toml:version"]
+version_provider = "pep621"
+version_scheme = "pep440"
+
+[tool.commitizen.customize]
+bump_map = {"chore" = "PATCH", "build" = "PATCH", "ci" = "PATCH", "docs" = "PATCH", "feat" = "MINOR", "fix" = "PATCH", "new" = "MAJOR", "perf" = "MINOR", "refactor" = "MINOR", "style" = "PATCH", "test" = "PATCH"}
+bump_pattern = "^(chore|build|ci|docs|feat|fix|new|perf|refactor|style|test)"
+change_type_map = {"chore" = "Chores", "build" = "Builds", "ci" = "Continuous Integration", "docs" = "Documentation", "feat" = "Features", "fix" = "Fix and/or Hotfixes", "new" = "New Version", "perf" = "Performance", "refactor" = "Refactoring", "style" = "Style Improvement", "test" = "Tests"}
+change_type_order = ["new", "feat", "ci", "build", "fix", "perf", "refactor", "style", "docs", "test", "chore"]
+changelog_pattern = "^(chore|build|ci|docs|feat|fix|new|perf|refactor|style|test)?(!)?"
+commit_parser = "^((?P<change_type>chore|build|ci|docs|feat|fix|new|perf|refactor|style|test)(?:\\((?P<scope>[^()\r\n]*)\\)|\\()?(?P<breaking>!)?|\\w+!):\\s(?P<message>.*)?"
 
 [tool.pytest.ini_options]
 testpaths = ["src/tests"]
@@ -74,8 +95,9 @@ preview = true
 compile-bytecode = true
 resolution = "highest"
 dev-dependencies = [
+    "commitizen>=3.29.1",
+    "pre-commit>=4.0.1",
     "pytest>=8.3.3",
     "pytest-qt>=4.4.0",
     "ruff>=0.6.9",
-    "pre-commit>=4.0.1",
 ]

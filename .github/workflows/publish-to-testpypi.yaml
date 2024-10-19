@@ -31,6 +31,7 @@ jobs:
       run: uv build
 
     - name: Publish package to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
+      run: uv publish --trusted-publishing automatic
+      env:
+        UV_PUBLISH_URL: https://test.pypi.org/legacy/
+        UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
