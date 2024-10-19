@@ -6,7 +6,6 @@ on:
 
 jobs:
   deploy:
-
     name: uv-master-deploy
     runs-on: ubuntu-latest
     permissions:
@@ -24,12 +23,12 @@ jobs:
         version: "0.4"
 
     - name: Install dependencies
-      run: uv sync --verbose
+      run: uv sync --no-dev --no-install-project
 
     - name: Build package
       run: uv build
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      run: uv publish --trusted-publishing automatic
+      env:
+        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

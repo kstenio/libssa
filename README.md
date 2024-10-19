@@ -6,9 +6,11 @@
 
 [![PyPI - Python Version](https://badgen.net/pypi/python/libssa/?color=5500d4)](https://www.python.org/downloads/)
 [![GitHub - Commits](https://badgen.net/github/commits/kstenio/libssa/?color=6c037f&icon=github)](https://github.com/kstenio/libssa/commits/)
+[![GitHub - Contributors](https://badgen.net/github/contributors/kstenio/libssa/?color=902da6&icon=github)](https://github.com/kstenio/libssa/graphs/contributors)
 [![GitHub - Releases](https://badgen.net/github/release/kstenio/libssa/?color=6865aa&icon=github)](https://github.com/kstenio/libssa/releases)
 [![PyPI - Release](https://badgen.net/pypi/v/libssa/?color=0507ee&icon=pypi)](https://pypi.org/project/libssa/)
 [![GitHub - License](https://badgen.net/github/license/kstenio/libssa/?color=05c8fe)](https://www.gnu.org/licenses/agpl-3.0.html.en)
+
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.05961/status.svg)](https://doi.org/10.21105/joss.05961)
 
 **LIBSsa 2** is free software, licensed under the **GNU Affero General Public License version 3**,
@@ -105,21 +107,21 @@ This will install all the necessary libraries, including those for development. 
 Once the environment is set up, you can run LIBSsa (or any other dependency tool) with `uv run`:
 
 ```shell
-uv run libssa-gui                              # Runs LIBSsa
-uv run pytest                                  # Runs automated tests
-uv run ruff check .                            # Runs code checker/linter
-uv run ruff format                             # Runs code formatter
-uv run pre-commit install --install-hooks      # Sets up pre-commit hooks
-uv run pre-commit                              # Runs pre-commit
-uv run cz bump                                 # Uses commitizen for auto-versioning LIBSsa (after proper commit)
-uv run cz bump --prerelease [alpha|beta|rc]    # Same as above, with prerelease flag
+uv run libssa-gui                            # Runs LIBSsa
+uv run pytest                                # Runs automated tests
+uv run ruff check .                          # Runs code checker/linter
+uv run ruff format                           # Runs code formatter
+uv run pre-commit install --install-hooks    # Sets up pre-commit hooks
+uv run pre-commit                            # Runs pre-commit
+uv run cz bump                               # Uses commitizen for auto-versioning LIBSsa (after proper commit)
+uv run cz bump --prerelease [alpha|beta|rc]  # Same as above, with prerelease flag
 ```
 
 Additionally, some command aliases are available through the **Makefile** standard, which uses [make](https://www.gnu.org/software/make/)
 to keep _aliases_. Make usually comes pre-installed in Linux distributions and macOS; however, for Windows (outside WSL), it needs to
 be [installed separately](https://gnuwin32.sourceforge.net/packages/make.htm).
 
-Below are some available commands; for additional ones, check the project [Makefile](./Makefile).
+Below are some available commands; for additional ones, check the project [Makefile](https://github.com/kstenio/libssa/blob/master/Makefile).
 
 ```shell
 make install-uv-linux  # Installs uv on Linux using `curl`
@@ -137,7 +139,7 @@ If you wish to contribute to the development of LIBSsa, please check for the gui
 LIBSsa 2 is an open-source project. It is distributed in the hope that it will be
 useful, but *WITHOUT ANY WARRANTY*; without even the implied warranty of *MERCHANTABILITY*
 or *FITNESS FOR A PARTICULAR PURPOSE*. See the GNU Affero General Public License
-version 3 [attached](./LICENSE.txt) for more details.
+version 3 [attached](https://github.com/kstenio/libssa/blob/master/LICENSE.txt) for more details.
 
 ## Historical background
 
@@ -167,7 +169,7 @@ This registration provides an additional layer of protection in accordance with 
 
 LIBSsa also uses content from other projects: SVG icons are from [Font Awesome](https://fontawesome.com/), and the logo
 is based on the [PT_Sans font](https://fonts.google.com/specimen/PT+Sans). License to those content are available in the
-[doc/open_source_licenses](./doc/open_source_licenses) folder.
+[doc/open_source_licenses](https://github.com/kstenio/libssa/blob/master/doc/open_source_licenses) folder.
 
 ---
 

@@ -1,6 +1,12 @@
 # CHANGELOG
 
 
+## v2.5.1b4 (2024-10-19)
+
+### Builds
+
+- **publish-with-uv**: added settings for publish to pypi + updated readme (main and gui) ([`822a939`](https://github.com/kstenio/libssa/commit/822a93923f74f41fe4884a8b6d8d5c16de0bf412))
+
 ## v2.5.1b3 (2024-10-19)
 
 ### Builds

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "libssa"
-version = "2.5.1b3"
+version = "2.5.1b4"
 description = "LIBSsa: an open source software for analyzing LIBS spectra"
 authors = [{ name = "Kleydson Stenio", email = "9257942+kstenio@users.noreply.github.com" }]
 readme = "README.md"
@@ -43,6 +43,7 @@ bump_message = "ci(auto-version-bump): updating libssa from $current_version →
 changelog_file = "CHANGELOG.md"
 changelog_incremental = true
 name = "cz_customize"
+pre_bump_hooks = ["uv sync"]
 tag_format = "v$version"
 template = "doc/changelog_template/CHANGELOG.md.j2"
 update_changelog_on_bump = true

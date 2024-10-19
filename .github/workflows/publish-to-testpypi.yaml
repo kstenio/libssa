@@ -2,12 +2,10 @@ name: Upload Python Package to TestPyPI
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
 
 jobs:
   deploy:
-
     name: uv-development-deploy
     runs-on: ubuntu-latest
     permissions:
@@ -25,7 +23,7 @@ jobs:
         version: "0.4"
 
     - name: Install dependencies
-      run: uv sync --verbose
+      run: uv sync --no-dev --no-install-project
 
     - name: Build package
       run: uv build
